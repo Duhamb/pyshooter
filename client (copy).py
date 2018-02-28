@@ -1390,7 +1390,6 @@ def readinput(events):
 					screen = pygame.display.set_mode(smallresolution, pygame.RESIZABLE)
 			if event.key == K_r: #reset key
 				for flag in man.flagbag:
-					#print "flag dropped"
 					man.flagbag.remove(flag)
 					SendData(client_server_sock,["update","FR",{"name":flag.parent.name}])
 					trash = ReceiveData(client_server_sock)				

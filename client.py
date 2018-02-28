@@ -6,8 +6,6 @@ sys.path.append(os.path.split(sys.path[0])[0])
 if not pygame.font: print('Warning, fonts disabled')
 if not pygame.mixer: print('Warning, sound disabled')
 
-memory = {}
-
 def distance(p1, p2):
 	total = 0
 	for i in range(len(p1)):
@@ -36,6 +34,7 @@ class Sound():
 		self.sound = load_sound(name)
 		self.on = 0
 		self.onlast = 0
+		self.stop()
 	def play(self, dist):
 		self.sound.set_volume(math.exp(-dist/400))
 		self.sound.play()#comment this line out to turn off sounds
@@ -54,9 +53,7 @@ class Sound():
 def scrpos2(value, coord):
 	area = pygame.display.get_surface().get_rect()
 	if coord == "x":
-		#this causes a problem i havent been able to work through due to circularity of ideas. means you can move the mouse and move the guy#done
 		tmpdist = (mpx - gunformotiontracking.xrectfixed)/4#so it moves with the mouse
-		#tmpdist = (mpx - man.x)/4
 		newpos = focused.fixed.x + tmpdist
 		if -(newpos - back.rect.width/2) <= area.width/2:#so it is block from going off the map
 			centerx = back.rect.width/2 - area.width/2
@@ -68,7 +65,6 @@ def scrpos2(value, coord):
 		return returnvalue
 	else:
 		tmpdist = (mpy - gunformotiontracking.yrectfixed)/4
-		#tmpdist = (mpy - man.y)/4
 		newpos = focused.fixed.y + tmpdist	
 		if -(newpos - back.rect.height/2) <= area.height/2:
 			centery = back.rect.height/2 - area.height/2
@@ -81,9 +77,7 @@ def scrpos2(value, coord):
 def realpos2(value, coord):
 	area = pygame.display.get_surface().get_rect()
 	if coord == "x":
-		#tmpdist = 0
 		tmpdist = (mpx - gunformotiontracking.xrectfixed)/4
-		#tmpdist = (mpx - man.x)/4
 		newpos = focused.fixed.x + tmpdist
 		if -(newpos - back.rect.width/2) <= area.width/2:
 			centerx = back.rect.width/2 - area.width/2
@@ -93,9 +87,7 @@ def realpos2(value, coord):
 			centerx = newpos
 		return (((value - scrpos2(centerx, "x"))/masterscale + scrpos2(centerx, "x")) + centerx) - area.width / 2
 	else:
-		#tmpdist = 0
 		tmpdist = (mpy - gunformotiontracking.yrectfixed)/4
-		#tmpdist = (mpy - man.y)/4
 		newpos = focused.fixed.y + tmpdist	
 		if -(newpos - back.rect.height/2) <= area.height/2:
 			centery = back.rect.height/2 - area.height/2
@@ -116,7 +108,7 @@ def findempty():
 	random.seed()
 	count = 0
 	foundstart = False
-	hitter = 0#possible thread issue fixme, as both use global hitter variable
+	hitter = 0
 	while foundstart == False:
 		count +=1
 		x = random.randint(int(-front.scale/2), int(front.scale/2))
@@ -129,12 +121,7 @@ def findempty():
 					break
 	return 	(x, y)	
 
-				
 masterscale = 1	
-
-def debugdraw(a, b):
-	global whilecount
-	pygame.draw.circle(front.image, (0, 0, 0), (int(a + front.scale/2),int(b + front.height())), 2, 0)
 
 class Ob():
 	def __init__(self, x =0, y =0):
@@ -423,9 +410,6 @@ class A(pygame.sprite.Sprite, Ob):
 		
 	def update(self): #man and otherss
 
-		
-
-	
 		if self in home and not self in clones:
 			for opponent in players:
 				if opponent in grounds:
@@ -460,14 +444,14 @@ class A(pygame.sprite.Sprite, Ob):
 		self.scaledifference = self.scale - self.lastscale
 
 	
-		#add forces together
-		#variable forces already added in, so these must be adding not absolute!
-		if self  in home or self in clones:
-			self.yf += -self.yvc*self.mu/5#/10   # friction, based on velocity
-			if self.hashitlastb == 0:
-				self.xf += -self.xvc*self.mu
-			else:
-				self.xf += -self.xvc*self.mu	#more friction if you are running on the bottom#possible
+		# #add forces together
+		# #variable forces already added in, so these must be adding not absolute!
+		# if self  in home or self in clones:
+		# 	self.yf += -self.yvc*self.mu/5#/10   # friction, based on velocity
+		# 	if self.hashitlastb == 0:
+		# 		self.xf += -self.xvc*self.mu
+		# 	else:
+		# 		self.xf += -self.xvc*self.mu	#more friction if you are running on the bottom#possible
 		
 		
 		#calculate new velocity based on acceleration
@@ -743,39 +727,29 @@ class Man(A):
 		self.gun1.gunnumber = 1
 				
 	def setGun2(self, image):
-		
-		
 		self.gun2= Gun(image)
 		self.gun2.image2, self.gun2.rect2 = load_image(image[0:-4]+"variable.png", None)
 		self.gun2.original2, self.gun2.rect2 = load_image(image[0:-4]+"variable.png", None)
 		self.originallist.append(self.gun2.original2)
-		
 		self.gun2.parent = self
-		
 		self.gun2.setLaser()
 		self.gun2.laser0.lasercross = Ob()
 		self.gun2.laser1.lasercross = Ob()
-		
 		self.gun2.laser0.lasercount = 0
 		self.gun2.laser1.lasercount = 1
-
 		self.gunlist.append([self.gun2, [self.gun2.laser0, self.gun2.laser1]])
 		self.gun2.gunnumber = 2
+
 	def setGun3(self, image):
-		
-		
 		self.gun3= Gun(image)
 		self.gun3.image2, self.gun3.rect2 = load_image(image[0:-4]+"variable.png", None)
 		self.gun3.original2, self.gun3.rect2 = load_image(image[0:-4]+"variable.png", None)
 		self.originallist.append(self.gun3.original2)
-		
 		self.gun3.parent = self
 		self.gun3.flamecross = Ob()
-		
 		self.gun3.setFlame()
 		self.gun3.b = self.gun3.flame
 		self.gun3.flame.weregoing = 0
-
 		self.gunlist.append([self.gun3, [self.gun3.flame]])
 		self.gun3.gunnumber = 3
 	
@@ -783,16 +757,19 @@ class Man(A):
 		self.hook = Hook("hook.png")
 		self.hook.parent = self
 		self.hook.title = "hook"
+
 	def setCross(self):
 		self.cross = Cross("cross.png")
 		self.cross.parent = self
 		self.cross.title = "cross"
+
 	def setFlag(self, image):
 		self.flag =Flag(image)
 		self.flag.image2, self.flag.rect2 = load_image(image[0:-4]+"variable.png", None)
 		self.flag.original2, self.flag.rect2 = load_image(image[0:-4]+"variable.png", None)
 		self.flag.parent = self
-		self.flag.title = "flag"	
+		self.flag.title = "flag"
+
 	def updatecolor(self):
 		try: #otherwise it is a race condition between the two threads
 			self.colortmpcalc = self.position/numberofplayers *0.8 + 0.2##scale 0.2 to 1
@@ -861,13 +838,13 @@ class Flag(A):
 
 		if self.flagtaken  == 1:
 			self.x = self.holder.x + self.holder.scale/2/2
-			self.y = self.holder.y - self.height()/2#should be different to line above
+			self.y = self.holder.y - self.height()/2
 			self.scale = self.holder.scale
 		else:
 			None
 			self.scale = 30	
 			
-		if True:#self.redraw():	#redraw was buggy, probably a parent issue. fixme
+		if True:
 			self.image = self.original	
 			self.image = pygame.transform.scale(self.image, (int(self.scale), int(self.height())))#line seems redundant
 		
@@ -1174,6 +1151,8 @@ class Flame(A):
 
 pressinga=0
 pressingd=0
+pressingw=0
+pressings=0
 pressingbutton3=0
 tmpcount=0
 goingdownforquit=0
@@ -1188,6 +1167,8 @@ def readinput(events):
 	global mpx, mpy
 	global pressinga
 	global pressingd
+	global pressingw
+	global pressings
 	global pressingbutton3
 	global tmpcount
 	global goingdownforquit
@@ -1244,26 +1225,15 @@ def readinput(events):
 				if blurring:
 					global blur
 					blur = 1
-			if event.key == K_w:
-				man.scaleincrement = +5
-				man.modifiedscale = 1
-			elif event.key == K_s:
-				if man.scale > 5:
-					man.scaleincrement = -5
-				man.modifiedscale = 1
 			elif event.key == K_a:
 				pressinga=1
 			elif event.key == K_d:
 				pressingd=1
-			elif event.key == K_SPACE:
-				if man.jumpcount == 0 or man.jumpcount ==1:
-					jump.play(0)
-					man.modifiedy = 1
-					if man.yvc >=0: #ie going down#to allow double jumping
-						man.yv = -220*(man.scale/100)*masterscale
-					else:
-						man.yv += -220*(man.scale/100)*masterscale
-					man.jumpcount += 1
+			elif event.key == K_w:
+				pressingw=1
+			elif event.key == K_s:
+				pressings=1
+		
 		elif event.type == MOUSEBUTTONDOWN:
 			if event.button == 4:
 				if man is ultimateman:
@@ -1280,9 +1250,6 @@ def readinput(events):
 					man.b = man.gunlist[man.scroll % len(man.gunlist)][1][0]
 					dspritelist[dspritelist.index(man.gunlist[(man.scroll + 1)% len(man.gunlist)][0])] = man.gunlist[man.scroll % len(man.gunlist)][0]
 			if event.button == 1:
-			
-				
-					
 				if man is ultimateman:				
 					if man.scroll % len(man.gunlist) == 0:
 						for item in man.gunlist[0][1]:
@@ -1329,11 +1296,9 @@ def readinput(events):
 				man.hook.pressingbutton3 = 1
 		elif event.type == KEYUP:
 			if event.key == K_w:
-				man.scaleincrement = 0
-				man.modifiedscale = 0
+				pressingw=0
 			elif event.key == K_s:
-				man.scaleincrement = 0
-				man.modifiedscale = 0
+				pressings=0
 			elif event.key == K_a:
 				pressinga=0
 			elif event.key == K_d:
@@ -1373,26 +1338,29 @@ def readinput(events):
 			man.yf +=  0.4*man.hook.distance*math.cos(man.hook.angle)*(man.scale/100)*masterscale #not perfect, should be hookdistance-man.width. ie hook from closest side of man, not from center
 			man.xf += 0.4*man.hook.distance*math.sin(man.hook.angle)*(man.scale/100)*masterscale
 
-	else: #ie stopped pressing button3
+	else: 
 		hookfire.stop()
-		tmpcount = 0 #so allow to go back into the setup
+		tmpcount = 0 
 		man.hook.framecount = 1
+
 	if pressinga == 1:
-		if man.xvc >=0:#moving right
-			man.xf += -200*(man.scale/100)*masterscale
-		else:#moving left
-			if man.xvc >= -10.0*(man.scale/100)*masterscale:
-				man.xf += -200*(man.scale/100)*masterscale
-			else: #maximum speed
-				man.xf += -20*(man.scale/100)*masterscale
+		man.xf += -5*(man.scale/100)*masterscale
 	if pressingd == 1:
-		if man.xvc <=0:#moving left		
-			man.xf += 200*(man.scale/100)*masterscale
-		else:#moving right
-			if man.xvc <= 10.0*(man.scale/100)*masterscale:
-				man.xf += 200*(man.scale/100)*masterscale
-			else:
-				man.xf += 20*(man.scale/100)*masterscale
+		man.xf += 5*(man.scale/100)*masterscale
+
+	(mpx, mpy) = pygame.mouse.get_pos()
+	dis = distance2(man.xf, man.yf, mpx, mpy)
+
+	dx = mpx - man.x
+	dy = mpy - man.y
+	
+	if pressingw == 1:
+		man.yf +=  50*realpos2(dy, "y")/dis*(man.scale/100)*masterscale
+		man.xf +=  50*realpos2(dx, "x")/dis*(man.scale/100)*masterscale
+	if pressings == 1:
+		man.yf +=  -50*realpos2(dy, "y")/dis*(man.scale/100)*masterscale
+		man.xf +=  -50*realpos2(dx, "x")/dis*(man.scale/100)*masterscale
+
 
 def related(a,b):
 	try:
@@ -1412,13 +1380,6 @@ def related(a,b):
 			return True
 	except:
 		None
-		
-	# try:	
-	# 	#maybe dont want bot colliding with man or opponent
-	# 	if b in bots and a in players:
-	# 		return True
-	# except:
-	# 	None
 		
 	return False
 
@@ -1440,18 +1401,15 @@ def isblack(x, y):
 			
 	x = int(x); y = int(y)
 	global isblackobject
-	(rx, ry) = realpos(x,y) #needs top left to be at 0,0 to work
+	(rx, ry) = realpos(x,y) 
 	for item in grounds:
 		if not related(item, by):	
 			#fixme, for speed, should only do perpixel test on back in grounds, for everything else, just do rectcollide test
 			if item.rect.collidepoint(x,y): #makes sure that the later pixel test is really on the image
 				(imagex,imagey)=(int((item.origwidth/item.width())*(rx - realpos2(item.rect.left, "x"))), int((item.origheight/item.height())*(ry - realpos2(item.rect.top, "y")))) #gets coords on image, relative to image
 
-				try: #i cant work out why, but sometimes the rect.collidepoint test doesnt give me what i expect so i still put this inside a try test
-					#if not item.image.get_at((imagex , imagey)) == (255, 255, 255, 255): #the test to use if no array but just want to test image
-					#if item.array[int(imagex)][int(imagey)] != 0:
+				try: 
 					if item.array[int(imagex)][int(imagey)] != 16777215: #isnt white			
-					#if not item.array[int(imagex)][int(imagey)] == [255, 255, 255]:
 						if firing == 1:
 							if item in opponents or item is man: #stuff abut the shooting switch
 								if not [item, hitter.parent] in listofdeaths: #only add new deaths.
@@ -1468,8 +1426,6 @@ def destroy(x, y, self):
 		if not item in opponents and not item is man:
 			(imagex,imagey)=(int((item.origwidth/item.width())*(x - realpos2(item.rect.left, "x"))), int((item.origheight/item.height())*(y - realpos2(item.rect.top, "y"))))
 			
-				
-			#valuesdone = []#this method you stop hashing lines#make it global if you want it to be perfect, but it is slow
 			for i in range(int(imagex -7*self.parent.scale/30), int(imagex +7*self.parent.scale/30)):
 				for j in range(int(imagey -7*self.parent.scale/30), int(imagey +7*self.parent.scale/30)):
 					try:
@@ -1500,16 +1456,13 @@ numberofplayers = 1
 scoreaverage = 0
 scores = [0]
 
-
 captured = 0
 returned = 0
-
 
 def setup_pygame():
 	None
 	global whilecount, smallresolution, resolution, screen, fullscreen, clock
 	
-	os.environ["SDL_VIDEO_CENTERED"] = "1" #hacky
 	pygame.mixer.pre_init(44100,-16,2, 1024)
 	random.seed()
 	pygame.init()
@@ -1534,24 +1487,21 @@ def setup_pygame():
 	pygame.display.set_caption(game)
 
 	pygame.mouse.set_pos(pygame.display.get_surface().get_rect().width/2, pygame.display.get_surface().get_rect().height/2) #thanks pymike
-	pygame.mouse.set_visible(0)
+	pygame.mouse.set_visible(1)
 
 	clock = pygame.time.Clock()
 		
 
 if __name__ == "__main__":
 
-	##main start####
 	game = "coffeeworlds"
 
 	name = "Claudio"
 	setup_pygame()
 	
-
 	background = pygame.Surface(screen.get_size())
 	background = background.convert()
 	background.fill((250, 250, 250))
-
 
 	explode = Sound("explode.wav")
 	jump = Sound("jump.wav")
@@ -1573,9 +1523,6 @@ if __name__ == "__main__":
 	blurring = True
 	blur = 0
 
-
-
-	#set the map here
 	scene = "1"
 	if scene == "2":#hack for ease
 		needsmask = 1#unless we are doing blurring, may as well leave as 1, but really depennds on whether front background is transparent, or a pattern. transparent needs mask
@@ -1584,15 +1531,11 @@ if __name__ == "__main__":
 	front = Ground("map"+scene+"front.png")
 	back = Ground("map"+scene+"back.png")
 
-	#front.blur = 1
-
 	front.back = back
 	back.front = front
 
-	back.scale=4800 #remember to change the scale above, for bodge test
+	back.scale=4800 
 	front.scale=back.scale
-	#these are 4800,6400 for map1,map2
-
 
 	man = Man("man.png")
 	focused = man
@@ -1627,11 +1570,10 @@ if __name__ == "__main__":
 	for ground in grounds:
 		ground.array=pygame.surfarray.array2d(ground.image)
 
-	gunformotiontracking= Gun("blank.png") #hack # there is inherent circularity in the way we choose the screen center, based on the mouse position, which can only be found relative to other objects by knowing the screen center. therefore we make a dummy image (hopefully drawn at the bottom) to resolve this, by being able to reference something else
+	gunformotiontracking= Gun("blank.png") 
 	gunformotiontracking.parent = man
 	gunformotiontracking.gunnumber = 0
 	
-
 	cursor = Cross("cross.png")
 	cursor.title = "cursor"
 	cursor.parent = man
@@ -1645,7 +1587,6 @@ if __name__ == "__main__":
 				dspritelist.append(item) #ie the bullets
 	dspritelist += [man.gunlist[0][0]]
 	dspritelist += [man]
-	
 	
 	dspritelist.append(cursor)	
 
@@ -1681,11 +1622,9 @@ if __name__ == "__main__":
 	for sprite in spritelist:
 		sprite.update()	
 	
-	
 	for item in home:	
 		item.init.x, item.init.y = findempty()
 		item.x = item.init.x; item.y = item.init.y
-
 
 	lag = 0
 	whilecount = 0
@@ -1707,10 +1646,6 @@ if __name__ == "__main__":
 	
 		except:
 			None
-	
-		
-		man.yf += 22*man.scale/100*masterscale #gravity
-		man.b.yf += 22*man.scale/100*masterscale
 	
 		readinput(pygame.event.get())
 

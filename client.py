@@ -2,21 +2,11 @@
 import os, pygame, math, time, sys, socket,select, _thread, colorsys, random
 from pygame.locals import *
 sys.path.append(os.path.split(sys.path[0])[0])
-
+from geometry import *
 if not pygame.font: print('Warning, fonts disabled')
 if not pygame.mixer: print('Warning, sound disabled')
 
-def distance(p1, p2):
-	total = 0
-	for i in range(len(p1)):
-		total += (p1[i] - p2[i])**2
-	return total **(1/2)
-	
-def distance2(a, b, c, d):
-	return 	math.sqrt (( a - c )*( a - c ) + ( b - d )*( b - d ) )
-	
-def findangle( q, w, e, r ): #angle a to b
-	return math.pi + math.atan2( (q - e), (w - r) )
+
 			
 def load_image(name, colorkey=None):
 	fullname = os.path.join('data', name)
@@ -46,7 +36,6 @@ class Sound():
 		if self.on == 0 and self.onlast == 1:
 			self.stop()
 		self.onlast = self.on
-		#need to set self.on to be zero when sound has finished playing
 	def setArray(self):
 		self.sound = pygame.sndarray.make_sound(self.array)
 		
@@ -192,30 +181,6 @@ def collidepoint(self):
 		return self.x - self.height()/2, self.y
 	if self.lasttest == "r":
 		return self.x + self.height()/2, self.y
-			
-
-def chooseclock(self):
-	if self.hashitlastt == 1:
-		if self.xv >=0:
-			plus = 1
-		else:
-			plus = 0
-	if self.hashitlastb == 1:
-		if self.xv >=0:
-			plus = 0
-		else:
-			plus = 1
-	if self.hashitlastl == 1:
-		if self.yv >=0:
-			plus = 0
-		else:
-			plus = 1
-	if self.hashitlastr == 1:
-		if self.yv >=0:
-			plus = 1
-		else:
-			plus = 0
-	self.anticlockwise = plus
 				
 
 class A(pygame.sprite.Sprite, Ob):
@@ -223,7 +188,7 @@ class A(pygame.sprite.Sprite, Ob):
 	def pyname(self):
 		result = []
 		for item in globals():
-			if globals()[item] is self:#thank you python, for being awesome. now vaiables know their own names
+			if globals()[item] is self:
 				result.append(item)		
 		return result
 	def width(self):
@@ -423,8 +388,6 @@ class A(pygame.sprite.Sprite, Ob):
 			if distance(self.init,self)<self.scale/1 + self.flag.height()/2:# bring it home
 				if self.flag.x == self.init.x and self.flag.y == self.init.y:
 					self.captured = 1
-					#if len(self.flagbag) != 0:
-					#	returnedflag.play(distance(self, focused))
 			if distance(self, self.flag) <self.scale/2:#return your own flag
 				if self.flag.x != self.init.x or self.flag.y != self.init.y:
 					if self.flag.flagtaken  == 0:
@@ -438,8 +401,6 @@ class A(pygame.sprite.Sprite, Ob):
 		global hitter
 		self.lastscale = self.scale#fixme, move to end of update?
 		self.scale = self.scale * (100 + self.scaleincrement)/100
-		
-		
 		
 		self.scaledifference = self.scale - self.lastscale
 
@@ -472,8 +433,7 @@ class A(pygame.sprite.Sprite, Ob):
 				
 		hitter = self
 		if self is man or (self.title == "bullet" and self.hashit == 0)  or self in clones: #correct line
-		#if self is man:
-			########
+
 			for frac in  range(0,self.maxfrac+1):
 			#is these isblack test come back true, no action taken, ie dont move the man
 				if isblack(*scrpos(self.x + self.scale/2 + self.xvc*self.t*(frac/self.maxfrac), self.y)) or isblack(*scrpos(self.x + self.scale/2 + self.xvc*self.t*(frac/self.maxfrac), self.y - self.height()/(4.0))) or isblack(*scrpos(self.x + self.scale/2 + self.xvc*self.t*(frac/self.maxfrac), self.y + self.height()/(4.0))):
@@ -752,11 +712,6 @@ class Man(A):
 		self.gun3.flame.weregoing = 0
 		self.gunlist.append([self.gun3, [self.gun3.flame]])
 		self.gun3.gunnumber = 3
-	
-	def setHook(self):
-		self.hook = Hook("hook.png")
-		self.hook.parent = self
-		self.hook.title = "hook"
 
 	def setCross(self):
 		self.cross = Cross("cross.png")
@@ -907,10 +862,7 @@ class Ground(A):
 		
 class Cross(A):
 	def update(self):
-		if self is man.cross:#fixme, cross should stop being a sprite soon
-			if self.parent.hook.firingstate == 0:
-				self.x = man.x
-				self.y = man.y
+
 		if self.title == "cursor":
 			(self.x, self.y) = realpos(mpx, mpy)
 			self.scale = focused.scale/2#could cause problems with the two threads, due to setting scale somewhere in the middle....(mastersclae type problem)
@@ -930,58 +882,6 @@ class Cross(A):
 	
 framecount = 1
 
-class Hook(A):
-	def update(self):
-		if (self.weregoing == 1 or (self.weregoing == 0 and self.framecount < self.maxframe)) and self.pressingbutton3 == 1:
-			self.scale *=masterscale
-			self.firingstate = 1
-			self.endx = self.parent.x + (self.framecount/self.maxframe)*(self.parent.cross.x - self.parent.x)
-			self.endy = self.parent.y + (self.framecount/self.maxframe)*(self.parent.cross.y - self.parent.y) 
-			
-			self.x = (self.endx + self.parent.x)/2
-			self.y = (self.endy + self.parent.y)/2
-			self.scale = distance2(self.endx, self.endy, self.parent.x, self.parent.y)
-			#print self.scale
-			self.angle = findangle(self.parent.x, self.parent.y, self.endx, self.endy)#same as if used cross coordinates
-			
-			try: #crash if too big
-				self.otherscale = 600/(self.scale-1)+1
-			except:
-				self.otherscale = 600
-			
-
-			if self.redraw():
-				self.image = self.original
-				try:
-					self.image = pygame.transform.scale(self.image, (int(math.fabs(int(self.otherscale*(self.parent.scale*5*masterscale/self.parent.origheight))+1)), int(math.fabs(self.scale))))
-				except:
-					self.image = pygame.transform.scale(self.image, (50, math.fabs(self.scale))) #pygame crash if you scale too big
-				
-				self.image.fill((self.parent.rcolor, self.parent.gcolor, self.parent.bcolor), None)	
-				self.image = pygame.transform.rotate(self.image, math.degrees(self.angle))
-			
-			self.rect = self.image.get_rect()
-			self.rect.center = scrpos(self.x,self.y)
-			if self.framecount < self.maxframe:
-				self.framecount += 1
-			if self.framecount == self.maxframe:
-				if self.parent.hookhitcount == 1:
-					hookfire.stop()
-					hookhit.play(distance(self, man))
-					self.parent.hookhitcount =2
-				if self.parent.hookhitcount ==0:
-					self.parent.hookhitcount=1
-
-				
-			self.scale /=masterscale	
-		else:
-			self.parent.hookhitcount =0
-			self.firingstate = 0
-			self.x=self.parent.x
-			self.y=self.parent.y#ie inside the parent
-			self.image = pygame.transform.scale(self.original, (0, 0))#ie disappear
-			self.rect = self.image.get_rect()
-			self.rect.center = scrpos(self.x,self.y)
 
 
 class Laser(A):
@@ -1073,7 +973,6 @@ class Laser(A):
 
 			self.scale /=masterscale	
 		else:
-			self.parent.hookhitcount =0
 			self.firingstate = 0
 			self.x=self.parent.x
 			self.y=self.parent.y#ie inside the parent
@@ -1140,7 +1039,6 @@ class Flame(A):
 				
 			self.scale /=masterscale	
 		else:
-			self.parent.hookhitcount =0
 			self.firingstate = 0
 			self.x=self.parent.x
 			self.y=self.parent.y#ie inside the parent
@@ -1219,7 +1117,6 @@ def readinput(events):
 				man.hashitb = 0
 				man.hashitt = 0
 				pressingbutton3 = 0
-				man.hook.pressingbutton3 = 0
 				man.jumpcount = 0
 			
 				if blurring:
@@ -1293,7 +1190,6 @@ def readinput(events):
 				
 			if event.button == 3:
 				pressingbutton3=1
-				man.hook.pressingbutton3 = 1
 		elif event.type == KEYUP:
 			if event.key == K_w:
 				pressingw=0
@@ -1307,41 +1203,11 @@ def readinput(events):
 		elif event.type == MOUSEBUTTONUP:
 			if event.button == 3:
 				pressingbutton3=0
-				man.hook.pressingbutton3 = 0
 				
 			if event.button == 1:
 				if focused is ultimateman:
 					focused.gunlist[3][0].flame.on = 0#cant just check man, but man only gets updated at top of this routine
-	if pressingbutton3 == 1:
-		if tmpcount == 0: #set it up, one time only, but on every click
-			tmpangle = findangle(man.x, man.y, *realpos(mpx, mpy))#*to turn into tuple
-			for i in range(0, int(70*man.scale/32*masterscale)):
-				hookfire.play(0)
-				if isblack(*scrpos(man.x + math.sin(tmpangle)*i*5, man.y +math.cos(tmpangle)*i*5)):
-					man.hook.weregoing = 1
-					
-					(man.cross.x, man.cross.y) = (man.x + math.sin(tmpangle)*i*5, man.y +math.cos(tmpangle)*i*5)
-					man.cross.hookedobject = isblackobject #this is useful is the object moves, so the hook can stay stuck to the relative part
-					man.cross.relativex = man.cross.x - isblackobject.x
-					man.cross.relativey = man.cross.y - isblackobject.y
-					(man.cross.x, man.cross.y) = (man.cross.relativex + man.cross.hookedobject.x, man.cross.relativey + man.cross.hookedobject.y)
-					break
-				else:
-					man.hook.weregoing = 0
-					(man.cross.x, man.cross.y) = (man.x + math.sin(tmpangle)*i*5, man.y +math.cos(tmpangle)*i*5)
-					
-			
-			tmpcount = 1 #so we dont redo the setup
-		if man.hook.weregoing == 1 and man.hook.framecount == man.maxframe: #check this every click, every fraction of hold, but only act on good clikcs
-			(man.cross.x, man.cross.y) = (man.cross.relativex + man.cross.hookedobject.x, man.cross.relativey + man.cross.hookedobject.y) #in case hookedobject has moved
-			man.hook.distance = distance(man, man.cross)
-			man.yf +=  0.4*man.hook.distance*math.cos(man.hook.angle)*(man.scale/100)*masterscale #not perfect, should be hookdistance-man.width. ie hook from closest side of man, not from center
-			man.xf += 0.4*man.hook.distance*math.sin(man.hook.angle)*(man.scale/100)*masterscale
 
-	else: 
-		hookfire.stop()
-		tmpcount = 0 
-		man.hook.framecount = 1
 
 	if pressinga == 1:
 		man.xf += -5*(man.scale/100)*masterscale
@@ -1355,11 +1221,15 @@ def readinput(events):
 	dy = mpy - man.y
 	
 	if pressingw == 1:
-		man.yf +=  50*realpos2(dy, "y")/dis*(man.scale/100)*masterscale
-		man.xf +=  50*realpos2(dx, "x")/dis*(man.scale/100)*masterscale
+		man.yf =  400*realpos2(dy, "y")/dis*(man.scale/100)*masterscale
+		man.xf =  400*realpos2(dx, "x")/dis*(man.scale/100)*masterscale
 	if pressings == 1:
-		man.yf +=  -50*realpos2(dy, "y")/dis*(man.scale/100)*masterscale
-		man.xf +=  -50*realpos2(dx, "x")/dis*(man.scale/100)*masterscale
+		man.yf =  -400*realpos2(dy, "y")/dis*(man.scale/100)*masterscale
+		man.xf =  -400*realpos2(dx, "x")/dis*(man.scale/100)*masterscale
+
+	if pressingw == 0 or pressings == 0:
+		man.xvc = 0
+		man.yvc = 0
 
 
 def related(a,b):
@@ -1558,7 +1428,6 @@ if __name__ == "__main__":
 		player.setGun2("gun2.png")
 		player.setGun3("gun3.png")
 	
-		player.setHook()
 		player.setFlag("flag.png")
 		player.setCross()
 	
@@ -1580,7 +1449,7 @@ if __name__ == "__main__":
 
 	dspritelist = [front]
 	
-	dspritelist += [man.flag, man.hook]
+	dspritelist += [man.flag]
 	for i in range(len(man.gunlist)):
 		if i != 4:#remove the clone
 			for item in man.gunlist[i][1]:
@@ -1594,7 +1463,7 @@ if __name__ == "__main__":
 	spritelist.append(gunformotiontracking)
 
 	spritelist += [man, man.flag] 
-	spritelist += [man.hook, man.cross]
+	spritelist += [man.cross]
 
 	for item in man.gunlist:
 		spritelist.append(item[0])#ie the guns

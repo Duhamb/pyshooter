@@ -3,14 +3,13 @@ import sys
 import pygame as pg
 
 class Player():
-    def __init__(self, image, location, speed):
-        self.speed = speed
+    def __init__(self, image, location):
         self.image = pg.transform.rotate(image, 90)
         self.original_image = image
         self.rect = self.image.get_rect(center=location)
         self.position = pg.math.Vector2(location)
-        self.velocity = pg.math.Vector2(0, 0)
-        self.mask = pg.mask.from_surface(self.image)
+        self.position = pg.math.Vector2(location)
+        self.light = pg.image.load("circle.png")
 
     def draw(self, surface):
         self.update()
@@ -26,32 +25,24 @@ class Player():
         self.rect = self.image.get_rect(center=self.rect.center)
 
 class Background():
-    def __init__(self, back, front, location, speed):
+    def __init__(self, back, front, location):
         self.front = front
         self.back = back
-        self.center_image_position = pg.math.Vector2(location)
-        self.rect = self.front.get_rect(center=(-100,+50))
-        self.mask = pg.mask.from_surface(self.back)
+        self.center_image_position = pg.math.Vector2((0,0))
+        self.rect = self.front.get_rect(center=location)
+        self.back_array=pg.surfarray.array2d(self.back)
+        # self.steps_sound = pg.mixer.Sound("stepstone_1.wav")
+        # self.steps_sound.set_volume(10)
 
     def draw(self, surface):
-        surface.blit(self.front, self.rect.center)
-        surface.blit(self.back, self.rect.center)
-        # olist = self.mask.outline()
-        # pg.draw.polygon(surface,(200,150,150),olist,0)
-        # pg.draw.lines(surface,(200,150,150),1,olist)
+        surface.blit(self.front, self.rect)
 
-    def move(self, vector, player_mask, player_position):
-        offset = ( int(player_position[0]-vector[0]*10- self.rect.centerx), int(player_position[1] -vector[1]*10- self.rect.centery))
-        # print(offset)
-        if self.mask.overlap(player_mask, offset):
-            # print("bateu")
-            print(self.mask.overlap(player_mask, offset))
-        else:
-            pass
-            dx = vector[0]
-            dy = vector[1]
-            self.rect = self.front.get_rect(center = (self.rect.center[0] + 10*dx, self.rect.center[1] + 10*dy))
-            self.center_image_position = pg.math.Vector2(self.rect.center)
+    def move(self, vector):
+        # self.steps_sound.play()
+        dx = vector[0]
+        dy = vector[1]
+        self.rect = self.front.get_rect(center = (self.rect.center[0] + 10*dx, self.rect.center[1] + 10*dy))
+        self.center_image_position = pg.math.Vector2(self.rect.center)
 
 ###############################################
 
@@ -61,25 +52,32 @@ class Main:
         self.size = self.width, self.height = 800, 600
         self.fps = 60
         self.pressionou_w = False
+        self.pressionou_a = False
+        self.pressionou_s = False
+        self.pressionou_d = False
+
 
     def on_init(self):
         os.environ['SDL_VIDEO_CENTERED'] = '1'
         pg.init()
         self._running = True
         self.clock = pg.time.Clock()
+        pg.mouse.set_visible(0)
         # resolution = (int(pg.display.Info().current_w), int(pg.display.Info().current_h))
         
-        self._display_surf = pg.display.set_mode(self.size) 
+        self._display_surf = pg.display.set_mode(self.size, pg.FULLSCREEN) 
         self.screen = pg.display.get_surface() # repetido?
         
         self.PLAYER_POSITION = (self.width/2, self.height/2)
-        self.PLAY_IMAGE = pg.image.load("player2.png")
+        self.PLAY_IMAGE = pg.image.load("player3.png")
         self.PLAY_IMAGE = pg.transform.scale(self.PLAY_IMAGE, (75,75))
         self.BACK_IMAGE = pg.image.load("city1_back.png").convert_alpha()
         self.FRONT_IMAGE = pg.image.load("city1.jpg").convert_alpha()
+        self.CROSS_IMAGE = pg.image.load("cross.png").convert_alpha()
+        self.CROSS_IMAGE = pg.transform.scale(self.CROSS_IMAGE, (15,15))
         
-        self.player = Player(self.PLAY_IMAGE, self.PLAYER_POSITION, 7)
-        self.back = Background(self.BACK_IMAGE, self.FRONT_IMAGE, self.PLAYER_POSITION, 7)
+        self.player = Player(self.PLAY_IMAGE, self.PLAYER_POSITION)
+        self.back = Background(self.BACK_IMAGE, self.FRONT_IMAGE, self.PLAYER_POSITION)
 
     def on_event(self, event):
         if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
@@ -88,9 +86,21 @@ class Main:
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_w:
                 self.pressionou_w = True
+            if event.key == pg.K_a:
+                self.pressionou_a = True
+            if event.key == pg.K_s:
+                self.pressionou_s = True
+            if event.key == pg.K_d:
+                self.pressionou_d = True
         elif event.type == pg.KEYUP:
             if event.key == pg.K_w:
                 self.pressionou_w = False
+            if event.key == pg.K_a:
+                self.pressionou_a = False
+            if event.key == pg.K_s:
+                self.pressionou_s = False
+            if event.key == pg.K_d:
+                self.pressionou_d = False
         
     def display_fps(self):
         pg.display.set_caption("{} - FPS: {:.2f}".format("PyShooter", self.clock.get_fps()))
@@ -101,7 +111,28 @@ class Main:
             self.mouse_position = pg.mouse.get_pos()
             self.direction_of_move = -(self.mouse_position - self.actual_position)
             self.direction_of_move /= self.direction_of_move.length()
-            self.back.move(self.direction_of_move, self.player.mask, self.player.position)
+            self.back.move(self.direction_of_move)
+
+        if self.pressionou_s:
+            self.actual_position = self.player.position
+            self.mouse_position = pg.mouse.get_pos()
+            self.direction_of_move = +(self.mouse_position - self.actual_position)
+            self.direction_of_move /= self.direction_of_move.length()
+            self.back.move(self.direction_of_move)
+
+        if self.pressionou_a:
+            self.actual_position = self.player.position
+            self.mouse_position = pg.mouse.get_pos()
+            self.direction_of_move = +(self.mouse_position - self.actual_position).rotate(90)
+            self.direction_of_move /= self.direction_of_move.length()
+            self.back.move(self.direction_of_move)
+
+        if self.pressionou_d:
+            self.actual_position = self.player.position
+            self.mouse_position = pg.mouse.get_pos()
+            self.direction_of_move = -(self.mouse_position - self.actual_position).rotate(90)
+            self.direction_of_move /= self.direction_of_move.length()
+            self.back.move(self.direction_of_move)
         self.clock.tick(self.fps)
 
     def on_cleanup(self):
@@ -112,6 +143,11 @@ class Main:
         self.screen.fill((0,0,0))
         self.back.draw(self.screen)
         self.player.draw(self.screen)
+        self.screen.blit(self.CROSS_IMAGE, pg.mouse.get_pos())
+        # filter = pg.surface.Surface(self.size)
+        # filter.fill(pg.color.Color('Grey'))
+        # filter.blit(self.player.light, self.player.rect)
+        # self.screen.blit(filter, (0, 0), special_flags=pg.BLEND_RGBA_SUB)
         self.display_fps()
         pg.display.update()
 

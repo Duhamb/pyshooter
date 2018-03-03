@@ -1,48 +1,8 @@
 import os
 import sys
 import pygame as pg
-
-class Player():
-    def __init__(self, image, location):
-        self.image = pg.transform.rotate(image, 90)
-        self.original_image = image
-        self.rect = self.image.get_rect(center=location)
-        self.position = pg.math.Vector2(location)
-        self.position = pg.math.Vector2(location)
-        self.light = pg.image.load("circle.png")
-
-    def draw(self, surface):
-        self.update()
-        surface.blit(self.image, self.rect)
-
-    def update(self):
-        self.rotate()
-        self.rect.center = self.position
-
-    def rotate(self):
-        _, angle = (pg.mouse.get_pos()-self.position).as_polar()
-        self.image = pg.transform.rotozoom(self.original_image, -angle, 1)
-        self.rect = self.image.get_rect(center=self.rect.center)
-
-class Background():
-    def __init__(self, back, front, location):
-        self.front = front
-        self.back = back
-        self.center_image_position = pg.math.Vector2((0,0))
-        self.rect = self.front.get_rect(center=location)
-        self.back_array=pg.surfarray.array2d(self.back)
-        # self.steps_sound = pg.mixer.Sound("stepstone_1.wav")
-        # self.steps_sound.set_volume(10)
-
-    def draw(self, surface):
-        surface.blit(self.front, self.rect)
-
-    def move(self, vector):
-        # self.steps_sound.play()
-        dx = vector[0]
-        dy = vector[1]
-        self.rect = self.front.get_rect(center = (self.rect.center[0] + 10*dx, self.rect.center[1] + 10*dy))
-        self.center_image_position = pg.math.Vector2(self.rect.center)
+from Player import *
+from Background import *
 
 ###############################################
 
@@ -63,9 +23,9 @@ class Main:
         self._running = True
         self.clock = pg.time.Clock()
         pg.mouse.set_visible(0)
-        # resolution = (int(pg.display.Info().current_w), int(pg.display.Info().current_h))
+        self.resolution = (int(pg.display.Info().current_w), int(pg.display.Info().current_h))
         
-        self._display_surf = pg.display.set_mode(self.size, pg.FULLSCREEN) 
+        self._display_surf = pg.display.set_mode(self.resolution, pg.FULLSCREEN) 
         self.screen = pg.display.get_surface() # repetido?
         
         self.PLAYER_POSITION = (self.width/2, self.height/2)
@@ -106,33 +66,30 @@ class Main:
         pg.display.set_caption("{} - FPS: {:.2f}".format("PyShooter", self.clock.get_fps()))
 
     def on_loop(self):
+        self.actual_position = self.player.position
+        self.mouse_position = pg.mouse.get_pos()
+        self.vector_position = self.mouse_position - self.actual_position
+        
         if self.pressionou_w:
-            self.actual_position = self.player.position
-            self.mouse_position = pg.mouse.get_pos()
-            self.direction_of_move = -(self.mouse_position - self.actual_position)
+            self.direction_of_move = -(self.vector_position)
             self.direction_of_move /= self.direction_of_move.length()
             self.back.move(self.direction_of_move)
 
         if self.pressionou_s:
-            self.actual_position = self.player.position
-            self.mouse_position = pg.mouse.get_pos()
-            self.direction_of_move = +(self.mouse_position - self.actual_position)
+            self.direction_of_move = +(self.vector_position)
             self.direction_of_move /= self.direction_of_move.length()
             self.back.move(self.direction_of_move)
 
         if self.pressionou_a:
-            self.actual_position = self.player.position
-            self.mouse_position = pg.mouse.get_pos()
-            self.direction_of_move = +(self.mouse_position - self.actual_position).rotate(90)
+            self.direction_of_move = +(self.vector_position).rotate(90)
             self.direction_of_move /= self.direction_of_move.length()
             self.back.move(self.direction_of_move)
 
         if self.pressionou_d:
-            self.actual_position = self.player.position
-            self.mouse_position = pg.mouse.get_pos()
-            self.direction_of_move = -(self.mouse_position - self.actual_position).rotate(90)
+            self.direction_of_move = -(self.vector_position).rotate(90)
             self.direction_of_move /= self.direction_of_move.length()
             self.back.move(self.direction_of_move)
+
         self.clock.tick(self.fps)
 
     def on_cleanup(self):
@@ -144,10 +101,6 @@ class Main:
         self.back.draw(self.screen)
         self.player.draw(self.screen)
         self.screen.blit(self.CROSS_IMAGE, pg.mouse.get_pos())
-        # filter = pg.surface.Surface(self.size)
-        # filter.fill(pg.color.Color('Grey'))
-        # filter.blit(self.player.light, self.player.rect)
-        # self.screen.blit(filter, (0, 0), special_flags=pg.BLEND_RGBA_SUB)
         self.display_fps()
         pg.display.update()
 

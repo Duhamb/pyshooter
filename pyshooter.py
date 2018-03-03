@@ -10,7 +10,8 @@ class Player():
         self.rect = self.image.get_rect(center=location)
         self.position = pg.math.Vector2(location)
         self.velocity = pg.math.Vector2(0, 0)
-    
+        self.mask = pg.mask.from_surface(self.image)
+
     def draw(self, surface):
         self.update()
         surface.blit(self.image, self.rect)
@@ -29,16 +30,28 @@ class Background():
         self.front = front
         self.back = back
         self.center_image_position = pg.math.Vector2(location)
-        self.rect = self.front.get_rect(center=location)
+        self.rect = self.front.get_rect(center=(-100,+50))
+        self.mask = pg.mask.from_surface(self.back)
 
     def draw(self, surface):
-        surface.blit(self.front, self.rect)
+        surface.blit(self.front, self.rect.center)
+        surface.blit(self.back, self.rect.center)
+        # olist = self.mask.outline()
+        # pg.draw.polygon(surface,(200,150,150),olist,0)
+        # pg.draw.lines(surface,(200,150,150),1,olist)
 
-    def move(self, vector):
-        dx = vector[0]
-        dy = vector[1]
-        self.rect = self.front.get_rect(center = (self.rect.center[0] + 10*dx, self.rect.center[1] + 10*dy))
-        self.center_image_position = pg.math.Vector2(self.rect.center)
+    def move(self, vector, player_mask, player_position):
+        offset = ( int(player_position[0]-vector[0]*10- self.rect.centerx), int(player_position[1] -vector[1]*10- self.rect.centery))
+        # print(offset)
+        if self.mask.overlap(player_mask, offset):
+            # print("bateu")
+            print(self.mask.overlap(player_mask, offset))
+        else:
+            pass
+            dx = vector[0]
+            dy = vector[1]
+            self.rect = self.front.get_rect(center = (self.rect.center[0] + 10*dx, self.rect.center[1] + 10*dy))
+            self.center_image_position = pg.math.Vector2(self.rect.center)
 
 ###############################################
 
@@ -62,8 +75,8 @@ class Main:
         self.PLAYER_POSITION = (self.width/2, self.height/2)
         self.PLAY_IMAGE = pg.image.load("player2.png")
         self.PLAY_IMAGE = pg.transform.scale(self.PLAY_IMAGE, (75,75))
-        self.BACK_IMAGE = pg.image.load("city1.jpg").convert()
-        self.FRONT_IMAGE = pg.image.load("city1.jpg").convert()
+        self.BACK_IMAGE = pg.image.load("city1_back.png").convert_alpha()
+        self.FRONT_IMAGE = pg.image.load("city1.jpg").convert_alpha()
         
         self.player = Player(self.PLAY_IMAGE, self.PLAYER_POSITION, 7)
         self.back = Background(self.BACK_IMAGE, self.FRONT_IMAGE, self.PLAYER_POSITION, 7)
@@ -88,7 +101,7 @@ class Main:
             self.mouse_position = pg.mouse.get_pos()
             self.direction_of_move = -(self.mouse_position - self.actual_position)
             self.direction_of_move /= self.direction_of_move.length()
-            self.back.move(self.direction_of_move)
+            self.back.move(self.direction_of_move, self.player.mask, self.player.position)
         self.clock.tick(self.fps)
 
     def on_cleanup(self):

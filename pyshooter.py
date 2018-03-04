@@ -25,21 +25,23 @@ class Main:
     
     def on_init(self):
         os.environ['SDL_VIDEO_CENTERED'] = '1'
-        pg.mixer.pre_init(44100, -16, 2, 2048)
+        pg.mixer.pre_init(frequency=44100, size=0, channels=1, buffer=4096) #size - 16, channels 2
         pg.mixer.init()
         pg.init()
         self._running = True
         self.clock = pg.time.Clock()
         pg.mouse.set_visible(0)
-        # self.resolution = (int(pg.display.Info().current_w), int(pg.display.Info().current_h))
+        self.resolution = (int(pg.display.Info().current_w), int(pg.display.Info().current_h))
         
-        self._display_surf = pg.display.set_mode(self.size, pg.FULLSCREEN) 
+        self._display_surf = pg.display.set_mode(self.size) 
         self.screen = pg.display.get_surface() # repetido?
         
         self.PLAYER_POSITION = (self.width/2, self.height/2)
         
         self.PLAY_IMAGE = pg.image.load("Assets/Images/player3.png")
         self.PLAY_IMAGE = pg.transform.scale(self.PLAY_IMAGE, (75,75))
+        self.PLAY_IMAGE_BACK = pg.image.load("Assets/Images/back_player.png")
+        self.PLAY_IMAGE_BACK = pg.transform.scale(self.PLAY_IMAGE_BACK, (75,75))
         
         self.BOT_IMAGE = pg.image.load("Assets/Images/player2.png")
         self.BOT_IMAGE = pg.transform.scale(self.BOT_IMAGE, (75,75))
@@ -55,7 +57,7 @@ class Main:
         self.player_sound = Sound.Player 
         self.player_sound.load()
 
-        self.player = Player(self.PLAY_IMAGE, (0,0), self.PLAYER_POSITION, self.player_animation, self.player_sound)
+        self.player = Player(self.PLAY_IMAGE, self.PLAY_IMAGE_BACK, (0,0), self.PLAYER_POSITION, self.player_animation, self.player_sound)
         self.bot0 = Bot(self.BOT_IMAGE, (200,200))
         self.bot1 = Bot(self.BOT_IMAGE, (-200,200))
         self.bot2 = Bot(self.BOT_IMAGE, (200,-200))
@@ -81,7 +83,7 @@ class Main:
     def on_render(self):
         self.screen.fill((0,0,0))
         self.back.draw(self.screen, self.player)
-        self.player.draw(self.screen)
+        self.player.draw(self.screen, self.back)
         self.bot0.draw(self.screen, self.back, self.player)
         # self.bot1.draw(self.screen, self.back, self.player)
         # self.bot2.draw(self.screen, self.back, self.player)

@@ -4,15 +4,17 @@ import pygame as pg
 I'm not proud of this, but... :(
 """
 
-def scale_image(list_images):
+def scale_image(list_images, ratio):
+    size = list_images[0].get_rect().size
     for i in range(0, len(list_images)):
-        list_images[i] = pg.transform.scale(list_images[i], (75,75))
+        list_images[i] = pg.transform.scale(list_images[i], (int(size[0]/ratio),int(size[1]/ratio)))
     return list_images
 
 class Player:
 
     move = []
     shoot = []
+    run = []
 
     # @staticmethod
     @classmethod
@@ -38,14 +40,36 @@ class Player:
             cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_17.png'))
             cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_18.png'))
             cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_19.png'))
-            cls.move = scale_image(cls.move)
+            cls.move = scale_image(cls.move, 2.7)
 
         if len(cls.shoot) == 0:
             cls.shoot.append(pg.image.load('Assets/Images/shoot/survivor-shoot_rifle_0.png'))
             cls.shoot.append(pg.image.load('Assets/Images/shoot/survivor-shoot_rifle_1.png'))
             cls.shoot.append(pg.image.load('Assets/Images/shoot/survivor-shoot_rifle_2.png'))
-            cls.shoot = scale_image(cls.shoot)
+            cls.shoot = scale_image(cls.shoot, 2.7)
 
+        if len(cls.run) == 0:
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_0.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_1.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_2.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_3.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_4.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_5.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_6.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_7.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_8.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_9.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_10.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_11.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_12.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_13.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_14.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_15.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_16.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_17.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_18.png'))
+            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_19.png'))
+            cls.run = scale_image(cls.run, 2.7)
 
      # @classmethod
      # def class_method(cls):

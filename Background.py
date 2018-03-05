@@ -13,4 +13,3 @@ class Background():
 
     def update_position(self, player):
         self.rect.center = player.position_on_screen - player.position_on_scenario
-

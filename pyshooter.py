@@ -5,6 +5,7 @@ import pygame as pg
 from Player import *
 from Background import *
 from Bot import *
+from Projectiles import *
 
 import Animation
 import Sound
@@ -20,6 +21,9 @@ class Main:
         self.pressionou_a = False
         self.pressionou_s = False
         self.pressionou_d = False
+
+        self.all_sprites_list = pg.sprite.Group()
+        self.bullet_list = pg.sprite.Group()
 
         # print(Animation.Player.a)
     
@@ -51,6 +55,9 @@ class Main:
         
         self.CROSS_IMAGE = pg.image.load("Assets/Images/cross.png").convert_alpha()
         self.CROSS_IMAGE = pg.transform.scale(self.CROSS_IMAGE, (15,15))
+
+        self.BULLET_IMAGE = pg.image.load("Assets/Images/bullets/bullet1.png")
+        self.BULLET_IMAGE = pg.transform.scale(self.BULLET_IMAGE, (5,2))
         
         self.player_animation = Animation.Player
         self.player_animation.load()
@@ -64,11 +71,18 @@ class Main:
         self.bot3 = Bot(self.BOT_IMAGE, (-200,-200))
         self.back = Background(self.BACK_IMAGE, self.FRONT_IMAGE)
 
+
     def on_event(self, event):
         if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
             self._running = False
 
         self.player.handle_event(event)
+
+        if self.player.is_shooting == True:
+            bullet = Projectiles(self.player.position_on_screen, self.BULLET_IMAGE)
+            self.all_sprites_list.add(bullet)
+            self.bullet_list.add(bullet)
+
         
     def display_fps(self):
         pg.display.set_caption("{} - FPS: {:.2f}".format("PyShooter", self.clock.get_fps()))
@@ -90,6 +104,9 @@ class Main:
         # self.bot3.draw(self.screen, self.back, self.player)
         self.screen.blit(self.CROSS_IMAGE, pg.mouse.get_pos())
         self.display_fps()
+
+        self.all_sprites_list.draw(self.screen)
+        self.all_sprites_list.update()
         pg.display.update()
 
     def on_execute(self):

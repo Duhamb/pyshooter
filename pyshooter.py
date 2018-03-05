@@ -21,7 +21,6 @@ class Main:
         self.pressionou_s = False
         self.pressionou_d = False
 
-        # print(Animation.Player.a)
     
     def on_init(self):
         os.environ['SDL_VIDEO_CENTERED'] = '1'
@@ -57,17 +56,18 @@ class Main:
         self.player_sound = Sound.Player 
         self.player_sound.load()
 
-        self.player = Player(self.PLAY_IMAGE, self.PLAY_IMAGE_BACK, (0,0), self.PLAYER_POSITION, self.player_animation, self.player_sound)
-        self.bot0 = Bot(self.BOT_IMAGE, (200,200))
-        self.bot1 = Bot(self.BOT_IMAGE, (-200,200))
-        self.bot2 = Bot(self.BOT_IMAGE, (200,-200))
-        self.bot3 = Bot(self.BOT_IMAGE, (-200,-200))
         self.back = Background(self.BACK_IMAGE, self.FRONT_IMAGE)
+        self.player = Player(self.PLAY_IMAGE, self.PLAY_IMAGE_BACK, (0,0), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.back)
+        self.bot0 = Bot(self.BOT_IMAGE, (200,200), self.screen, self.back, self.player)
+
+        self.players = pg.sprite.Group(self.player)
+        self.bots = pg.sprite.Group(self.bot0)
 
     def on_event(self, event):
         if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
             self._running = False
 
+        # o grupo deveria chamar esses metodos também
         self.player.handle_event(event)
         
     def display_fps(self):
@@ -82,13 +82,18 @@ class Main:
 
     def on_render(self):
         self.screen.fill((0,0,0))
+        # sem sprite ainda
         self.back.draw(self.screen, self.player)
-        self.player.draw(self.screen, self.back)
-        self.bot0.draw(self.screen, self.back, self.player)
-        # self.bot1.draw(self.screen, self.back, self.player)
-        # self.bot2.draw(self.screen, self.back, self.player)
-        # self.bot3.draw(self.screen, self.back, self.player)
+
+        # como que atualiza todos os grupos?
+        self.players.update()
+        self.players.draw(self.screen)
+        self.bots.update()
+        self.bots.draw(self.screen)
+
+        # acho que não precisa de sprite pra essa
         self.screen.blit(self.CROSS_IMAGE, pg.mouse.get_pos())
+        
         self.display_fps()
         pg.display.update()
 

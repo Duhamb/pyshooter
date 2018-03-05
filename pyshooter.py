@@ -2,6 +2,7 @@ import os
 import sys
 import pygame as pg
 
+from Menu import *
 from Player import *
 from Background import *
 from Bot import *
@@ -29,10 +30,12 @@ class Main:
         pg.init()
         self._running = True
         self.clock = pg.time.Clock()
-        pg.mouse.set_visible(0)
-        self.resolution = (int(pg.display.Info().current_w), int(pg.display.Info().current_h))
-        
-        self._display_surf = pg.display.set_mode(self.size) 
+
+        # self.resolution = (int(pg.display.Info().current_w), int(pg.display.Info().current_h))
+
+        self.menu = Menu()
+
+        self._display_surf = pg.display.set_mode(self.size, pg.FULLSCREEN)
         self.screen = pg.display.get_surface() # repetido?
         
         self.PLAYER_POSITION = (self.width/2, self.height/2)
@@ -47,7 +50,7 @@ class Main:
         
         self.BACK_IMAGE = pg.image.load("Assets/Images/city1_back.png").convert_alpha()
         self.FRONT_IMAGE = pg.image.load("Assets/Images/city1.jpg").convert_alpha()
-        
+
         self.CROSS_IMAGE = pg.image.load("Assets/Images/cross.png").convert_alpha()
         self.CROSS_IMAGE = pg.transform.scale(self.CROSS_IMAGE, (15,15))
         
@@ -99,6 +102,11 @@ class Main:
 
     def on_execute(self):
         self.on_init()
+
+        self.menu.intro()
+
+        pg.mouse.set_visible(0)
+
         while (self._running):
             for event in pg.event.get():
                 self.on_event(event)

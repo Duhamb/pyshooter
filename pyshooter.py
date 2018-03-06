@@ -6,6 +6,7 @@ from Menu import *
 from Player import *
 from Background import *
 from Bot import *
+from Projectiles import *
 
 import Animation
 import Sound
@@ -66,12 +67,20 @@ class Main:
         self.players = pg.sprite.Group(self.player)
         self.bots = pg.sprite.Group(self.bot0)
 
+        self.bullet_list = pg.sprite.Group()
+        self.BULLET_IMAGE = pg.image.load("Assets/Images/bullets/bullet1.png")
+        self.BULLET_IMAGE = pg.transform.scale(self.BULLET_IMAGE, (5, 2))
+
     def on_event(self, event):
         if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
             self._running = False
 
         # o grupo deveria chamar esses metodos também
         self.player.handle_event(event)
+        
+        if self.player.is_shooting == True:
+            bullet = Projectiles(self.player.position_on_screen, self.BULLET_IMAGE)
+            self.bullet_list.add(bullet)
         
     def display_fps(self):
         pg.display.set_caption("{} - FPS: {:.2f}".format("PyShooter", self.clock.get_fps()))
@@ -93,6 +102,9 @@ class Main:
         self.players.draw(self.screen)
         self.bots.update()
         self.bots.draw(self.screen)
+
+        self.bullet_list.draw(self.screen)
+        self.bullet_list.update()
 
         # acho que não precisa de sprite pra essa
         self.screen.blit(self.CROSS_IMAGE, pg.mouse.get_pos())

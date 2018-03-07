@@ -18,6 +18,8 @@ class Menu():
         pg.display.update()
 
     def on_event(self, event):
+        if event.type == self.REPLAY:
+            self.music.play()
         if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
             self._in_menu = False
         if event.type == pg.KEYDOWN:
@@ -28,11 +30,15 @@ class Menu():
 
         if 150+200 > mouse[0] > 150 and 450+50 > mouse[1] > 450:
             self.surface.blit(self.SINGLE_ON, (150, 450))
+            if pg.mouse.get_pressed()[0]:
+                self._in_menu = False
         else:
             self.surface.blit(self.SINGLE_OFF, (150, 450))
 
         if 450+200 > mouse[0] > 450 and 450+50 > mouse[1] > 450:
             self.surface.blit(self.MULTI_ON, (450, 450))
+            if pg.mouse.get_pressed()[0]:
+                self._in_menu = False
         else:
             self.surface.blit(self.MULTI_OFF, (450, 450))
 
@@ -40,8 +46,17 @@ class Menu():
     def intro(self):
         self.surface = pg.display.get_surface()
         self.surface.blit(self.MENU_IMAGE, (0, 0))
+
+        self.music = pg.mixer.Sound('Assets/Sounds/BestMusic.wav')
+        self.music.set_volume(0.5)
+        self.music.play()
+        self.REPLAY = pg.USEREVENT + 1
+        pg.mixer.music.set_endevent(self.REPLAY)
+
         while(self._in_menu):
             for event in pg.event.get():
                 self.on_event(event)
             self.interactive()
             self.on_render()
+
+        self.music.stop()

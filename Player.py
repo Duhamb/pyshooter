@@ -126,7 +126,7 @@ class Player(pg.sprite.Sprite):
         
         if self.is_shooting:
             self.sound.play()
-            self.sound.zoa.play()
+            # self.sound.zoa.play()
 
             self.image = self.animation.shoot[self.index_animation_shoot]
             self.original_image = self.animation.shoot[self.index_animation_shoot]

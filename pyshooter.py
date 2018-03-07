@@ -35,7 +35,9 @@ class Main:
 
         self.menu = Menu()
 
-        self._display_surf = pg.display.set_mode(self.size, pg.FULLSCREEN)
+        # no final vai ser melhor usar o self.resolution no lugar de self.size e usar o pg.FULLSCREEN
+        # mas em desenvolvimento pode ser melhor manter assim para permitir a visualização no console
+        self._display_surf = pg.display.set_mode(self.size)
         self.screen = pg.display.get_surface() # repetido?
         
         self.PLAYER_POSITION = (self.width/2, self.height/2)

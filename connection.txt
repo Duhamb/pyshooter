@@ -1,0 +1,10 @@
+#Modify this file as necessary, but be careful of whitespace; settings.py isn't very smart.
+
+#The client's IP.  Modify to the server's IP on a LAN.  NAT punchthrough is not yet supported.
+client_ip = "localhost"
+
+#Tell the server to listen to all IPs, such as any IP within a LAN.
+server_ip = "0.0.0.0"
+
+#The port used for both the client and the server
+port = 6317

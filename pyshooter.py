@@ -45,7 +45,8 @@ class Main:
         self.PLAY_IMAGE = pg.image.load("Assets/Images/player3.png")
         self.PLAY_IMAGE = pg.transform.scale(self.PLAY_IMAGE, (75,75))
         self.PLAY_IMAGE_BACK = pg.image.load("Assets/Images/back_player.png")
-        self.PLAY_IMAGE_BACK = pg.transform.scale(self.PLAY_IMAGE_BACK, (75,75))
+        self.sz = self.PLAY_IMAGE_BACK.get_rect().size
+        self.PLAY_IMAGE_BACK = pg.transform.scale(self.PLAY_IMAGE_BACK, (int(self.sz[0]/2.7),int(self.sz[1]/2.7) ))
         
         self.BOT_IMAGE = pg.image.load("Assets/Images/player2.png")
         self.BOT_IMAGE = pg.transform.scale(self.BOT_IMAGE, (75,75))
@@ -92,7 +93,7 @@ class Main:
 
         # como que atualiza todos os grupos?
         self.players.update()
-        self.players.draw(self.screen)
+        self.player.draw(self.screen)
         self.bots.update()
         self.bots.draw(self.screen)
 

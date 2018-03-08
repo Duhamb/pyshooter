@@ -14,7 +14,7 @@ class Background():
     def draw(self, surface, player):
         self.update_position(player)
         surface.blit(self.front, self.rect)
-        surface.blit(self.back, self.rect)
+        # surface.blit(self.back, self.rect)
 
     def update_position(self, player):
         self.rect.center = player.position_on_screen - player.position_on_scenario

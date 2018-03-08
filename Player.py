@@ -8,24 +8,106 @@ def draw_rect(rect, screen):
     pg.draw.line(screen, (255,0,0), rect.topleft, rect.bottomleft, 1)
     pg.draw.line(screen, (255,0,0), rect.topright, rect.bottomright, 1)
 
-def draw_rays(screen, position_on_screen, back_mask, back_rect):
+def get_normal(position_on_scenario, back_mask, back_rect):
     qtd = 60
-    vetor_base = pg.math.Vector2( (72,0) )
+    vetor_base = pg.math.Vector2( (35,0) )
     angulo = 0
+    lista_de_angulos = []
+    angulo_inicial = None
+    angulo_final = None
+
+    position_on_screen = back_rect.center + position_on_scenario
+
     for i in range(0,qtd):
         vetor_rotacionado = pg.math.Vector2(position_on_screen) + vetor_base.rotate(angulo)
         # converte  a posição da tela para a posição no campo
         pos_scenario =  -pg.math.Vector2(back_rect.topleft) + vetor_rotacionado
         x = int(pos_scenario[0])
         y = int(pos_scenario[1])
+
+        if back_mask.get_at((x,y)):
+            if angulo_inicial == None:
+                angulo_inicial = angulo
+            else:
+                angulo_final = angulo
+        else:
+            if angulo_final != None:
+                diff = [angulo_inicial, angulo_final]
+                lista_de_angulos.append( diff )
+                
+                angulo_final = None
+                angulo_inicial = None
+
+        angulo += 360/qtd
+    if angulo_inicial != None and angulo_final != None:
+        diff = [angulo_inicial, angulo_final]
+        lista_de_angulos.append( diff )
+
+    first = lista_de_angulos[0]
+    last = lista_de_angulos[-1]
+    if first[0] == 0 and last[1] == 354:
+        first[0] = last[0]
+        del lista_de_angulos[-1]
+
+    for i in range(0, len(lista_de_angulos)):
+        a = lista_de_angulos[i][0]
+        b = lista_de_angulos[i][1]
+        if a > b:
+            lista_de_angulos[i] = [(a+b)/2-180, b-a+360]
+        else:
+            lista_de_angulos[i] = [(a+b)/2, b-a]
+
+    return lista_de_angulos
+
+def draw_rays(screen, position_on_scenario, back_mask, back_rect):
+    qtd = 60
+    vetor_base = pg.math.Vector2( (35,0) )
+    angulo = 0
+    lista_de_angulos = []
+    angulo_inicial = None
+    angulo_final = None
+
+    position_on_screen = back_rect.center + position_on_scenario
+    ha_zero = None
+    ha_final = None
+    for i in range(0,qtd):
+        vetor_rotacionado = pg.math.Vector2(position_on_screen) + vetor_base.rotate(angulo)
+        # converte  a posição da tela para a posição no campo
+        pos_scenario =  -pg.math.Vector2(back_rect.topleft) + vetor_rotacionado
+        x = int(pos_scenario[0])
+        y = int(pos_scenario[1])
+
         if back_mask.get_at((x,y)):
             cor = (255,0,0)
+            if angulo_inicial == None:
+                angulo_inicial = angulo
+            else:
+                angulo_final = angulo
         else:
             cor = (0,255,0)
-
-        pg.draw.line(screen, cor, position_on_screen, vetor_rotacionado, 1)
+            if angulo_final != None:
+                if angulo_inicial == 0:
+                    ha_zero = angulo_final
+                elif angulo_final == 354:
+                    ha_final = angulo_inicial
+                else:
+                    diff = (angulo_final + angulo_inicial)/2
+                    lista_de_angulos.append( diff )
+                
+                angulo_final = None
+                angulo_inicial = None
+        pg.draw.line(screen, cor, position_on_screen, vetor_rotacionado, 2)
         angulo += 360/qtd
 
+    if angulo_inicial != None and angulo_final != None:
+        diff = (angulo_final, angulo_inicial)
+        lista_de_angulos.append( diff )
+
+    if ha_zero != None and ha_final != None:
+        diff = (ha_zero + ha_final)/2 - 180
+        lista_de_angulos.append( diff )
+
+    return lista_de_angulos    
 
 class Player(pg.sprite.Sprite):
     def __init__(self, image, back_image, location_on_scenario, location_on_screen, animation, sound, background):
@@ -38,7 +120,6 @@ class Player(pg.sprite.Sprite):
         self.original_back_image = back_image
         self.background = background
         self.loc = location_on_screen
-
         # the image center isnt correct
         self.delta_center_position = pg.math.Vector2((+56/2.7,-19/2.7))
 
@@ -50,6 +131,7 @@ class Player(pg.sprite.Sprite):
         self.position_on_screen = pg.math.Vector2(location_on_screen)
         self.position_on_scenario = pg.math.Vector2(location_on_scenario)
 
+        self.is_colliding = False
         # handle events
         self.pressionou_w = False
         self.pressionou_a = False
@@ -67,15 +149,53 @@ class Player(pg.sprite.Sprite):
         screen.blit(self.image, self.rect)
         screen.blit(self.image, (0,0))
         # screen.blit(self.feet, self.position_on_screen)
-        screen.blit(self.back_image, self.rect_back)
+        # screen.blit(self.back_image, self.rect_back)
         olist = self.mask.outline()
         pg.draw.lines(screen,(200,150,150), 1, olist)
 
-        draw_rect(self.rect, screen)
-        draw_rays(screen, self.position_on_screen, self.background.mask, self.background.rect)
-
+        # draw_rect(self.rect, screen)
+        # draw_rays(screen, self.position_on_scenario, self.background.mask, self.background.rect)
+            
     def move(self, direction):
-        self.temp_position_on_scenario = self.position_on_scenario + 5*pg.math.Vector2(direction/direction.length())
+
+        if not self.is_possible_direction(direction):
+            angles = get_normal(self.temp_position_on_scenario, self.background.mask, self.background.rect)
+            if len(angles) <= 1:
+                big_size = False
+                for k in angles:
+                    if k[1] > 150:
+                        big_size = True
+                        break
+                if not big_size:
+                    for j in angles:
+                        i = j[0]
+                        new_direction = pg.math.Vector2((1,0)).rotate(i + 90)
+                        try:
+                            new_direction = new_direction.dot(5*pg.math.Vector2(direction/(direction.length()))) * new_direction
+                        except:
+                            new_direction = pg.math.Vector2(0,0)
+                        direction = new_direction
+
+                    try:
+                        self.position_on_scenario += 5*(direction/(direction.length()))
+                    except:
+                        self.position_on_scenario += 5*(direction)
+                    self.index_animation_move += 1
+                    if self.index_animation_move == len(self.animation.move):
+                        self.index_animation_move = 0
+
+        else:
+            try:
+                self.position_on_scenario += 5*(direction/(direction.length()))
+            except: 
+                self.position_on_scenario += 5*(direction)
+            self.index_animation_move += 1
+            if self.index_animation_move == len(self.animation.move):
+                self.index_animation_move = 0
+
+    def is_possible_direction(self, direction):
+        # prevê o estado caso o movimento ocorra
+        self.temp_position_on_scenario = self.position_on_scenario + 5*pg.math.Vector2(direction/ (direction.length()))
         self.temp_index_animation_move = self.index_animation_move + 1
         if self.temp_index_animation_move == len(self.animation.move):
             self.temp_index_animation_move = 0
@@ -83,19 +203,16 @@ class Player(pg.sprite.Sprite):
         self.temp_rect = self.image.get_rect(center=self.new_rect_center)
         self.temp_mask = pg.mask.from_surface(self.back_image)
 
-        self.background.rect.center = self.position_on_screen - self.temp_position_on_scenario
-        self.offset = ((-self.background.rect.left + self.temp_rect.left), (-self.background.rect.top + self.temp_rect.top))
-        self.is_colliding = self.background.mask.overlap(self.temp_mask, self.offset)
-        if self.is_colliding:
-            print("invalid move!")
-            print(self.position_on_scenario + pg.math.Vector2(self.background.rect.size)/2)
-            print(self.is_colliding)
-        else:
-            self.position_on_scenario += 5*(direction/direction.length())
-            self.index_animation_move += 1
-            if self.index_animation_move == len(self.animation.move):
-                self.index_animation_move = 0
+        self.temp_rect_back = self.background.rect.copy()
 
+        self.temp_rect_back.center = self.position_on_screen - self.temp_position_on_scenario
+
+        self.offset = ((-self.temp_rect_back.left + self.temp_rect.left), (-self.temp_rect_back.top + self.temp_rect.top))
+        self.is_colliding = self.background.mask.overlap(self.temp_mask, self.offset)
+
+        if self.is_colliding:
+            return False
+        return True
 
     def rotate(self):
         _, angle = (pg.mouse.get_pos()-self.position_on_screen).as_polar()

@@ -7,6 +7,7 @@ from Player import *
 from Background import *
 from Bot import *
 from ExtendedGroup import *
+from Statistics import *
 
 import Animation
 import Sound
@@ -18,11 +19,6 @@ class Main:
         self._running = True
         self.size = self.width, self.height = 800, 600
         self.fps = 60
-        self.pressionou_w = False
-        self.pressionou_a = False
-        self.pressionou_s = False
-        self.pressionou_d = False
-
     
     def on_init(self):
         os.environ['SDL_VIDEO_CENTERED'] = '1'
@@ -57,11 +53,6 @@ class Main:
 
         self.CROSS_IMAGE = pg.image.load("Assets/Images/cross.png").convert_alpha()
         self.CROSS_IMAGE = pg.transform.scale(self.CROSS_IMAGE, (15,15))
-
-        # initialize font; must be called after 'pygame.init()' to avoid 'Font not Initialized' error
-        self.font_text = pg.font.Font("Assets/Fonts/UrbanJungleDEMO.otf", 25)
-        self.score = self.font_text.render("000000000", 1, (255,255,255))
-        
         
         self.player_animation = Animation.Player
         self.player_animation.load()
@@ -71,7 +62,7 @@ class Main:
         self.back = Background(self.BACK_IMAGE, self.FRONT_IMAGE)
         self.player = Player(self.PLAY_IMAGE, self.PLAY_IMAGE_BACK, (0,0), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.back)
         self.bot0 = Bot(self.BOT_IMAGE, (200,200), self.screen, self.back, self.player)
-
+        self.stats = Statistics(self.player, self.screen.get_rect().size)
         self.players = ExtendedGroup(self.player)
         self.bots = ExtendedGroup(self.bot0)
 
@@ -103,10 +94,11 @@ class Main:
         self.bots.update()
         self.bots.draw(self.screen)
 
-        self.screen.blit(self.score, (10, 10))
+
 
         # acho que não precisa de sprite pra essa
         self.screen.blit(self.CROSS_IMAGE, pg.mouse.get_pos())
+        self.stats.draw(self.screen)
         
         self.display_fps()
         pg.display.update()

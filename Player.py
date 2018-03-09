@@ -1,10 +1,4 @@
 import pygame
-import pygame.gfxdraw
-import math
-
-# [TODO] descobrir como alterar o group.draw pra renderizar duas imagens
-# alternativa: unir as duas imagens e passar somente a união delas
-
 
 # esse método de colisão tá bugado, mas apresenta desempenho minimamente razoável
 # continuarei pensando em como consertar essa parte
@@ -64,22 +58,34 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.animation = animation
         self.sound = sound
-        self.index_animation_move = 0        
-        self.index_animation_shoot = 0
         self.back_image = back_image
         self.original_back_image = back_image
+        self.original_feet = animation.feet_run[0]
         self.background = background
         self.loc = location_on_screen
         # the image center isnt correct
         self.delta_center_position = pygame.math.Vector2((+56/2.7,-19/2.7))
 
         self.mask = pygame.mask.from_surface(self.back_image)
-        self.rect = animation.move[0].get_rect(center = location_on_screen)
+        self.rect = animation.idle[0].get_rect(center = location_on_screen)
         self.rect_back = self.rect
-        self.image = animation.move[0]
+        self.image = animation.idle[0]
 
         self.position_on_screen = pygame.math.Vector2(location_on_screen)
         self.position_on_scenario = pygame.math.Vector2(location_on_scenario)
+
+        # index for animations
+        self.index_animation_move = 0        
+        self.index_animation_shoot = 0
+        self.index_animation_idle = 0
+        self.index_animation_reload = 0
+        self.index_animation_feet = 0
+
+        # flags for animation
+        self.is_moving = False
+        self.is_shooting = False
+        self.is_reloading = False
+        self.is_idle = True        
 
         # handle events
         self.is_colliding = False
@@ -87,17 +93,48 @@ class Player(pygame.sprite.Sprite):
         self.pressionou_a = False
         self.pressionou_s = False
         self.pressionou_d = False
-        self.is_shooting = False
+
+
+        # auxiliar: remover depois
+        self.float_index = 0
 
     def update(self):
         self.react_to_event()
+        self.choose_animation()
         self.rotate()
 
-    # esse metodo não sobrescreveu
-    # a draw é um metodo do grupo
     def draw(self, screen):
         screen.blit(self.feet, self.feet.get_rect(center=self.position_on_screen).topleft)
         screen.blit(self.image, self.rect)
+
+    def choose_animation(self):
+        if self.is_shooting:
+            self.index_animation_shoot += 1
+            if self.index_animation_shoot > 2:
+                self.index_animation_shoot = 0
+            self.original_image = self.animation.shoot[self.index_animation_shoot]
+        elif self.is_reloading:
+            self.float_index += 0.5
+            if self.float_index > 1:
+                self.float_index = 0
+            self.index_animation_reload += int(self.float_index)
+            if self.index_animation_reload > 19:
+                self.index_animation_reload = 0
+                self.is_reloading = False
+            self.original_image = self.animation.rifle_reload[self.index_animation_reload]
+        elif self.is_idle:
+            self.float_index += 0.25
+            if self.float_index > 1:
+                self.float_index = 0
+            self.index_animation_idle += int(self.float_index)
+            if self.index_animation_idle > 19:
+                self.index_animation_idle = 0
+            self.original_image = self.animation.idle[self.index_animation_idle]
+        elif self.is_moving:
+            self.index_animation_move += 1
+            if self.index_animation_move > 19:
+                self.index_animation_move = 0
+            self.original_image = self.animation.move[self.index_animation_move]
 
     def move(self, direction):
         if not self.is_possible_direction(direction):
@@ -122,17 +159,11 @@ class Player(pygame.sprite.Sprite):
                         self.position_on_scenario += 5*(direction/(direction.length()))
                     except:
                         self.position_on_scenario += 5*(direction)
-                    self.index_animation_move += 1
-                    if self.index_animation_move == len(self.animation.move):
-                        self.index_animation_move = 0
         else:
             try:
                 self.position_on_scenario += 5*(direction/(direction.length()))
             except: 
                 self.position_on_scenario += 5*(direction)
-            self.index_animation_move += 1
-            if self.index_animation_move == len(self.animation.move):
-                self.index_animation_move = 0
 
     def is_possible_direction(self, direction):
         # prevê o estado caso o movimento ocorra
@@ -189,6 +220,9 @@ class Player(pygame.sprite.Sprite):
                 self.pressionou_s = True
             if event.key == pygame.K_d:
                 self.pressionou_d = True
+            # [TODO] a flag deve ser setada se uma das quatro direcionais forem pressionadas
+            self.is_moving = True
+            self.is_idle = False
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_w:
                 self.pressionou_w = False
@@ -198,11 +232,17 @@ class Player(pygame.sprite.Sprite):
                 self.pressionou_s = False
             if event.key == pygame.K_d:
                 self.pressionou_d = False
-
+            # [TODO] a flag deve ser setada se uma das quatro direcionais forem pressionadas
+            self.is_moving = False
+            self.is_idle = True
         if event.type == pygame.MOUSEBUTTONDOWN:
-            self.is_shooting = True
+            if event.button == 3:
+                self.is_reloading = True
+            if event.button == 1:
+                self.is_shooting = True
         elif event.type == pygame.MOUSEBUTTONUP:
-            self.is_shooting = False
+            if event.button == 1:
+                self.is_shooting = False
 
     def react_to_event(self):
         if self.pressionou_w or self.pressionou_d or self.pressionou_a or self.pressionou_s:
@@ -228,18 +268,12 @@ class Player(pygame.sprite.Sprite):
         
         if self.is_shooting:
             self.sound.play()
-            # self.sound.zoa.play()
-
-            self.image = self.animation.shoot[self.index_animation_shoot]
-            self.original_image = self.animation.shoot[self.index_animation_shoot]
-            self.index_animation_shoot += 1
-            if self.index_animation_shoot == len(self.animation.shoot):
-                self.index_animation_shoot = 0
         else:
             self.sound.shoot.fadeout(100)
             # self.sound.stop()
-            self.image = self.animation.move[self.index_animation_move]
-            self.original_image = self.animation.move[self.index_animation_move]
-
-        self.feet = self.animation.run[self.index_animation_move]
-        self.original_feet = self.animation.run[self.index_animation_move]
+        if self.is_moving:
+            self.feet = self.animation.feet_run[self.index_animation_feet]
+            self.original_feet = self.animation.feet_run[self.index_animation_feet]
+            self.index_animation_feet += 1
+            if self.index_animation_feet > 19:
+                self.index_animation_feet = 0

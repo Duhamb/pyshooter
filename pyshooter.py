@@ -6,6 +6,7 @@ from Menu import *
 from Player import *
 from Background import *
 from Bot import *
+from ExtendedGroup import *
 
 import Animation
 import Sound
@@ -71,15 +72,15 @@ class Main:
         self.player = Player(self.PLAY_IMAGE, self.PLAY_IMAGE_BACK, (0,0), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.back)
         self.bot0 = Bot(self.BOT_IMAGE, (200,200), self.screen, self.back, self.player)
 
-        self.players = pg.sprite.Group(self.player)
-        self.bots = pg.sprite.Group(self.bot0)
+        self.players = ExtendedGroup(self.player)
+        self.bots = ExtendedGroup(self.bot0)
 
     def on_event(self, event):
         if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
             self._running = False
 
         # o grupo deveria chamar esses metodos também
-        self.player.handle_event(event)
+        self.players.handle_event(event)
         
     def display_fps(self):
         pg.display.set_caption("{} - FPS: {:.2f}".format("PyShooter", self.clock.get_fps()))
@@ -98,7 +99,7 @@ class Main:
 
         # como que atualiza todos os grupos?
         self.players.update()
-        self.player.draw(self.screen)
+        self.players.draw(self.screen)
         self.bots.update()
         self.bots.draw(self.screen)
 

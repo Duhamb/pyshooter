@@ -56,6 +56,11 @@ class Main:
 
         self.CROSS_IMAGE = pg.image.load("Assets/Images/cross.png").convert_alpha()
         self.CROSS_IMAGE = pg.transform.scale(self.CROSS_IMAGE, (15,15))
+
+        # initialize font; must be called after 'pygame.init()' to avoid 'Font not Initialized' error
+        self.font_text = pg.font.Font("Assets/Fonts/UrbanJungleDEMO.otf", 25)
+        self.score = self.font_text.render("000000000", 1, (255,255,255))
+        
         
         self.player_animation = Animation.Player
         self.player_animation.load()
@@ -96,6 +101,8 @@ class Main:
         self.player.draw(self.screen)
         self.bots.update()
         self.bots.draw(self.screen)
+
+        self.screen.blit(self.score, (10, 10))
 
         # acho que não precisa de sprite pra essa
         self.screen.blit(self.CROSS_IMAGE, pg.mouse.get_pos())

@@ -62,9 +62,9 @@ class Menu():
         if 150 + 200 > mouse[0] > 150 and 450 + 50 > mouse[1] > 450:
             self.surface.blit(self.SERVER_ON, (150, 450))
             if event.type == pg.MOUSEBUTTONDOWN:
-                server = NetworkServer.Server()
-                server.connect(server_ip, port)
-                server.accepting_allow()
+                self.server = NetworkServer.Server()
+                self.server.connect(server_ip, port)
+                self.server.accepting_allow()
                 self._in_menu_multiplayer = False
         else:
             self.surface.blit(self.SERVER_OFF, (150, 450))
@@ -99,6 +99,6 @@ class Menu():
         while(self._in_menu_multiplayer):
             for event in pg.event.get():
                 self.on_event(event)
-            self.interactive_multiplayer(event)
+                self.interactive_multiplayer(event)
             self.on_render()
         self.music.stop()

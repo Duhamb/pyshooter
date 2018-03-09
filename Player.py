@@ -95,6 +95,10 @@ class Player(pygame.sprite.Sprite):
         self.pressionou_d = False
 
 
+        # for statistics
+        self.ammo = 20
+
+
         # auxiliar: remover depois
         self.float_index = 0
 
@@ -238,8 +242,14 @@ class Player(pygame.sprite.Sprite):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 3:
                 self.is_reloading = True
+                pygame.mixer.Channel(1).play(self.sound.reload)
+                self.ammo = 20
             if event.button == 1:
                 self.is_shooting = True
+                
+                # a lógica de como as munições são reduzidas deve ser alterada depois
+                if self.ammo != 0:
+                    self.ammo -= 1
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
                 self.is_shooting = False
@@ -267,7 +277,7 @@ class Player(pygame.sprite.Sprite):
                 self.move(self.direction_of_move)
         
         if self.is_shooting:
-            self.sound.play()
+            pygame.mixer.Channel(1).play(self.sound.shoot)
         else:
             self.sound.shoot.fadeout(100)
             # self.sound.stop()

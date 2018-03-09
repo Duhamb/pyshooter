@@ -1,9 +1,5 @@
 import pygame as pg 
 
-"""
-I'm not proud of this, but... :(
-"""
-
 def scale_image(list_images, ratio):
     size = list_images[0].get_rect().size
     for i in range(0, len(list_images)):
@@ -14,62 +10,52 @@ class Player:
 
     move = []
     shoot = []
-    run = []
+    feet_run = []
+    idle = []
+    rifle_reload = []
 
     # @staticmethod
     @classmethod
     def load(cls):
         if len(cls.move) == 0:
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_0.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_1.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_2.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_3.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_4.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_5.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_6.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_7.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_8.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_9.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_10.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_11.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_12.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_13.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_14.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_15.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_16.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_17.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_18.png'))
-            cls.move.append(pg.image.load('Assets/Images/move/survivor-move_rifle_19.png'))
+            default_directory = 'Assets/Images/player/rifle/move/survivor-move_rifle_'
+            extension_file = '.png'
+            for i in range(0,20):
+                actual_file = default_directory + str(i) + extension_file
+                cls.move.append(pg.image.load(actual_file))
             cls.move = scale_image(cls.move, 2.7)
 
         if len(cls.shoot) == 0:
-            cls.shoot.append(pg.image.load('Assets/Images/shoot/survivor-shoot_rifle_0.png'))
-            cls.shoot.append(pg.image.load('Assets/Images/shoot/survivor-shoot_rifle_1.png'))
-            cls.shoot.append(pg.image.load('Assets/Images/shoot/survivor-shoot_rifle_2.png'))
+            default_directory = 'Assets/Images/player/rifle/shoot/survivor-shoot_rifle_'
+            extension_file = '.png'
+            for i in range(0,3):
+                actual_file = default_directory + str(i) + extension_file
+                cls.shoot.append(pg.image.load(actual_file))
             cls.shoot = scale_image(cls.shoot, 2.7)
 
-        if len(cls.run) == 0:
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_0.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_1.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_2.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_3.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_4.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_5.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_6.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_7.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_8.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_9.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_10.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_11.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_12.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_13.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_14.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_15.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_16.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_17.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_18.png'))
-            cls.run.append(pg.image.load('Assets/Images/feet/run/survivor-run_19.png'))
-            cls.run = scale_image(cls.run, 2.7)
+        if len(cls.idle) == 0:
+            default_directory = 'Assets/Images/player/rifle/idle/survivor-idle_rifle_'
+            extension_file = '.png'
+            for i in range(0,20):
+                actual_file = default_directory + str(i) + extension_file
+                cls.idle.append(pg.image.load(actual_file))
+            cls.idle = scale_image(cls.idle, 2.7)
+
+        if len(cls.rifle_reload) == 0:
+            default_directory = 'Assets/Images/player/rifle/reload/survivor-reload_rifle_'
+            extension_file = '.png'
+            for i in range(0,20):
+                actual_file = default_directory + str(i) + extension_file
+                cls.rifle_reload.append(pg.image.load(actual_file))
+            cls.rifle_reload = scale_image(cls.rifle_reload, 2.7)
+
+        if len(cls.feet_run) == 0:
+            default_directory = 'Assets/Images/player/feet/walk/survivor-walk_'
+            extension_file = '.png'
+            for i in range(0,20):
+                actual_file = default_directory + str(i) + extension_file
+                cls.feet_run.append(pg.image.load(actual_file))
+            cls.feet_run = scale_image(cls.feet_run, 2.7)
 
      # @classmethod
      # def class_method(cls):

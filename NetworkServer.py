@@ -1,6 +1,6 @@
 from Mastermind import *
 
-from settings import *
+from NetworkSettings import *
 
 import threading
 from time import gmtime, strftime

@@ -1,5 +1,5 @@
 try:    name = raw_input("Enter a screen name: ")
-except: name =     input("Enter a screen name: ")
+except: name = input("Enter a screen name: ")
 
 import pygame
 from pygame.locals import *
@@ -8,7 +8,7 @@ pygame.display.init()
 pygame.font.init()
 
 from Mastermind import *
-from settings import *
+from NetworkSettings import *
 import NetworkServer
 
 screen_size = [400,300]
@@ -16,7 +16,7 @@ icon = pygame.Surface((1,1)); icon.set_alpha(0); pygame.display.set_icon(icon)
 pygame.display.set_caption("Mastermind Chat Example - Ian Mallett - v.1.02 - 2013")
 surface = pygame.display.set_mode(screen_size,RESIZABLE)
 
-pygame.key.set_repeat(400,25)
+pygame.key.set_repeat(400, 25)
 
 client = None
 server = None
@@ -96,7 +96,7 @@ def main():
         client.connect(client_ip,port)
     except MastermindError:
         print("No server found; starting server!")
-        server = chat_server.ServerChat()
+        server = NetworkServer.ServerChat()
         server.connect(server_ip,port)
         server.accepting_allow()
 

@@ -1,5 +1,7 @@
 import pygame as pg
 import time
+from NetworkSettings import *
+import NetworkServer
 
 class Menu():
     def __init__(self):
@@ -62,6 +64,9 @@ class Menu():
         if 150 + 200 > mouse[0] > 150 and 450 + 50 > mouse[1] > 450:
             self.surface.blit(self.SERVER_ON, (150, 450))
             if pg.mouse.get_pressed()[0]:
+                server = NetworkServer.ServerChat()
+                server.connect(server_ip, port)
+                server.accepting_allow()
                 self._in_menu_multiplayer = False
         else:
             self.surface.blit(self.SERVER_OFF, (150, 450))

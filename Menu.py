@@ -37,34 +37,32 @@ class Menu():
             self._in_menu = False
             self._in_menu_multiplayer = False
 
-    def interactive(self):
+    def interactive(self, event):
         mouse = pg.mouse.get_pos()
 
         if 150+200 > mouse[0] > 150 and 450+50 > mouse[1] > 450:
             self.surface.blit(self.SINGLE_ON, (150, 450))
-            if pg.mouse.get_pressed()[0]:
+            if event.type == pg.MOUSEBUTTONDOWN:
                 self._in_menu = False
         else:
             self.surface.blit(self.SINGLE_OFF, (150, 450))
 
         if 450+200 > mouse[0] > 450 and 450+50 > mouse[1] > 450:
             self.surface.blit(self.MULTI_ON, (450, 450))
-            if pg.mouse.get_pressed()[0]:
+            if event.type == pg.MOUSEBUTTONDOWN:
                 self._in_menu = False
                 self._in_menu_multiplayer = True
-
-                time.sleep(0.1)
 
         else:
             self.surface.blit(self.MULTI_OFF, (450, 450))
 
-    def interactive_multiplayer(self):
+    def interactive_multiplayer(self, event):
         mouse = pg.mouse.get_pos()
 
         if 150 + 200 > mouse[0] > 150 and 450 + 50 > mouse[1] > 450:
             self.surface.blit(self.SERVER_ON, (150, 450))
-            if pg.mouse.get_pressed()[0]:
-                server = NetworkServer.ServerChat()
+            if event.type == pg.MOUSEBUTTONDOWN:
+                server = NetworkServer.Server()
                 server.connect(server_ip, port)
                 server.accepting_allow()
                 self._in_menu_multiplayer = False
@@ -73,7 +71,7 @@ class Menu():
 
         if 450 + 200 > mouse[0] > 450 and 450 + 50 > mouse[1] > 450:
             self.surface.blit(self.CONNECT_ON, (450, 450))
-            if pg.mouse.get_pressed()[0]:
+            if event.type == pg.MOUSEBUTTONDOWN:
                 self._in_menu_multiplayer = False
         else:
             self.surface.blit(self.CONNECT_OFF, (450, 450))
@@ -89,12 +87,18 @@ class Menu():
         while(self._in_menu):
             for event in pg.event.get():
                 self.on_event(event)
-            self.interactive()
+                self.interactive(event)
             self.on_render()
+
+        button_up = True
+        while (button_up):
+            for event in pg.event.get():
+                if event.type == pg.MOUSEBUTTONUP:
+                    button_up = False
 
         while(self._in_menu_multiplayer):
             for event in pg.event.get():
                 self.on_event(event)
-            self.interactive_multiplayer()
+            self.interactive_multiplayer(event)
             self.on_render()
         self.music.stop()

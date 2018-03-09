@@ -246,6 +246,7 @@ class Player(pygame.sprite.Sprite):
                 self.ammo = 20
             if event.button == 1:
                 self.is_shooting = True
+                #print(self.rect)
                 
                 # a lógica de como as munições são reduzidas deve ser alterada depois
                 if self.ammo != 0:

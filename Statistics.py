@@ -26,7 +26,7 @@ class Statistics():
 		screen.blit(self.ammo, self.rect_ammo)
 		
 		self.ammo_real = self.player.ammo
-		self.create_ammo_display(screen, self.ammo_real)
+		# self.create_ammo_display(screen, self.ammo_real)
 
 	def create_ammo_display(self, screen, ammo_qtd):
 		degree = 10

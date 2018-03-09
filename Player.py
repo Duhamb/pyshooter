@@ -75,7 +75,7 @@ class Player(pygame.sprite.Sprite):
         self.position_on_scenario = pygame.math.Vector2(location_on_scenario)
 
         # index for animations
-        self.index_animation_move = 0        
+        self.index_animation_move = 0
         self.index_animation_shoot = 0
         self.index_animation_idle = 0
         self.index_animation_reload = 0

@@ -21,3 +21,11 @@ class Player:
     @classmethod
     def stop(cls):
         cls.shoot.stop()
+
+class Bot:
+    grunt = None
+    # @staticmethod
+    @classmethod
+    def load(cls):
+        # if len(cls.move) == 0:
+        cls.grunt = pg.mixer.Sound('Assets/Sounds/zombie.wav')

@@ -15,6 +15,43 @@ def screen_to_scenario(position_on_screen, scenario_rect):
 def background_center_position(position_on_screen, position_on_scenario):
 	return position_on_screen - position_on_scenario
 
+def convert_scenario_to_screen(background, position_on_scenario):
+	change_basis = change_basis_matrix(background)
+	position_on_screen = matrix_vector_mult(change_basis, position_on_scenario)
+	return pg.math.Vector2(position_on_screen) + background.origin_axis
+
+def convert_screen_to_scenario(background, position_on_screen):
+	change_basis = change_basis_matrix(background)
+	change_basis = matrix_inverse(change_basis)
+	position_on_scenario = matrix_vector_mult(change_basis, position_on_screen)
+	return pg.math.Vector2(position_on_scenario) - background.origin_axis
+
+# create che change basis matrix from background and screen coordinates
+# change screen to scenario
+def change_basis_matrix(background):
+	a11 = background.x_axis.dot(pg.math.Vector2((1,0)))
+	a12 = background.y_axis.dot(pg.math.Vector2((1,0)))
+	a21 = background.x_axis.dot(pg.math.Vector2((0,1)))
+	a22 = background.y_axis.dot(pg.math.Vector2((0,1)))
+	return [[a11,a12],[a21,a22]]
+
+def matrix_inverse(matrix):
+	det = matrix[0][0]*matrix[1][1] - matrix[0][1]*matrix[1][0]
+	aux = matrix[0][0]
+	matrix[0][0] = matrix[1][1]
+	matrix[1][1] = aux
+	matrix[1][0] *= -1
+	matrix[0][1] *= -1
+	for i in range(0,2):
+		for j in range(0,2):
+			matrix[i][j] /= det
+	return matrix
+
+def matrix_vector_mult(matrix, vector):
+	a11 = matrix[0][0]*vector[0] + matrix[0][1]*vector[1]
+	a21 = matrix[1][0]*vector[0] + matrix[1][1]*vector[1]
+	return (a11, a21)
+
 def scale_image_list(image_list, ratio):
 	list_size = len(image_list)
 	w,h = image_list[0].get_rect().size

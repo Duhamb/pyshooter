@@ -281,8 +281,9 @@ class Player(pygame.sprite.Sprite):
         elif self.is_reloading:
             self.float_index = increment(self.float_index, 0.5, 1)
             self.index_animation_reload = increment(self.index_animation_reload,int(self.float_index),19)
-            if self.index_animation_reload == 0:
+            if self.index_animation_reload == 19:
                 self.is_reloading = False
+                self.index_animation_reload = 0
             self.original_image = self.animation.rifle_reload[self.index_animation_reload]
         elif self.is_idle:
             self.float_index = increment(self.float_index, 0.25, 1)

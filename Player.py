@@ -1,7 +1,5 @@
 import pygame
 from helpers import *
-
-
 # esse método de colisão tá bugado, mas apresenta desempenho minimamente razoável
 # continuarei pensando em como consertar essa parte
 def get_normal(position_on_scenario, back_mask, back_rect):
@@ -93,9 +91,6 @@ class Player(pygame.sprite.Sprite):
         self.position_on_screen = pygame.math.Vector2(location_on_screen)
         self.position_on_scenario = pygame.math.Vector2(location_on_scenario)
 
-        # sight direction
-        self.sight_angle = None
-
         # index for animations
         self.index_animation_move = 0
         self.index_animation_shoot = 0
@@ -185,7 +180,7 @@ class Player(pygame.sprite.Sprite):
     def rotate(self):
         # get the angle between mouse and player
         _, angle = (pygame.mouse.get_pos()-self.position_on_screen).as_polar()
-        self.sight_angle = angle
+
         # gira todas as imagens
         self.image = pygame.transform.rotozoom(self.original_image, -angle, 1)
         self.feet = pygame.transform.rotozoom(self.original_feet, -angle, 1)

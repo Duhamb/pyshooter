@@ -1,0 +1,290 @@
+Notes:
+
+	There ARE undocumented methods and instance variables in PAdLib.  These are used internally, and make be of some use if you care to go mucking about with them.  Find them and use them as you will.  They are prefixed with "_padlib_" so that they are harder to mung.
+	
+	Except where noted, <Instance Variables> are read-only.  They are not to be changed.  They are also more volatile than anything else with future releases.  When subclassing, you need to be aware of the documented ones; ones that are undocumented are prefixed with "_padlib_" so that you don't accidentally set something just because you wanted a variable with the same name.
+	
+PAdLib.draw:
+
+	bezier(surface, color, controlpointslist, steps, width=1):
+	
+		--Draws a Bézier curve.  Such curves go through their first and last endpoints.  Look them up for their other geometric properties.
+		--The argument "color" is the color of the curve.
+		--The argument "controlpointslist" is a list of lists containing two elements, corresponding to a list of control points of the Bézier curve.  Points' coordinates can be floating point.  There must be at least two points.  This is NOT checked.
+		--The argument "steps" determines how many subdivisions take place throughout the entire curve (i.e., the whole curve is approximated by this number of straight lines).  While the algorithm is fast enough to easily handle larger numbers, in my estimation, smaller numbers work better, because the lines are long enough so that their start and endpoints don't overlap.  This is less of a problem in "aadraw(...)", but the same applies.
+		--The argument "width" is the width of the line drawn, in pixels.
+	
+	aabezier(surface, color, controlpointslist, steps, blend=True):
+	
+		--See "bezier(...)".  Draws an antialiased version.
+		--The argument "blend", if "True", blends the new pixels with the existing pixels in "surface".  If "False", the pixels simply overwrite the existing pixels (equivalent to blending onto a black surface), which often looks bad, especially at higher resolutions for "steps".
+		
+	spline(surface, color, closed, pointslist, steps, t=0.0,b=0.0,c=0.0, width=1):
+	
+		--Draws a Kochanek–Bartels cubic Hermite spline.  Such splines go through all of their control points.
+		--The argument "surface" is a surface that the spline will be drawn onto.
+		--The argument "color" is the color of the spline.
+		--The argument "closed" is a boolean variable.  If "True", the points will be treated as a loop.  If "False", the points will be treated as an open path.  For the default values of "t", "b", and "c", when closed, the line has at least a continuous first derivative and when open, the endpoints have a zero second derivative (no curvature).
+		--The argument "pointslist" is a list of lists containing two elements, corresponding to a list of points through which the spline will interpolate.  Points' coordinates can be floating point.  There must be at least one point (though practically, two).  This is NOT checked.
+		--The argument "steps" determines how many subdivisions take place between each interpolation point.  Between two points, the curve is approximated by this number of straight lines.  While the algorithm is fast enough to easily handle larger numbers, in my estimation, smaller numbers work better, because the lines are long enough so that their start and endpoints don't overlap.  This is less of a problem in "aadraw(...)", but the same applies.
+		--The argument "t" is the tension parameter of the Kochanek-Bartels spline.
+		--The argument "b" is the bias parameter of the Kochanek-Bartels spline.
+		--The argument "c" is the continuity parameter of the Kochanek-Bartels spline.
+		--The argument "width" is the width of the line drawn, in pixels.
+	
+	aaspline(surface, color, closed, pointslist, steps, t=0.0,b=0.0,c=0.0, blend=True):
+		
+		--See "spline(...)".  Draws an antialiased version.
+		--The argument "blend", if "True", blends the new pixels with the existing pixels in "surface".  If "False", the pixels simply overwrite the existing pixels (equivalent to blending onto a black surface), which often looks bad, especially at higher resolutions for "steps".
+
+	linepattern(surface, p1,p2, shading_function, section_length,section_offset=0):
+	
+		--Draws a patterned line.  Patterned lines are broken into sections.  Sections repeat down the length of the line beginning from the start location ("p1").
+		--The argument "surface" is a surface that the patterned line will be drawn onto.
+		--The argument "p1" is a list of two elements representing the location where the patterned line starts.
+		--The argument "p2" is a list of two elements representing the location where the patterned line ends.
+		--The argument "shading_function" is a function that is called to calculate the color of a section.  It should take one floating point argument ranging from 0.0 through 1.0, corresponding to the beginning and end of the section, respectively.  The function should be as fast as possible, because it will be called exactly once for each pixel subtended.
+		--The argument "section_length" is the length of each section, in pixels.
+		--The argument "section_offset" is the offset of the first section from the start location "p1", in pixels.
+
+	aalinepattern(surface, p1,p2, shading_function, section_length,section_offset=0, blend=True):
+
+		--See "linepattern(...)".  Draws an antialiased version.
+		--The argument "blend", if "True", blends the new pixels with the existing pixels in "surface".  If "False", the pixels simply overwrite the existing pixels (equivalent to blending onto a black surface), which often looks bad.
+		
+	rrect(surface, color, rect, radius, width=0):
+	
+		--Draws a rounded rectangle.  All corners will be rounded circularly by the given radius.  The radius being too large to fit is undefined behavior.  Unfortunately, this function touches every pixel within its bounding box, and creates and deallocates surfaces.  As such, it is not anywhere near as fast as PyGame's rect functions.  Also, solid rounded rectangles are actually faster to draw than filled ones.
+		--The argument "surface" is a surface that the rounded rectangle will be drawn onto.
+		--The argument "color" is the color of the rounded rectangle.
+		--The argument "rect" is the bounding rectangle of the rounded rect.
+		--The argument "radius" is the radius of circular curvature of all the corners of the rounded rectangle.
+		--The argument "width" is the width of the line of the rounded rectangle.  If it is 0, then the rounded rectangle is filled.
+		
+	trianglecolor(surface, c1,c2,c3, p1,p2,p3):
+	
+		--Draws a triangle with (potentially) different colors at its points.  The interpolation is plain barycentric interpolation, and is not corrected in the manner necessary for 3D perspective correction, for instance.  Will use NumPy acceleration, iff available.  See performance advice for "trianglecustom(...)".
+		--The argument "surface" is a surface that the triangle will be drawn onto.
+		--The argument "c1" is the color of the first vertex.  It should be either three or four elements long with elements ranging from 0 to 255, inclusive.  These properties are NOT checked.
+		--The argument "c2" is the color of the second vertex.  See "c1".
+		--The argument "c3" is the color of the third vertex.  See "c1".
+		--The argument "p1" is the location of first vertex.  Can be floating point.
+		--The argument "p2" is the location of second vertex.  Can be floating point.
+		--The argument "p3" is the location of third vertex.  Can be floating point.
+		
+	trianglecustom(surface, p1,p2,p3, shading_function,is_numpy=False):
+	
+		--Draws a triangle with a custom shading function.  The triangle's bounding box is "n" pixels by "m" pixels.  This function is O(n*m).  It's fast enough to draw a few small triangles, but start making large ones, even with NumPy, and framerate will drop.  You should cache the drawing in a surface, and then blit the surface.
+		--The argument "surface" is a surface that the triangle will be drawn onto.
+		--The argument "p1" is the location of first vertex.  Can be floating point.
+		--The argument "p2" is the location of second vertex.  Can be floating point.
+		--The argument "p3" is the location of third vertex.  Can be floating point.
+		--The argument "shading_function" is a function that is called to calculate the color of a pixel.  The function should be as fast as possible, because it will be called exactly once for each pixel subtended.  If "is_numpy" is "False", it should take three floating point arguments, each ranging from 0.0 through 1.0, corresponding to the barycentric coordinates of the triangle.  It should return either three xor four integers, each ranging from 0 to 255, representing the red, green, and blue, xor the red, green, blue, and alpha of the pixel, respectively.  If "is_numpy" is "True", it should take six arguments.  The first, second, and third are m*n NumPy arrays of type numpy.float, representing the u, v, w barycentric coordinates of each pixel.  The fourth is a m*n NumPy array of type numpy.bool, representing whether the barycentric coordinates represent a point inside the triangle.  The fifth is an m*n*4 NumPy array of type numpy.uint8 representing BGRA, and should be set from the other parameters.
+		--The argument "is_numpy" is a boolean that controls how the argument "shading_function" is interpreted.  See "shading_function" for discussion.
+		
+	triangletexture(surface, texture, t1,t2,t3, p1,p2,p3, filter=False,clamp=False):
+	
+		--Draws a textured triangle.  See "trianglecustom(...)".  See performance advice for "trianglecustom(...)".
+		--The argument "texture" is a surface that the triangle's colors will be mapped from.
+		--The argument "t1" is a two element iterable defining the texture coordinate of the first vertex.  This works exactly the same as in standard OpenGL (a reference on which you should consult if you are unfamiliar)--normal values range from 0.0 to 1.0, but can be outside this range.
+		--The argument "t2" is a two element iterable defining the texture coordinate of the second vertex.  See "t1".
+		--The argument "t3" is a two element iterable defining the texture coordinate of the third vertex.  See "t1".
+		--The argument "filter" is a boolean variable that defines whether the texture is bilinearly filtered when it is sampled.  Usually provides "nicer" results, but takes about four times as long.
+		--The argument "clamp" is a boolean variable that defines whether the texture is clamped when it is sampled.  If it is "True", then texture coordinates will be clamped to the range [0.0,1.0].  If it is "False", then the the texture coordinates will wrap around.
+		
+	quadtexture(surface, texture, t1,t2,t3,t4, p1,p2,p3,p4, filter=False,clamp=False):
+	
+		--Draws a textured quad.  See "triangletexture(...)".  This is actually handled through two calls to "triangletexture(...)", so, for example, if the textures are not evenly interpolated (i.e., the points can't be constructed through a shear operation), there will be a diagonal line where the interpolation intensity must change.  See performance advice for "trianglecustom(...)".
+		--The argument "t4" is analogous to the other texture coordinates.
+		--The argument "p4" is analogous to the other vertex coordinates.  The vertices are assumed to be specified in counterclockwise order.
+		
+PAdLib.occluder:
+
+	class Occluder:
+	
+		<Instance Variables>:
+			
+			.points:       A list of the points comprising this occluder.
+			.numof_points: An integer listing the length of .points.
+			.bounce:       The bounciness.  See .set_bounce(...).
+			
+	
+		.__init__(ccw_point_list):
+		
+			--Makes a new occluder object that is used to block particle systems and to occlude lights when shadowing.  The class is fairly lightweight, and caches data as necessary, so creating and destroying them is not a terribly costly operation.
+			--The argument "ccw_point_list" is a list of points comprising the occluder.  These points MUST be in a counterclockwise order and describe a convex polygon (no degenerateness, either!).  These properties are NOT checked.
+		
+		.intersects(point):
+		
+			--Returns whether the a point intersects this occluder (i.e., is contained within it).  Returns "True" if so, "False" otherwise.  Points exactly on the boundary are considered to be outside.  The worst case complexity of this function is linear in the number of points it has.
+			--The argument "point" is the point to test.
+		
+		.set_bounce(bounce):
+		
+			--Sets the fraction of velocity particles bounce off this occluder with if they hit it.  Sane values range from a little more than 0.0 to a little less than 1.0, but you CAN pass it anything . . .
+			--The argument "bounce" is that fraction, expressed as a float.
+		
+PAdLib.particles:
+
+	class Particle:
+	
+		<Instance Variables>:
+		
+			.particle_system: The particle system this particle belongs to.
+			.position:        The particle's position.
+			.velocity:        The particle's velocity.
+			.time:            The number of seconds this particle has been alive.
+			.life:            The number of seconds this particle will live.
+			.colors:          The list of colors this particle possesses.  I know this is kindof awful, but it does guarantee that changes in the color of the emitter won't affect particles that already exist.
+			.color:           After .get_color() has been called at least once, this instance variable will exist, and will hold a three element list representing the last color .get_color() computed.
+			
+		.__init__(particle_system, position,velocity, life,colors):
+		
+			--Creates a new particle.  You should probably never be using this class directly; Emitter handles creating them and ParticleSystem handles updating and drawing them.
+			--The argument "particle_system" is the particle system this particle belongs to.  May be used in the future.
+			--The argument "position" is a list representing the initial position of the particle.
+			--The argument "velocity" is a list representing the initial velocity of the particle.
+			--The argument "life" is the time, in seconds, that this particle will live.
+			--The argument "colors" is the list of colors this particle will take on over its lifetime.  See note under the instance variable ".colors".
+		
+		.get_color():
+		
+			--Returns the calculated color of this particle based on its colors and the amount of time it has been alive.  This method caches its value, so that calling it immediately after does not cause the value to be recalculated.  The cached value is invalidated by the ".update(...)" method.  After this method is been called at least once, the instance will have a variable ".color" that holds the most recently computed color.
+			
+		.update(dt, accel):
+		
+			--Accelerates and moves the particle.  Also clears the cached value of ".get_color()", if any.
+			--The argument "dt" is the time step to advance the particles by, in seconds.
+			--The argument "accel" is the acceleration, in pixels*second^-2 of all particles.  This is mainly used to model things like gravitation or wind.
+		
+		.draw(surface):
+		
+			--Draws the particle.  No checks are done to ensure that it is within the target surface before this happens, although it seems the PyGame does this check internally.
+			--The argument "surface" is the surface to draw it onto.
+	
+	class Emitter:
+	
+		<Instance Variables>:
+		
+			.position: The emitter's position.
+			.density:  The average number of new particles created per second.
+			.angle:    The direction the new particles start traveling (but see ".spread"), in radians.
+			.spread:   Twice the deviation (+/-) from the angle that particle can take, in radians.
+			.speed:    A list of two elements representing the minimum and maximum values possible for the randomly chosen speeds of new particles.
+			.life:     A list of two elements representing the minimum and maximum values possible for the randomly chosen lifespan of new particles.
+			.colors:   The list of colors each new particle will take on over its lifetime.
+			
+		.__init__():
+		
+			--Makes a new particle emitter.
+		
+		.set_position(emitter_position):
+		
+			--Sets the position of this particle emitter (all new particles this emitter creates will start here).
+			--The argument "emitter_position" is the new position.
+		
+		.set_density(particles_per_second):
+		
+			--Sets the average number of particles being emitted per second.
+			--The argument "particles_per_second" is the new average number to be emitted per second.
+			
+		.set_angle(degrees_angle,degrees_spread=0):
+		
+			--Sets the angle new particles are emitted at.
+			--The argument "degrees_angle" is the angle, in degrees.
+			--The argument "degrees_spread" is twice the deviation (+/-) from the angle that particle can take, in degrees.
+
+		.set_speed(speed_range):
+		
+			--Sets the speed new particles are emitted at.
+			--The argument "speed_range" is a list of two elements containing the minimum and maximum values from which new particles' speeds, in pixels per second, are evenly randomly chosen.
+
+		.set_life(life_range):
+		
+			--Sets the time new particles will live.
+			--The argument "life_range" is a list of two elements containing the minimum and maximum values from which new particles' life times, in seconds, are evenly randomly chosen.
+
+		.set_colors(colors):
+		
+			--Sets the color new particles will take on over their lifetimes.
+			--The argument "colors" is a list of tuples (preferably 3-tuples) representing RGB color data.  Each channel's value ranges from 0 through 255 (inclusive).
+
+		.get_angle(center_rad,spread_rad):
+		
+			--Used when new particles are created to determine a new angle for the particle.  This method is used internally; you shouldn't need to call this method yourself.  The default implementation chooses a value evenly randomly between "center_rad-spread_rad/2" and "center_rad+spread_rad/2", but this method may be overridden or set so as to work differently.  An interesting implementation uses Python's "random.triangular(...)" to choose a random value where particles are most likely to follow more along "center_rad" instead of equally likely to deviate.  This method returns (and should return should you change it) a floating point number representing the angle to launch a new particle at.
+			--The argument "center_rad" is the center argument representing the angle, in radians, the new particle ought to be launched at.
+			--The argument "spread_rad" is the spread argument representing the total deviation (so twice the deviation from the center), in radians, the new particle might to be launched at.
+
+	class ParticleSystem:
+	
+		<Instance Variables>:
+		
+			.particles: The list of particles that are alive in this particle system.
+			.emitters:  A dictionary representing the emitters associated with this particle system.  Keys are the "name" argument in the ".add_emitter(...)" method, or an internal name prefixed with "_padlib_" if the "name" argument was omitted.  Values are the corresponding emitters.
+			.accel:     A list of two elements representing a vector of the current accelerations of all particles in this particle system, with values in pixels*seconds^-2.
+			.occluders: A list of occluders--objects that block particles--associated with this particle system.
+		
+		.__init__():
+		
+			--Makes a new particle system.
+		
+		.add_emitter(emitter,name=-1):
+		
+			--Associates an emitter with this particle system.
+			--The argument "emitter" is the new emitter to add.
+			--The argument "name", if it is not "-1", can be used to refer to the emitter later when accessing ".emitters".
+
+		.set_particle_acceleration(acceleration):
+		
+			--Sets the acceleration used by all particles in this particle system.  To clarify, this method is O(1).
+			--The argument "acceleration" is a list of two elements representing a vector of the new acceleration, in pixels*seconds^-2.
+
+		.set_particle_occluders(occluders):
+		
+			--Sets the particle occluders of this particle system (i.e., the things that the particles can collide with).
+			--The argument "occluders" is a list of instances of PAdLib.occluder.Occluder.
+		
+		.update(dt):
+		
+			--Accelerates and moves all particles in this particle system and checks them for collisions.  If a collision (with an occluder) is found, then the particle is simply moved to the closest boundary of the occluder, and its velocity is reflected.  Additionally adds new particles from emitters and removes old particles past their lifespan.  The particles' dynamics are computed with the very simple Euler's method which, while very simple and fast, is not terribly accurate; with smaller timesteps, particles will accelerate slightly faster.  Additionally, since collisions are processed once per time step, smaller timesteps lead to more accurate results.
+			--The argument "dt" is the time, in seconds, that the simulation steps for.
+
+		.draw(surface):
+		
+			--Draws the particle system.
+			--The argument "surface" is a surface that the particle system will be drawn onto.
+
+PAdLib.shadow:
+
+	class Shadow:
+	
+		<Instance Variables>:
+		
+			.position:  A two element list representing the position of the light source.
+			.occluders: A list of instances of PAdLib.occluder.Occluder that shadow the light.
+			.radius:    The radius of the light source.
+			.mask:      The light mask (see ".get_mask_and_position(...)").
+	
+		.__init__():
+		
+			--Creates a new shadowing object, representing an omnidirectional light and the shadows it creates.
+		
+		.set_light_position(position):
+		
+			--Sets the position of the light.
+			--The argument "position" is a two element list representing the light's new position, in pixels.  Elements may be floating point.
+
+		.set_radius(radius):
+		
+			--Sets the radius of the light.
+			--The argument "radius" is a represents the light's radius position, in pixels, and may be floating point.
+
+		.set_occluders(occluders):
+		
+			--Sets the light occluders of this shadowing object (i.e., the things that the light is occluded by).
+			--The argument "occluders" is a list of instances of PAdLib.occluder.Occluder.
+		
+		.get_mask_and_position(fill_occluders):
+		
+			--Returns a mask containing the lighting information and a position.  The mask is a black square, with an inscribed white circle tangent to its edges.  From this white circle, black spaces are cut out corresponding to the occluders in the scene.  The position is the location to draw the mask.
+			--The argument "fill_occluders" determines whether the algorithm treats occluders themselves as being shadowed on their insides.

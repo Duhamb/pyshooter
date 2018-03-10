@@ -1,4 +1,14 @@
+# this file has constant values and auxiliar functions used in whole game
+
 import pygame as pg
+
+
+
+
+
+
+######################   FUNCTIONS    ##################################
+
 
 # this function return the position on screen based on other coordinates
 # is needed because all orientation is made by scenario position and

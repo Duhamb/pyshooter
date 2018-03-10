@@ -106,14 +106,10 @@ class Bot(pg.sprite.Sprite):
             self.original_image = self.animation[0][self.index_animation_idle]
 
     def move(self):
-        distance_to_player = self.position_on_scenario.distance_to(self.player.position_on_scenario)
-
- 
         direction = self.player.position_on_scenario - self.position_on_scenario
         direction.normalize_ip()
         direction = direction * 4
         self.position_on_scenario += direction
-
 
     def choose_action(self):
         distance_to_player = self.position_on_scenario.distance_to(self.player.position_on_scenario)

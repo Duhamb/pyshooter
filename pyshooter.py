@@ -58,6 +58,14 @@ class Main:
         self.players = ExtendedGroup(self.player)
         self.bots = ExtendedGroup(self.bot0)
 
+        # test lighting effect
+        #########################################
+        self.fog = pg.Surface(self.size)
+        self.fog.fill((20,20,20))
+        self.light_mask = pg.image.load('Assets/Images/light.png').convert_alpha()
+        self.light_rect = self.light_mask.get_rect()
+        #########################################
+
     def on_event(self, event):
         if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
             self._running = False
@@ -87,6 +95,16 @@ class Main:
 
         # acho que não precisa de sprite pra essa
         self.screen.blit(self.CROSS_IMAGE, pg.mouse.get_pos())
+
+        # test lighting effect
+        ######################################################
+        self.fog.fill((20,20,20))
+        self.light_rect.center = self.player.position_on_screen
+        # rot_light = pg.transform.rotozoom(self.light_mask, -self.player.sight_angle - 90, 1)
+        # new_rect = rot_light.get_rect(center = self.light_rect.center)
+        self.fog.blit(self.light_mask, self.light_rect)
+        self.screen.blit(self.fog, (0, 0), special_flags=pg.BLEND_MULT)
+        ######################################################
         self.stats.draw(self.screen)
         
         self.display_fps()

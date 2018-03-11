@@ -2,6 +2,7 @@ import pygame as pg
 import time
 from NetworkSettings import *
 import NetworkServer
+from pyshooterClient import *
 
 class Menu():
     def __init__(self):
@@ -25,6 +26,8 @@ class Menu():
         self.CONNECT_OFF = pg.transform.scale(self.CONNECT_OFF, (200, 50))
         self.CONNECT_ON = pg.image.load("Assets/Images/menu/button_connect_on.png")
         self.CONNECT_ON = pg.transform.scale(self.CONNECT_ON, (200, 50))
+
+        self.have_client = False
 
     def on_render(self):
         pg.display.update()
@@ -62,9 +65,9 @@ class Menu():
         if 150 + 200 > mouse[0] > 150 and 450 + 50 > mouse[1] > 450:
             self.surface.blit(self.SERVER_ON, (150, 450))
             if event.type == pg.MOUSEBUTTONDOWN:
-                self.server = NetworkServer.Server()
-                self.server.connect(server_ip, port)
-                self.server.accepting_allow()
+                self.server_client = pyshooterClient('Name1')
+                self.server_client.start()
+                self.have_client = True
                 self._in_menu_multiplayer = False
         else:
             self.surface.blit(self.SERVER_OFF, (150, 450))

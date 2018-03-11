@@ -111,6 +111,10 @@ class Player(pygame.sprite.Sprite):
         screen.blit(self.feet, self.feet.get_rect(center=self.position_on_screen).topleft)
         screen.blit(self.image, self.rect)
 
+    def draw_multiplayer(self, screen, feet_rect, rect):
+        screen.blit(self.feet, feet_rect)
+        screen.blit(self.image, rect)
+
     def choose_animation(self):
         if self.is_shooting:
             self.index_animation_shoot += 1

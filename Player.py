@@ -1,5 +1,5 @@
 import pygame
-
+from helpers import *
 # esse método de colisão tá bugado, mas apresenta desempenho minimamente razoável
 # continuarei pensando em como consertar essa parte
 def get_normal(position_on_scenario, back_mask, back_rect):
@@ -14,7 +14,6 @@ def get_normal(position_on_scenario, back_mask, back_rect):
 
     for i in range(0,qtd):
         vetor_rotacionado = pygame.math.Vector2(position_on_screen) + vetor_base.rotate(angulo)
-        # converte  a posição da tela para a posição no campo
         pos_scenario =  -pygame.math.Vector2(back_rect.topleft) + vetor_rotacionado
         x = int(pos_scenario[0])
         y = int(pos_scenario[1])
@@ -54,23 +53,41 @@ def get_normal(position_on_scenario, back_mask, back_rect):
     return lista_de_angulos
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, image, back_image, location_on_scenario, location_on_screen, animation, sound, background):
+    def __init__(self, location_on_scenario, location_on_screen, animation, sound, background):
         super().__init__()
+
+        # set all animations
         self.animation = animation
+
+        # set all sounds (shoot, move, reload)
         self.sound = sound
-        self.back_image = back_image
-        self.original_back_image = back_image
+
+        # define the collider shape
+        self.collider_image = pg.image.load("Assets/Images/back_player.png").convert_alpha()
+        self.collider_image = scale_image(self.collider_image, 2.7)
+        self.rect_back = self.collider_image.get_rect(center = location_on_screen)
+        self.mask = pygame.mask.from_surface(self.collider_image)
+
+        # this surface wont be modified on the execution
+        self.original_back_image = self.collider_image
+
+        # initialize the original_feet
+        # It will be modified according with animation
         self.original_feet = animation.feet_run[0]
+        
+        # represent the Background object
+        # needed to orientation
         self.background = background
-        self.loc = location_on_screen
+
         # the image center isnt correct
+        # each sprite has a different offset
         self.delta_center_position = pygame.math.Vector2((+56/2.7,-19/2.7))
 
-        self.mask = pygame.mask.from_surface(self.back_image)
-        self.rect = animation.idle[0].get_rect(center = location_on_screen)
-        self.rect_back = self.rect
+        # the sprite and rect of player
         self.image = animation.idle[0]
+        self.rect = self.image.get_rect(center = location_on_screen)
 
+        # positions
         self.position_on_screen = pygame.math.Vector2(location_on_screen)
         self.position_on_scenario = pygame.math.Vector2(location_on_scenario)
 
@@ -94,10 +111,8 @@ class Player(pygame.sprite.Sprite):
         self.pressionou_s = False
         self.pressionou_d = False
 
-
         # for statistics
         self.ammo = 20
-
 
         # auxiliar: remover depois
         self.float_index = 0
@@ -106,47 +121,21 @@ class Player(pygame.sprite.Sprite):
         self.react_to_event()
         self.choose_animation()
         self.rotate()
+        # all player properties are updated at this point
+        # useful for multiplayer feature
 
     def draw(self, screen):
         screen.blit(self.feet, self.feet.get_rect(center=self.position_on_screen).topleft)
         screen.blit(self.image, self.rect)
 
+
+
     def draw_multiplayer(self, screen, feet_rect, rect):
         screen.blit(self.feet, feet_rect)
         screen.blit(self.image, rect)
-
-    def choose_animation(self):
-        if self.is_shooting:
-            self.index_animation_shoot += 1
-            if self.index_animation_shoot > 2:
-                self.index_animation_shoot = 0
-            self.original_image = self.animation.shoot[self.index_animation_shoot]
-        elif self.is_reloading:
-            self.float_index += 0.5
-            if self.float_index > 1:
-                self.float_index = 0
-            self.index_animation_reload += int(self.float_index)
-            if self.index_animation_reload > 19:
-                self.index_animation_reload = 0
-                self.is_reloading = False
-            self.original_image = self.animation.rifle_reload[self.index_animation_reload]
-        elif self.is_idle:
-            self.float_index += 0.25
-            if self.float_index > 1:
-                self.float_index = 0
-            self.index_animation_idle += int(self.float_index)
-            if self.index_animation_idle > 19:
-                self.index_animation_idle = 0
-            self.original_image = self.animation.idle[self.index_animation_idle]
-        elif self.is_moving:
-            self.index_animation_move += 1
-            if self.index_animation_move > 19:
-                self.index_animation_move = 0
-            self.original_image = self.animation.move[self.index_animation_move]
-
     def move(self, direction):
         if not self.is_possible_direction(direction):
-            angles = get_normal(self.temp_position_on_scenario, self.background.mask, self.background.rect)
+            angles = get_normal(self.next_position_on_scenario, self.background.mask, self.background.rect)
             if len(angles) <= 1:
                 big_size = False
                 for k in angles:
@@ -175,33 +164,32 @@ class Player(pygame.sprite.Sprite):
 
     def is_possible_direction(self, direction):
         # prevê o estado caso o movimento ocorra
-        self.temp_position_on_scenario = self.position_on_scenario + 5*pygame.math.Vector2(direction/ (direction.length()))
-        self.temp_index_animation_move = self.index_animation_move + 1
-        if self.temp_index_animation_move == len(self.animation.move):
-            self.temp_index_animation_move = 0
+        self.next_position_on_scenario = self.position_on_scenario + 5*pygame.math.Vector2(direction/ (direction.length()))
+        self.next_index_animation_move = increment(self.index_animation_move, 1, len(self.animation.move))
   
-        self.temp_rect = self.image.get_rect(center=self.new_rect_center)
-        self.temp_mask = pygame.mask.from_surface(self.back_image)
+        self.next_rect = self.image.get_rect(center = self.new_rect_center)
+        self.next_mask = pygame.mask.from_surface(self.collider_image)
 
-        self.temp_rect_back = self.background.rect.copy()
+        self.next_rect_background = self.background.rect.copy()
 
-        self.temp_rect_back.center = self.position_on_screen - self.temp_position_on_scenario
+        # this command obtain the next position of background
+        self.next_rect_background.center = background_center_position(self.position_on_screen, self.next_position_on_scenario)
 
-        self.offset = ((-self.temp_rect_back.left + self.temp_rect.left), (-self.temp_rect_back.top + self.temp_rect.top))
-        self.is_colliding = self.background.mask.overlap(self.temp_mask, self.offset)
+        self.offset = ((self.next_rect.left - self.next_rect_background.left ), (self.next_rect.top - self.next_rect_background.top))
+        self.is_colliding = self.background.mask.overlap(self.next_mask, self.offset)
 
         if self.is_colliding:
             return False
         return True
 
     def rotate(self):
+        # get the angle between mouse and player
         _, angle = (pygame.mouse.get_pos()-self.position_on_screen).as_polar()
 
-        self.angle_param = angle
         # gira todas as imagens
         self.image = pygame.transform.rotozoom(self.original_image, -angle, 1)
         self.feet = pygame.transform.rotozoom(self.original_feet, -angle, 1)
-        self.back_image = pygame.transform.rotozoom(self.original_back_image, -angle, 1)
+        self.collider_image = pygame.transform.rotozoom(self.original_back_image, -angle, 1)
 
         # gira em torno do centro real
         # encontra a nova posição do centro do rect
@@ -214,8 +202,7 @@ class Player(pygame.sprite.Sprite):
 
         # atualiza a mascara relativa ao personagem
         # garante que a imagem estará sempre sobrepondo sua máscara
-        self.mask = pygame.mask.from_surface(self.back_image)
-
+        self.mask = pygame.mask.from_surface(self.collider_image)
 
     # esse metodo pode estar no grupo também
     def handle_event(self, event):
@@ -230,6 +217,8 @@ class Player(pygame.sprite.Sprite):
                 self.pressionou_d = True
             # [TODO] a flag deve ser setada se uma das quatro direcionais forem pressionadas
             self.is_moving = True
+            # o som inicia quando seta a flag
+            pygame.mixer.Channel(2).play(self.sound.footstep, -1)
             self.is_idle = False
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_w:
@@ -242,6 +231,8 @@ class Player(pygame.sprite.Sprite):
                 self.pressionou_d = False
             # [TODO] a flag deve ser setada se uma das quatro direcionais forem pressionadas
             self.is_moving = False
+            # o som para quando a flag é abaixada
+            self.sound.footstep.stop()
             self.is_idle = True
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 3:
@@ -249,6 +240,8 @@ class Player(pygame.sprite.Sprite):
                 pygame.mixer.Channel(1).play(self.sound.reload)
                 self.ammo = 20
             if event.button == 1:
+                if not self.is_shooting:
+                    pygame.mixer.Channel(1).play(self.sound.shoot, -1)
                 self.is_shooting = True
                 #print(self.rect)
                 
@@ -258,6 +251,7 @@ class Player(pygame.sprite.Sprite):
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
                 self.is_shooting = False
+                self.sound.shoot.fadeout(125)
 
     def react_to_event(self):
         if self.pressionou_w or self.pressionou_d or self.pressionou_a or self.pressionou_s:
@@ -280,15 +274,27 @@ class Player(pygame.sprite.Sprite):
             if self.pressionou_d:
                 self.direction_of_move = (self.vector_position).rotate(90)
                 self.move(self.direction_of_move)
-        
-        if self.is_shooting:
-            pygame.mixer.Channel(1).play(self.sound.shoot)
-        else:
-            self.sound.shoot.fadeout(100)
-            # self.sound.stop()
+
         if self.is_moving:
             self.feet = self.animation.feet_run[self.index_animation_feet]
             self.original_feet = self.animation.feet_run[self.index_animation_feet]
-            self.index_animation_feet += 1
-            if self.index_animation_feet > 19:
-                self.index_animation_feet = 0
+            self.index_animation_feet = increment(self.index_animation_feet, 1, 19)
+    
+    def choose_animation(self):
+        if self.is_shooting:
+            self.index_animation_shoot = increment(self.index_animation_shoot, 1, 2)
+            self.original_image = self.animation.shoot[self.index_animation_shoot]
+        elif self.is_reloading:
+            self.float_index = increment(self.float_index, 0.5, 1)
+            self.index_animation_reload = increment(self.index_animation_reload,int(self.float_index),19)
+            if self.index_animation_reload == 19:
+                self.is_reloading = False
+                self.index_animation_reload = 0
+            self.original_image = self.animation.rifle_reload[self.index_animation_reload]
+        elif self.is_idle:
+            self.float_index = increment(self.float_index, 0.25, 1)
+            self.index_animation_idle = increment(self.index_animation_idle, int(self.float_index), 19)
+            self.original_image = self.animation.idle[self.index_animation_idle]
+        elif self.is_moving:
+            self.index_animation_move = increment(self.index_animation_move, 1, 19)
+            self.original_image = self.animation.move[self.index_animation_move]

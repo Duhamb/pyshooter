@@ -14,6 +14,7 @@ class Menu():
         self.screen = pg.display.get_surface()
         self.color = (100, 100, 100)
         self._in_menu = True
+        self._in_menu_get_name = True
         self._in_menu_multiplayer = False
         self.MENU_IMAGE = pg.image.load("Assets/Images/menu/background.png")
         self.MENU_IMAGE = pg.transform.scale(self.MENU_IMAGE, (800, 600))
@@ -87,12 +88,13 @@ class Menu():
 
         self.name = str(name)
         self.surface.blit(self.MENU_IMAGE, (0, 0))
+        self._in_menu_get_name = False
 
 
     def make_prompt(self):
         font = pg.font.SysFont("arial", 20)
         message = 'Type your name :'
-        rend = font.render(message + self.name, True, pg.Color("black"))
+        rend = font.render(message, True, pg.Color("black"))
         return (rend, rend.get_rect(topleft=(270, 270)))
 
 
@@ -119,15 +121,21 @@ class Menu():
                              clear_on_enter=True, inactive_on_enter=False)
         self.prompt = self.make_prompt()
         pg.key.set_repeat(*KEY_REPEAT_SETTING)
+        self.surface.blit(self.MENU_IMAGE, (0, 0))
         while(self._in_menu_multiplayer):
             for event in pg.event.get():
                 self.on_event(event)
-                self.input.get_event(event)
-                self.input.update()
-                self.input.draw(self.surface)
-                self.prompt = self.make_prompt()
-                self.interactive_multiplayer(event)
+                if(self._in_menu_get_name):
+                    self.input.get_event(event)
+                    self.input.update()
+                    self.input.draw(self.surface)
+                    self.prompt = self.make_prompt()
+                    self.surface.blit(*self.prompt)
+                    if(not self._in_menu_get_name):
+                        self.surface.blit(self.MENU_IMAGE, (0, 0))
+                else:
+                    self.interactive_multiplayer(event)
 
-                self.surface.blit(*self.prompt)
+
             self.on_render()
         self.music.stop()

@@ -22,6 +22,7 @@ class Main:
         self._running = True
         self.size = self.width, self.height = 800, 600
         self.fps = 60
+        self.multiplayer_on = False
     
     def on_init(self):
         os.environ['SDL_VIDEO_CENTERED'] = '1'
@@ -70,6 +71,15 @@ class Main:
         self.BULLET_IMAGE = pg.image.load("Assets/Images/bullets/bullet1.png")
         self.BULLET_IMAGE = pg.transform.scale(self.BULLET_IMAGE, (15, 3))
 
+        #call menu
+        self.menu.intro()
+
+        self.multiplayer_on = self.menu.have_client
+        if self.multiplayer_on:
+            self.server_client = self.menu.server_client
+
+        pg.mouse.set_visible(0)
+
     def on_event(self, event):
         if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
             self._running = False
@@ -98,12 +108,25 @@ class Main:
         self.screen.fill((0,0,0))
 
         # sem sprite ainda
+
         self.background.draw(self.screen, self.player)
 
+
         self.players.update()
-        self.players.draw(self.screen)
         self.bots.update()
-        self.bots.draw(self.screen)
+
+        if self.multiplayer_on:
+            self.server_client.push_player(self.player)
+            self.server_client.pull_players()
+            player_list = self.server_client.players_info
+            for player_name in player_list:
+                self.player.draw_multiplayer(self.screen, player_list[player_name])
+
+        else:# como que atualiza todos os grupos?
+
+            self.players.draw(self.screen)
+            self.bots.draw(self.screen)
+            #print(self.player.feet)
 
         self.bullet_list.update()
         self.bullet_list.draw(self.screen)
@@ -119,10 +142,6 @@ class Main:
 
     def on_execute(self):
         self.on_init()
-
-        self.menu.intro()
-
-        pg.mouse.set_visible(0)
 
         while (self._running):
             for event in pg.event.get():

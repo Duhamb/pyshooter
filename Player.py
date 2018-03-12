@@ -111,6 +111,11 @@ class Player(pygame.sprite.Sprite):
         self.pressionou_s = False
         self.pressionou_d = False
 
+        # aux param to multiplayer
+        self.angle_vision = None
+        self.animation_name = None
+        self.animation_index = None
+
         # for statistics
         self.ammo = 20
 
@@ -127,6 +132,19 @@ class Player(pygame.sprite.Sprite):
     def draw(self, screen):
         screen.blit(self.feet, self.feet.get_rect(center=self.position_on_screen).topleft)
         screen.blit(self.image, self.rect)
+
+
+
+    def draw_multiplayer(self, screen, server_info ):
+        # screen.blit(self.feet, feet_rect)
+        position_on_screen = scenario_to_screen_server(server_info['position_on_scenario'], self.background.rect)
+        animation = getattr(self.animation, server_info['animation_name'])
+        original_image = animation[server_info['animation_index']]
+
+        [imageMultiplayer, rect_multiplayer] = rotate_fake_center(original_image, server_info['angle'], self.delta_center_position, position_on_screen)
+        #imageMultiplayer = pygame.transform.rotozoom(original_image, -server_info['angle'], 1)
+        #rect_multiplayer = imageMultiplayer.get_rect(center=position_on_screen)
+        screen.blit(imageMultiplayer, rect_multiplayer)
 
     def move(self, direction):
         if not self.is_possible_direction(direction):
@@ -180,7 +198,7 @@ class Player(pygame.sprite.Sprite):
     def rotate(self):
         # get the angle between mouse and player
         _, angle = (pygame.mouse.get_pos()-self.position_on_screen).as_polar()
-
+        self.angle_vision = angle
         # gira todas as imagens
         self.image = pygame.transform.rotozoom(self.original_image, -angle, 1)
         self.feet = pygame.transform.rotozoom(self.original_feet, -angle, 1)
@@ -238,6 +256,7 @@ class Player(pygame.sprite.Sprite):
                 if not self.is_shooting:
                     pygame.mixer.Channel(1).play(self.sound.shoot, -1)
                 self.is_shooting = True
+                #print(self.rect)
                 
                 # a lógica de como as munições são reduzidas deve ser alterada depois
                 if self.ammo != 0:
@@ -278,9 +297,13 @@ class Player(pygame.sprite.Sprite):
         if self.is_shooting:
             self.index_animation_shoot = increment(self.index_animation_shoot, 1, 2)
             self.original_image = self.animation.shoot[self.index_animation_shoot]
+            self.animation_name = 'shoot'
+            self.animation_index = self.index_animation_shoot
         elif self.is_reloading:
             self.float_index = increment(self.float_index, 0.5, 1)
             self.index_animation_reload = increment(self.index_animation_reload,int(self.float_index),19)
+            self.animation_name = 'rifle_reload'
+            self.animation_index = self.index_animation_reload
             if self.index_animation_reload == 19:
                 self.is_reloading = False
                 self.index_animation_reload = 0
@@ -289,6 +312,19 @@ class Player(pygame.sprite.Sprite):
             self.float_index = increment(self.float_index, 0.25, 1)
             self.index_animation_idle = increment(self.index_animation_idle, int(self.float_index), 19)
             self.original_image = self.animation.idle[self.index_animation_idle]
+            self.animation_name = 'idle'
+            self.animation_index = self.index_animation_idle
         elif self.is_moving:
             self.index_animation_move = increment(self.index_animation_move, 1, 19)
             self.original_image = self.animation.move[self.index_animation_move]
+            self.animation_name = 'move'
+            self.animation_index = self.index_animation_move
+
+    def get_server_info(self):
+        # acho que o servidor não consegue tratar o tipo pg.math.Vector2
+        info = {'position_on_scenario': (self.position_on_scenario[0], self.position_on_scenario[1]),
+         'angle': self.angle_vision,
+         'animation_name': self.animation_name,
+         'animation_index': self.animation_index
+         }
+        return info

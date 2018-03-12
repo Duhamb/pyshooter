@@ -141,9 +141,9 @@ class Player(pygame.sprite.Sprite):
         animation = getattr(self.animation, server_info['animation_name'])
         original_image = animation[server_info['animation_index']]
 
-        #[imageMultiplayer, rect_multiplayer] = rotate_fake_center(original_image, -server_info['angle'], self.delta_center_position, self.position_on_screen)
-        imageMultiplayer = pygame.transform.rotozoom(original_image, -server_info['angle'], 1)
-        rect_multiplayer = imageMultiplayer.get_rect(center=position_on_screen)
+        [imageMultiplayer, rect_multiplayer] = rotate_fake_center(original_image, server_info['angle'], self.delta_center_position, position_on_screen)
+        #imageMultiplayer = pygame.transform.rotozoom(original_image, -server_info['angle'], 1)
+        #rect_multiplayer = imageMultiplayer.get_rect(center=position_on_screen)
         screen.blit(imageMultiplayer, rect_multiplayer)
 
     def move(self, direction):

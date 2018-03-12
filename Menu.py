@@ -65,7 +65,7 @@ class Menu():
         if 150 + 200 > mouse[0] > 150 and 450 + 50 > mouse[1] > 450:
             self.surface.blit(self.SERVER_ON, (150, 450))
             if event.type == pg.MOUSEBUTTONDOWN:
-                self.server_client = pyshooterClient('Name4')
+                self.server_client = pyshooterClient('Name')
                 self.server_client.start()
                 self.have_client = True
                 self._in_menu_multiplayer = False

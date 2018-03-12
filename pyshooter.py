@@ -36,7 +36,7 @@ class Main:
 
         self.menu = Menu()
 
-        self._display_surf = pg.display.set_mode(self.size, pg.FULLSCREEN)
+        self._display_surf = pg.display.set_mode(self.size)
         self.screen = pg.display.get_surface() # repetido?
         
         self.PLAYER_POSITION = (self.width/2, self.height/2)
@@ -49,8 +49,8 @@ class Main:
         self.BOT_IMAGE = pg.image.load("Assets/Images/player2.png")
         self.BOT_IMAGE = pg.transform.scale(self.BOT_IMAGE, (75,75))
         
-        self.BACK_IMAGE = pg.image.load("Assets/Images/city1_back.png").convert_alpha()
-        self.FRONT_IMAGE = pg.image.load("Assets/Images/city1.jpg").convert_alpha()
+        self.BACK_IMAGE = pg.image.load("Assets/Images/map_back.png").convert_alpha()
+        self.FRONT_IMAGE = pg.image.load("Assets/Images/map.jpg").convert_alpha()
 
         self.CROSS_IMAGE = pg.image.load("Assets/Images/cross.png").convert_alpha()
         self.CROSS_IMAGE = pg.transform.scale(self.CROSS_IMAGE, (15,15))
@@ -61,7 +61,7 @@ class Main:
         self.player_sound.load()
 
         self.back = Background(self.BACK_IMAGE, self.FRONT_IMAGE)
-        self.player = Player(self.PLAY_IMAGE, self.PLAY_IMAGE_BACK, (0,0), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.back)
+        self.player = Player(self.PLAY_IMAGE, self.PLAY_IMAGE_BACK, (0,-1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.back)
         self.bot0 = Bot(self.BOT_IMAGE, (200,200), self.screen, self.back, self.player)
 
         self.players = pg.sprite.Group(self.player)
@@ -69,7 +69,7 @@ class Main:
 
         self.bullet_list = pg.sprite.Group()
         self.BULLET_IMAGE = pg.image.load("Assets/Images/bullets/bullet1.png")
-        self.BULLET_IMAGE = pg.transform.scale(self.BULLET_IMAGE, (5, 2))
+        self.BULLET_IMAGE = pg.transform.scale(self.BULLET_IMAGE, (15, 3))
 
     def on_event(self, event):
         if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
@@ -87,6 +87,10 @@ class Main:
 
     def on_loop(self):
         self.clock.tick(self.fps)
+
+        for bullet in self.bullet_list:
+            if bullet.distance > 300:
+                self.bullet_list.remove(bullet)
 
     def on_cleanup(self):
         pg.quit()

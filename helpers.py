@@ -104,3 +104,18 @@ def increment(acc, increment, limit):
     if acc > limit:
         acc = 0
     return acc
+
+def rotate_fake_center(image, angle, offset, position_on_screen):
+
+    # gira todas as imagens
+    new_image = pg.transform.rotozoom(image, angle, 1)
+
+    # gira em torno do centro real
+    # encontra a nova posição do centro do rect
+    rotated_center = offset.rotate(-angle)
+    new_rect_center = rotated_center + position_on_screen
+
+    # atualiza o rect da imagem com o novo centro correto
+    rect = new_image.get_rect(center=new_rect_center)
+
+    return [new_image, rect]

@@ -45,7 +45,7 @@ class pyshooterClient():
     def disconnect(self):
         self.client.disconnect()
     def push_player(self, player):
-        self.client.send(["player", [self.name, {self.name: {'rect': helpers.screen_to_scenario_server(player.rect.center, player.background.rect),'angle': player.angle_vision}}]], None)
+        self.client.send(["player", [self.name, {self.name: player.get_server_info()}]], None)
 
     def pull_players(self):
         reply = None

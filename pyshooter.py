@@ -105,7 +105,7 @@ class Main:
             self.server_client.pull_players()
             player_list = self.server_client.players_info
             for player_name in player_list:
-                self.player.draw_multiplayer(self.screen, player_list[player_name]['rect'], player_list[player_name]['angle'])
+                self.player.draw_multiplayer(self.screen, player_list[player_name])
 
         else:# como que atualiza todos os grupos?
 

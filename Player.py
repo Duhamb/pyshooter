@@ -113,6 +113,8 @@ class Player(pygame.sprite.Sprite):
 
         # aux param to multiplayer
         self.angle_vision = None
+        self.animation_name = None
+        self.animation_index = None
 
         # for statistics
         self.ammo = 20
@@ -133,10 +135,14 @@ class Player(pygame.sprite.Sprite):
 
 
 
-    def draw_multiplayer(self,screen, position_on_scenario, angle_vision):
+    def draw_multiplayer(self, screen, server_info ):
         # screen.blit(self.feet, feet_rect)
-        position_on_screen = scenario_to_screen_server(position_on_scenario, self.background.rect)
-        imageMultiplayer = pygame.transform.rotozoom(self.original_image, -angle_vision, 1)
+        position_on_screen = scenario_to_screen_server(server_info['position_on_scenario'], self.background.rect)
+        animation = getattr(self.animation, server_info['animation_name'])
+        original_image = animation[server_info['animation_index']]
+
+        #[imageMultiplayer, rect_multiplayer] = rotate_fake_center(original_image, -server_info['angle'], self.delta_center_position, self.position_on_screen)
+        imageMultiplayer = pygame.transform.rotozoom(original_image, -server_info['angle'], 1)
         rect_multiplayer = imageMultiplayer.get_rect(center=position_on_screen)
         screen.blit(imageMultiplayer, rect_multiplayer)
 
@@ -291,9 +297,13 @@ class Player(pygame.sprite.Sprite):
         if self.is_shooting:
             self.index_animation_shoot = increment(self.index_animation_shoot, 1, 2)
             self.original_image = self.animation.shoot[self.index_animation_shoot]
+            self.animation_name = 'shoot'
+            self.animation_index = self.index_animation_shoot
         elif self.is_reloading:
             self.float_index = increment(self.float_index, 0.5, 1)
             self.index_animation_reload = increment(self.index_animation_reload,int(self.float_index),19)
+            self.animation_name = 'rifle_reload'
+            self.animation_index = self.index_animation_reload
             if self.index_animation_reload == 19:
                 self.is_reloading = False
                 self.index_animation_reload = 0
@@ -302,6 +312,19 @@ class Player(pygame.sprite.Sprite):
             self.float_index = increment(self.float_index, 0.25, 1)
             self.index_animation_idle = increment(self.index_animation_idle, int(self.float_index), 19)
             self.original_image = self.animation.idle[self.index_animation_idle]
+            self.animation_name = 'idle'
+            self.animation_index = self.index_animation_idle
         elif self.is_moving:
             self.index_animation_move = increment(self.index_animation_move, 1, 19)
             self.original_image = self.animation.move[self.index_animation_move]
+            self.animation_name = 'move'
+            self.animation_index = self.index_animation_move
+
+    def get_server_info(self):
+        # acho que o servidor não consegue tratar o tipo pg.math.Vector2
+        info = {'position_on_scenario': (self.position_on_scenario[0], self.position_on_scenario[1]),
+         'angle': self.angle_vision,
+         'animation_name': self.animation_name,
+         'animation_index': self.animation_index
+         }
+        return info

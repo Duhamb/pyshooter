@@ -46,9 +46,6 @@ class Main:
         
         self.BOT_IMAGE = pg.image.load("Assets/Images/player2.png")
         self.BOT_IMAGE = pg.transform.scale(self.BOT_IMAGE, (75,75))
-        
-        self.BACK_IMAGE = pg.image.load("Assets/Images/map_back.png").convert_alpha()
-        self.FRONT_IMAGE = pg.image.load("Assets/Images/map.jpg").convert_alpha()
 
         self.CROSS_IMAGE = pg.image.load("Assets/Images/cross.png").convert_alpha()
         self.CROSS_IMAGE = pg.transform.scale(self.CROSS_IMAGE, (15,15))

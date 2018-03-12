@@ -67,7 +67,7 @@ class Main:
         self.bots = ExtendedGroup(self.bot0)
         self.bots.add(self.bot1)
         self.bots.add(self.bot2)
-        self.bullet_list = pg.sprite.Group()
+        self.bullet_list = ExtendedGroup()
         self.BULLET_IMAGE = pg.image.load("Assets/Images/bullets/bullet1.png")
         self.BULLET_IMAGE = pg.transform.scale(self.BULLET_IMAGE, (15, 3))
 
@@ -87,7 +87,7 @@ class Main:
         self.players.handle_event(event)
         
         if self.player.is_shooting == True:
-            bullet = Projectiles(self.player.position_on_screen, self.BULLET_IMAGE)
+            bullet = Projectiles(self.player.position_on_scenario, self.player.position_on_screen, self.BULLET_IMAGE, self.background)
             self.bullet_list.add(bullet)
         
     def display_fps(self):
@@ -97,7 +97,7 @@ class Main:
         self.clock.tick(self.fps)
 
         for bullet in self.bullet_list:
-            if bullet.distance > 300:
+            if bullet.distance > 300 or bullet.is_colliding:
                 self.bullet_list.remove(bullet)
 
     def on_cleanup(self):
@@ -128,8 +128,8 @@ class Main:
             self.bots.draw(self.screen)
             #print(self.player.feet)
 
-        self.bullet_list.draw(self.screen)
         self.bullet_list.update()
+        self.bullet_list.draw(self.screen)
 
         # acho que não precisa de sprite pra essa
         self.screen.blit(self.CROSS_IMAGE, pg.mouse.get_pos())

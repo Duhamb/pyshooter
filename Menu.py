@@ -43,9 +43,6 @@ class Menu():
         if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
             self._in_menu = False
             self._in_menu_multiplayer = False
-        # if event.type == pg.KEYDOWN:
-        #     self._in_menu = False
-        #     self._in_menu_multiplayer = False
 
     def interactive(self, event):
         mouse = pg.mouse.get_pos()
@@ -87,16 +84,16 @@ class Menu():
             self.surface.blit(self.CONNECT_OFF, (450, 450))
 
     def change_name(self,id,name):
-        try:
-            self.name = str(name)
-        except ValueError:
-            print("Please input a valid color name.")
+
+        self.name = str(name)
+        self.surface.blit(self.MENU_IMAGE, (0, 0))
+
 
     def make_prompt(self):
         font = pg.font.SysFont("arial", 20)
         message = 'Type your name :'
-        rend = font.render(message + self.name, True, pg.Color("white"))
-        return (rend, rend.get_rect(topleft=(10, 35)))
+        rend = font.render(message + self.name, True, pg.Color("black"))
+        return (rend, rend.get_rect(topleft=(270, 270)))
 
 
     def intro(self):
@@ -118,19 +115,18 @@ class Menu():
             for event in pg.event.get():
                 if event.type == pg.MOUSEBUTTONUP:
                     button_up = False
-        self.input = TextBox((100, 100, 150, 30), command=self.change_name,
+        self.input = TextBox((300, 300, 200, 30), command=self.change_name,
                              clear_on_enter=True, inactive_on_enter=False)
         self.prompt = self.make_prompt()
         pg.key.set_repeat(*KEY_REPEAT_SETTING)
         while(self._in_menu_multiplayer):
             for event in pg.event.get():
-                self.surface.blit(self.MENU_IMAGE, (0, 0))
                 self.on_event(event)
-                self.interactive_multiplayer(event)
                 self.input.get_event(event)
                 self.input.update()
                 self.input.draw(self.surface)
                 self.prompt = self.make_prompt()
+                self.interactive_multiplayer(event)
 
                 self.surface.blit(*self.prompt)
             self.on_render()

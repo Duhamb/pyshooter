@@ -3,6 +3,7 @@ import traceback
 from Mastermind import *
 from NetworkSettings import *
 import NetworkServer
+import helpers
 
 class pyshooterClient():
     def __init__(self, name):
@@ -44,7 +45,7 @@ class pyshooterClient():
     def disconnect(self):
         self.client.disconnect()
     def push_player(self, player):
-        self.client.send(["player", [self.name, {self.name: {'rect': player.rect, 'feet_rect': player.feet.get_rect(center=player.position_on_screen).topleft}}]], None)
+        self.client.send(["player", [self.name, {self.name: {'rect': helpers.screen_to_scenario_server(player.rect.center, player.background.rect),'angle': player.angle_vision}}]], None)
 
     def pull_players(self):
         reply = None

@@ -111,6 +111,9 @@ class Player(pygame.sprite.Sprite):
         self.pressionou_s = False
         self.pressionou_d = False
 
+        # aux param to multiplayer
+        self.angle_vision = None
+
         # for statistics
         self.ammo = 20
 
@@ -130,9 +133,13 @@ class Player(pygame.sprite.Sprite):
 
 
 
-    def draw_multiplayer(self, screen, feet_rect, rect):
-        screen.blit(self.feet, feet_rect)
-        screen.blit(self.image, rect)
+    def draw_multiplayer(self,screen, position_on_scenario, angle_vision):
+        # screen.blit(self.feet, feet_rect)
+        position_on_screen = scenario_to_screen_server(position_on_scenario, self.background.rect)
+        imageMultiplayer = pygame.transform.rotozoom(self.original_image, -angle_vision, 1)
+        rect_multiplayer = imageMultiplayer.get_rect(center=position_on_screen)
+        screen.blit(imageMultiplayer, rect_multiplayer)
+
     def move(self, direction):
         if not self.is_possible_direction(direction):
             angles = get_normal(self.next_position_on_scenario, self.background.mask, self.background.rect)
@@ -185,7 +192,7 @@ class Player(pygame.sprite.Sprite):
     def rotate(self):
         # get the angle between mouse and player
         _, angle = (pygame.mouse.get_pos()-self.position_on_screen).as_polar()
-
+        self.angle_vision = angle
         # gira todas as imagens
         self.image = pygame.transform.rotozoom(self.original_image, -angle, 1)
         self.feet = pygame.transform.rotozoom(self.original_feet, -angle, 1)

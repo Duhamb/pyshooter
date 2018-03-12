@@ -5,14 +5,16 @@ class Player:
 
     shoot = None
     zoa = None
+    reload = None
+    footstep = None
     # @staticmethod
     @classmethod
     def load(cls):
         # if len(cls.move) == 0:
-        cls.shoot = pg.mixer.Sound('Assets/Sounds/AK47.wav')
+        cls.shoot = pg.mixer.Sound('Assets/Sounds/ak47_shoot.wav')
+        cls.reload = pg.mixer.Sound('Assets/Sounds/ak47_reload.wav')
+        cls.footstep = pg.mixer.Sound('Assets/Sounds/footstep.wav')
         cls.zoa = pg.mixer.Sound('Assets/Sounds/tacaopau.wav')
-        cls.shoot.set_volume(0.2)
-        cls.zoa.set_volume(0.6)
 
     @classmethod
     def play(cls):
@@ -21,3 +23,11 @@ class Player:
     @classmethod
     def stop(cls):
         cls.shoot.stop()
+
+class Bot:
+    grunt = None
+    # @staticmethod
+    @classmethod
+    def load(cls):
+        # if len(cls.move) == 0:
+        cls.grunt = pg.mixer.Sound('Assets/Sounds/zombie.wav')

@@ -35,8 +35,19 @@ class Main:
         #self.resolution = (int(pg.display.Info().current_w), int(pg.display.Info().current_h))
 
         self.menu = Menu()
+
+
+
         self._display_surf = pg.display.set_mode(self.size)
         self.screen = pg.display.get_surface() # repetido?
+
+        #initialize "loading menu"
+        self.ICON = pg.image.load("Assets/Images/cross.png")
+        self.ICON = pg.transform.scale(self.ICON, (32, 32))
+        self.screen.blit(self.menu.MENU_IMAGE, (0, 0))
+        pg.display.update()
+        pg.display.set_caption("Pyshooter")
+        pg.display.set_icon(self.ICON)
 
         self.PLAYER_POSITION = (self.width/2, self.height/2)
 

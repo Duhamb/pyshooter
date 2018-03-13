@@ -1,6 +1,10 @@
 import os
 import sys
 import pygame as pg
+import threading
+import time
+import itertools
+import sys
 
 from Menu import *
 from Player import *
@@ -16,6 +20,26 @@ import Animation
 import Sound
 
 ###############################################
+
+done = False
+def animate(screen, background_image):
+    load1 = pg.image.load('Assets/Images/load1.png')
+    load2 = pg.image.load('Assets/Images/load2.png')
+    font_text = pg.font.Font("Assets/Fonts/UrbanJungleDEMO.otf", 28)
+    loading_text = font_text.render("LOADING", 1, (255,255,255))
+    
+    rect = load1.get_rect(center = (400,300))
+    # rect_text = loading_text.get_rect(topleft=rect.bottomleft)
+    
+    for c in itertools.cycle([load1, load2]):
+        if done:
+            break
+        screen.fill((0,0,0))
+        screen.blit(background_image,(0,0))
+        screen.blit(c, rect)
+        screen.blit(loading_text, rect.bottomleft)
+        pg.display.update()
+        time.sleep(0.5)
 
 class Main:
     def __init__(self):
@@ -36,8 +60,6 @@ class Main:
 
         self.menu = Menu()
 
-
-
         self._display_surf = pg.display.set_mode(self.size)
         self.screen = pg.display.get_surface() # repetido?
 
@@ -48,6 +70,9 @@ class Main:
         pg.display.update()
         pg.display.set_caption("Pyshooter")
         pg.display.set_icon(self.ICON)
+
+        t = threading.Thread(target=animate, args=(self.screen, self.menu.MENU_IMAGE))
+        t.start()
 
         self.PLAYER_POSITION = (self.width/2, self.height/2)
 
@@ -82,6 +107,8 @@ class Main:
         self.BULLET_IMAGE = pg.image.load("Assets/Images/bullets/bullet1.png")
         self.BULLET_IMAGE = pg.transform.scale(self.BULLET_IMAGE, (15, 3))
 
+        global done
+        done = True
         #call menu
         self.menu.intro()
 

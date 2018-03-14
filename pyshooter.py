@@ -36,8 +36,6 @@ class Main:
 
         self.menu = Menu()
 
-
-
         self._display_surf = pg.display.set_mode(self.size)
         self.screen = pg.display.get_surface() # repetido?
 
@@ -66,11 +64,13 @@ class Main:
         self.player_animation.load()
         self.player_sound = Sound.Player 
         self.player_sound.load()
+        self.zombie_animation = Animation.Zombie
+        self.zombie_animation.load()
         self.background = Background()
         self.player = Player((0,-1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background)
-        self.bot0 = Bot((100,-1400), self.screen, self.background, self.player)
-        self.bot1 = Bot((-100,-1400), self.screen, self.background, self.player)
-        self.bot2 = Bot((200,-1400), self.screen, self.background, self.player)
+        self.bot0 = Bot((100,-1400), self.screen, self.background, self.player, self.zombie_animation)
+        self.bot1 = Bot((-100,-1400), self.screen, self.background, self.player, self.zombie_animation)
+        self.bot2 = Bot((200,-1400), self.screen, self.background, self.player, self.zombie_animation)
         self.stats = Statistics(self.player, self.screen.get_rect().size)
         self.light = Light(self.size, self.player)
         # esse grupo herda da sprite group
@@ -129,9 +129,7 @@ class Main:
         self.screen.fill((0,0,0))
 
         # sem sprite ainda
-
         self.background.draw(self.screen, self.player)
-
 
         self.players.update()
         self.bots.update()
@@ -143,16 +141,13 @@ class Main:
             for player_name in player_list:
                 self.player.draw_multiplayer(self.screen, player_list[player_name])
 
-        else:# como que atualiza todos os grupos?
-
+        else:
             self.players.draw(self.screen)
             self.bots.draw(self.screen)
-            #print(self.player.feet)
 
         self.bullet_list.update()
         self.bullet_list.draw(self.screen)
 
-        # acho que não precisa de sprite pra essa
         self.screen.blit(self.CROSS_IMAGE, pg.mouse.get_pos())
 
         self.light.draw(self.screen)

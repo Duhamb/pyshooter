@@ -13,8 +13,6 @@ class Statistics():
 		self.score_label = self.font_text_18.render("SCORE", 1, (255,255,255))
 		self.score_value = self.font_text_25.render("000000000", 1, (255,255,255))
 
-		self.ammo_real = player.ammo
-
 	def draw(self, screen):
 		self.draw_score(screen)
 		self.draw_weapon(screen)

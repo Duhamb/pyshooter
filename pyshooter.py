@@ -91,21 +91,31 @@ class Main:
 
         pg.mouse.set_visible(0)
 
+        self.delta_time = 0
+        self.second_get_ticks = 0
+        self.fire_rate = 0
+
     def on_event(self, event):
         if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
             self._running = False
 
         self.players.handle_event(event)
         
-        if self.player.is_shooting == True:
+        if self.player.is_shooting and self.fire_rate > 100:
             bullet = Projectiles(self.player.position_on_scenario, self.player.position_on_screen, self.BULLET_IMAGE, self.background)
             self.bullet_list.add(bullet)
+            self.fire_rate = 0
         
     def display_fps(self):
         pg.display.set_caption("{} - FPS: {:.2f}".format("PyShooter", self.clock.get_fps()))
 
     def on_loop(self):
         self.clock.tick(self.fps)
+
+        self.first_get_ticks = self.second_get_ticks
+        self.second_get_ticks = pg.time.get_ticks()
+        self.delta_time = self.second_get_ticks - self.first_get_ticks
+        self.fire_rate += self.delta_time
 
         for bullet in self.bullet_list:
             if bullet.distance > 300 or bullet.is_colliding:

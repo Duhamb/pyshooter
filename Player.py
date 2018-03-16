@@ -1,5 +1,6 @@
 import pygame
 from helpers import *
+
 # esse método de colisão tá bugado, mas apresenta desempenho minimamente razoável
 # continuarei pensando em como consertar essa parte
 def get_normal(position_on_scenario, back_mask, back_rect):
@@ -73,7 +74,7 @@ class Player(pygame.sprite.Sprite):
 
         # initialize the original_feet
         # It will be modified according with animation
-        self.original_feet = animation.feet_run[0]
+        self.original_feet = animation.feet_walk[0]
         
         # represent the Background object
         # needed to orientation
@@ -96,13 +97,20 @@ class Player(pygame.sprite.Sprite):
         self.index_animation_shoot = 0
         self.index_animation_idle = 0
         self.index_animation_reload = 0
-        self.index_animation_feet = 0
+        self.index_animation_feet_walk = 0
+        self.index_animation_feet_strafe_left = 0
+        self.index_animation_feet_strafe_right = 0
 
         # flags for animation
-        self.is_moving = False
+        self.is_moving_forward = False
+        self.is_moving_left = False
+        self.is_moving_right = False
         self.is_shooting = False
         self.is_reloading = False
-        self.is_idle = True        
+        self.is_idle = True
+
+        # flags for sounds
+        self.sound_footstep_playing = False 
 
         # handle events
         self.is_colliding = False
@@ -113,37 +121,35 @@ class Player(pygame.sprite.Sprite):
 
         # aux param to multiplayer
         self.angle_vision = None
-        self.animation_name = None
-        self.animation_index = None
+        self.animation_body = None
+        self.animation_body_index = None
+        self.animation_feet = None
+        self.animation_feet_index = None
 
-        # for statistics
-        self.ammo = 20
-
-        # auxiliar: remover depois
+        # slower animations
         self.float_index = 0
 
     def update(self):
         self.react_to_event()
         self.choose_animation()
         self.rotate()
-        # all player properties are updated at this point
-        # useful for multiplayer feature
 
     def draw(self, screen):
         screen.blit(self.feet, self.feet.get_rect(center=self.position_on_screen).topleft)
         screen.blit(self.image, self.rect)
 
-
-
     def draw_multiplayer(self, screen, server_info ):
-        # screen.blit(self.feet, feet_rect)
         position_on_screen = scenario_to_screen_server(server_info['position_on_scenario'], self.background.rect)
-        animation = getattr(self.animation, server_info['animation_name'])
-        original_image = animation[server_info['animation_index']]
-
+        # body
+        animation = getattr(self.animation, server_info['animation_body'])
+        original_image = animation[server_info['animation_body_index']]
         [imageMultiplayer, rect_multiplayer] = rotate_fake_center(original_image, server_info['angle'], self.delta_center_position, position_on_screen)
-        #imageMultiplayer = pygame.transform.rotozoom(original_image, -server_info['angle'], 1)
-        #rect_multiplayer = imageMultiplayer.get_rect(center=position_on_screen)
+        # feet
+        animation_feet = getattr(self.animation, server_info['animation_feet'])
+        original_image = animation_feet[server_info['animation_feet_index']]
+        [imageFeet, rect_feet] = rotate_fake_center(original_image, server_info['angle'], pg.math.Vector2((0,0)), position_on_screen)
+        # draw images
+        screen.blit(imageFeet, rect_feet)
         screen.blit(imageMultiplayer, rect_multiplayer)
 
     def move(self, direction):
@@ -228,11 +234,10 @@ class Player(pygame.sprite.Sprite):
                 self.pressionou_s = True
             if event.key == pygame.K_d:
                 self.pressionou_d = True
-            # [TODO] a flag deve ser setada se uma das quatro direcionais forem pressionadas
-            self.is_moving = True
-            # o som inicia quando seta a flag
-            pygame.mixer.Channel(2).play(self.sound.footstep, -1)
-            self.is_idle = False
+            if self.set_animation_move_flags() and not self.sound_footstep_playing:
+                pygame.mixer.Channel(2).play(self.sound.footstep, -1)
+                self.sound_footstep_playing = True
+                
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_w:
                 self.pressionou_w = False
@@ -242,25 +247,19 @@ class Player(pygame.sprite.Sprite):
                 self.pressionou_s = False
             if event.key == pygame.K_d:
                 self.pressionou_d = False
-            # [TODO] a flag deve ser setada se uma das quatro direcionais forem pressionadas
-            self.is_moving = False
-            # o som para quando a flag é abaixada
-            self.sound.footstep.stop()
-            self.is_idle = True
+            if not self.set_animation_move_flags():
+                self.sound.footstep.stop()
+                self.sound_footstep_playing = False
+        
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 3:
                 self.is_reloading = True
                 pygame.mixer.Channel(1).play(self.sound.reload)
-                self.ammo = 20
             if event.button == 1:
                 if not self.is_shooting:
                     pygame.mixer.Channel(1).play(self.sound.shoot, -1)
                 self.is_shooting = True
-                #print(self.rect)
-                
-                # a lógica de como as munições são reduzidas deve ser alterada depois
-                if self.ammo != 0:
-                    self.ammo -= 1
+    
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
                 self.is_shooting = False
@@ -287,23 +286,19 @@ class Player(pygame.sprite.Sprite):
             if self.pressionou_d:
                 self.direction_of_move = (self.vector_position).rotate(90)
                 self.move(self.direction_of_move)
-
-        if self.is_moving:
-            self.feet = self.animation.feet_run[self.index_animation_feet]
-            self.original_feet = self.animation.feet_run[self.index_animation_feet]
-            self.index_animation_feet = increment(self.index_animation_feet, 1, 19)
     
     def choose_animation(self):
+        # body animation
         if self.is_shooting:
             self.index_animation_shoot = increment(self.index_animation_shoot, 1, 2)
             self.original_image = self.animation.shoot[self.index_animation_shoot]
-            self.animation_name = 'shoot'
-            self.animation_index = self.index_animation_shoot
+            self.animation_body = 'shoot'
+            self.animation_body_index = self.index_animation_shoot
         elif self.is_reloading:
             self.float_index = increment(self.float_index, 0.5, 1)
             self.index_animation_reload = increment(self.index_animation_reload,int(self.float_index),19)
-            self.animation_name = 'rifle_reload'
-            self.animation_index = self.index_animation_reload
+            self.animation_body = 'rifle_reload'
+            self.animation_body_index = self.index_animation_reload
             if self.index_animation_reload == 19:
                 self.is_reloading = False
                 self.index_animation_reload = 0
@@ -312,19 +307,67 @@ class Player(pygame.sprite.Sprite):
             self.float_index = increment(self.float_index, 0.25, 1)
             self.index_animation_idle = increment(self.index_animation_idle, int(self.float_index), 19)
             self.original_image = self.animation.idle[self.index_animation_idle]
-            self.animation_name = 'idle'
-            self.animation_index = self.index_animation_idle
-        elif self.is_moving:
+            self.animation_body = 'idle'
+            self.animation_body_index = self.index_animation_idle
+        elif self.is_moving_forward or self.is_moving_left or self.is_moving_right:
             self.index_animation_move = increment(self.index_animation_move, 1, 19)
             self.original_image = self.animation.move[self.index_animation_move]
-            self.animation_name = 'move'
-            self.animation_index = self.index_animation_move
+            self.animation_body = 'move'
+            self.animation_body_index = self.index_animation_move
+        
+        # feet animation
+        if self.is_moving_forward:
+            self.original_feet = self.animation.feet_walk[self.index_animation_feet_walk]
+            self.animation_feet_index = self.index_animation_feet_walk
+            self.animation_feet = 'feet_walk'
+            self.index_animation_feet_walk = increment(self.index_animation_feet_walk, 1, 19)
+        elif self.is_moving_left:
+            self.original_feet = self.animation.feet_strafe_left[self.index_animation_feet_strafe_left]
+            self.animation_feet_index = self.index_animation_feet_strafe_left
+            self.animation_feet = 'feet_strafe_left'
+            self.index_animation_feet_strafe_left = increment(self.index_animation_feet_strafe_left, 1, 19)
+        elif self.is_moving_right:
+            self.original_feet = self.animation.feet_strafe_right[self.index_animation_feet_strafe_right]
+            self.animation_feet_index = self.index_animation_feet_strafe_right
+            self.animation_feet = 'feet_strafe_right'
+            self.index_animation_feet_strafe_right = increment(self.index_animation_feet_strafe_right, 1, 19)
+        else:
+            self.original_feet = self.animation.feet_idle[0]
+            self.animation_feet_index = 0
+            self.animation_feet = 'feet_idle'
 
     def get_server_info(self):
         # acho que o servidor não consegue tratar o tipo pg.math.Vector2
         info = {'position_on_scenario': (self.position_on_scenario[0], self.position_on_scenario[1]),
          'angle': self.angle_vision,
-         'animation_name': self.animation_name,
-         'animation_index': self.animation_index
+         'animation_body': self.animation_body,
+         'animation_body_index': self.animation_body_index,
+         'animation_feet': self.animation_feet,
+         'animation_feet_index': self.animation_feet_index
          }
         return info
+
+    def set_animation_move_flags(self):
+        self.is_idle = False
+        if self.pressionou_a:
+            self.is_moving_left = True 
+            self.is_moving_right = False
+            self.is_moving_forward = False
+        
+        if self.pressionou_d:
+            self.is_moving_right = True
+            self.is_moving_left = False 
+            self.is_moving_forward = False
+        
+        if self.pressionou_w or self.pressionou_s:
+            self.is_moving_left = False 
+            self.is_moving_forward = True
+            self.is_moving_right = False
+
+        if not self.pressionou_a and not self.pressionou_d and not self.pressionou_s and not self.pressionou_w:
+            self.is_moving_left = False
+            self.is_moving_forward = False
+            self.is_moving_right = False
+            self.is_idle = True
+            return False
+        return True

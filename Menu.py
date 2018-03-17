@@ -10,11 +10,13 @@ KEY_REPEAT_SETTING = (200,70)
 
 class Menu():
     def __init__(self):
-        self.name = "McLoma"
+        self.name = None
+        self.server_ip = None
         self.screen = pg.display.get_surface()
         self.color = (100, 100, 100)
         self._in_menu = True
         self._in_menu_get_name = True
+        self._in_menu_get_ip = True
         self._in_menu_multiplayer = False
         self.MENU_IMAGE = pg.image.load("Assets/Images/menu/background.png")
         self.MENU_IMAGE = pg.transform.scale(self.MENU_IMAGE, (800, 600))
@@ -80,6 +82,9 @@ class Menu():
         if 450 + 200 > mouse[0] > 450 and 450 + 50 > mouse[1] > 450:
             self.surface.blit(self.CONNECT_ON, (450, 450))
             if event.type == pg.MOUSEBUTTONDOWN:
+                self.get_ip()
+                self.server_client = pyshooterClient(self.name)
+                self.have_client = self.server_client.start_connect(self.server_ip)
                 self._in_menu_multiplayer = False
         else:
             self.surface.blit(self.CONNECT_OFF, (450, 450))
@@ -90,15 +95,45 @@ class Menu():
         self.surface.blit(self.MENU_IMAGE, (0, 0))
         self._in_menu_get_name = False
 
+    def change_ip(self,id,ip):
 
-    def make_prompt(self):
+        self.server_ip = str(ip)
+        self.surface.blit(self.MENU_IMAGE, (0, 0))
+        self._in_menu_get_ip = False
+
+
+    def get_ip(self):
+        self.input = TextBox((300, 300, 200, 30), command=self.change_ip,
+                             clear_on_enter=True, inactive_on_enter=False)
+        self.prompt = self.make_prompt('Type server ip :')
+        pg.key.set_repeat(*KEY_REPEAT_SETTING)
+        self.surface.blit(self.MENU_IMAGE, (0, 0))
+        while(self._in_menu_get_ip):
+            for event in pg.event.get():
+                self.on_event(event)
+                #get ip
+                self.input.get_event(event)
+                self.input.update()
+                self.input.draw(self.surface)
+                self.prompt = self.make_prompt('Type server ip :')
+                self.surface.blit(*self.prompt)
+                if(not self._in_menu_get_ip):
+                    self.surface.blit(self.MENU_IMAGE, (0, 0))
+                else:
+                    self.interactive_multiplayer(event)
+            self.on_render()
+
+
+
+
+    def make_prompt(self, message):
         font = pg.font.SysFont("arial", 20)
-        message = 'Type your name :'
         rend = font.render(message, True, pg.Color("black"))
         return (rend, rend.get_rect(topleft=(270, 270)))
 
 
     def intro(self):
+        # init
         self.surface = pg.display.get_surface()
         self.surface.blit(self.MENU_IMAGE, (0, 0))
 
@@ -106,30 +141,37 @@ class Menu():
         self.music.set_volume(0.5)
         self.music.play()
 
+        #Singleplayer/Multiplayer menu
         while(self._in_menu):
             for event in pg.event.get():
                 self.on_event(event)
                 self.interactive(event)
             self.on_render()
 
+        #avoid double click on menu
         button_up = True
         while (button_up):
             for event in pg.event.get():
                 if event.type == pg.MOUSEBUTTONUP:
                     button_up = False
+
+        #init multiplayer menu
         self.input = TextBox((300, 300, 200, 30), command=self.change_name,
                              clear_on_enter=True, inactive_on_enter=False)
-        self.prompt = self.make_prompt()
+        self.prompt = self.make_prompt('Type your name :')
         pg.key.set_repeat(*KEY_REPEAT_SETTING)
         self.surface.blit(self.MENU_IMAGE, (0, 0))
+
+
         while(self._in_menu_multiplayer):
             for event in pg.event.get():
                 self.on_event(event)
+                #get name
                 if(self._in_menu_get_name):
                     self.input.get_event(event)
                     self.input.update()
                     self.input.draw(self.surface)
-                    self.prompt = self.make_prompt()
+                    self.prompt = self.make_prompt('Type your name :')
                     self.surface.blit(*self.prompt)
                     if(not self._in_menu_get_name):
                         self.surface.blit(self.MENU_IMAGE, (0, 0))

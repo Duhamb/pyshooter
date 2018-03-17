@@ -71,8 +71,15 @@ class Main:
         pg.display.set_caption("Pyshooter")
         pg.display.set_icon(self.ICON)
 
-        t = threading.Thread(target=animate, args=(self.screen, self.menu.MENU_IMAGE))
+        self.background = None
+
+        t = threading.Thread(target = animate, args=(self.screen, self.menu.MENU_IMAGE))
         t.start()
+        self.load()
+        # q.join()
+        
+        global done
+        done = True
 
         self.PLAYER_POSITION = (self.width/2, self.height/2)
 
@@ -86,14 +93,16 @@ class Main:
 
         self.CROSS_IMAGE = pg.image.load("Assets/Images/cross.png").convert_alpha()
         self.CROSS_IMAGE = pg.transform.scale(self.CROSS_IMAGE, (15,15))
-        
+
         self.player_animation = Animation.Player
         self.player_animation.load()
         self.player_sound = Sound.Player 
         self.player_sound.load()
         self.zombie_animation = Animation.Zombie
         self.zombie_animation.load()
-        self.background = Background()
+
+
+        
         self.player = Player((0,-1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background)
         self.bot0 = Bot((100,-1400), self.screen, self.background, self.player, self.zombie_animation)
         self.bot1 = Bot((-100,-1400), self.screen, self.background, self.player, self.zombie_animation)
@@ -109,8 +118,6 @@ class Main:
         self.BULLET_IMAGE = pg.image.load("Assets/Images/bullets/bullet1.png")
         self.BULLET_IMAGE = pg.transform.scale(self.BULLET_IMAGE, (15, 3))
 
-        global done
-        done = True
         #call menu
         self.menu.intro()
 
@@ -118,11 +125,13 @@ class Main:
         if self.multiplayer_on:
             self.server_client = self.menu.server_client
 
-        pg.mouse.set_visible(0)
+        pg.mouse.set_visible(1)
 
         self.delta_time = 0
         self.second_get_ticks = 0
         self.fire_rate = 0
+    def load(self):
+        self.background = Background()
 
     def on_event(self, event):
         if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
@@ -177,7 +186,7 @@ class Main:
         self.bullet_list.update()
         self.bullet_list.draw(self.screen)
 
-        self.screen.blit(self.CROSS_IMAGE, pg.mouse.get_pos())
+        self.screen.blit(self.CROSS_IMAGE, self.CROSS_IMAGE.get_rect(center=pg.mouse.get_pos()))
 
         self.light.draw(self.screen)
         self.stats.draw(self.screen)

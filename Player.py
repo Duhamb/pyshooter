@@ -1,5 +1,6 @@
 import pygame
 from helpers import *
+import math
 
 # esse método de colisão tá bugado, mas apresenta desempenho minimamente razoável
 # continuarei pensando em como consertar essa parte
@@ -205,6 +206,17 @@ class Player(pygame.sprite.Sprite):
         # get the angle between mouse and player
         _, angle = (pygame.mouse.get_pos()-self.position_on_screen).as_polar()
         self.angle_vision = angle
+
+        ####################
+        hypo = (pygame.mouse.get_pos()-self.position_on_screen).length()
+        cate = 36/2.7
+        try:
+            new_angle = math.degrees(math.asin(cate/hypo))
+            angle -= new_angle
+        except:
+            pass
+        #################### 
+
         # gira todas as imagens
         self.image = pygame.transform.rotozoom(self.original_image, -angle, 1)
         self.feet = pygame.transform.rotozoom(self.original_feet, -angle, 1)

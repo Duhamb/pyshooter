@@ -21,7 +21,7 @@ class pyshooterClient():
             self.players_info = reply  # The entire history of the chat
 
 
-            print(self.players_info)
+            #print(self.players_info)
 
         except MastermindError:
             self.continuing = False
@@ -42,6 +42,16 @@ class pyshooterClient():
             self.client.connect(client_ip, port)
         print("Client connected!")
 
+    def start_connect(self, server_ip):
+        self.client = MastermindClientTCP(client_timeout_connect, client_timeout_receive)
+        try:
+            print("Client connecting on \"" + server_ip + "\", port " + str(port) + " . . .")
+            self.client.connect(server_ip, port)
+            return True
+        except MastermindError:
+            print("No server found; Starting Singleplayer")
+            return False
+
     def disconnect(self):
         self.client.disconnect()
     def push_player(self, player):
@@ -54,7 +64,7 @@ class pyshooterClient():
         self.players_info = reply
 
 
-        print(self.players_info)
+        #print(self.players_info)
 
 
     def main(self):

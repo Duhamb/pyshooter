@@ -34,6 +34,7 @@ class Main:
 
         #self.resolution = (int(pg.display.Info().current_w), int(pg.display.Info().current_h))
 
+        #create Menu object
         self.menu = Menu()
 
         self._display_surf = pg.display.set_mode(self.size)
@@ -82,13 +83,16 @@ class Main:
         self.BULLET_IMAGE = pg.image.load("Assets/Images/bullets/bullet1.png")
         self.BULLET_IMAGE = pg.transform.scale(self.BULLET_IMAGE, (15, 3))
 
-        #call menu
+        #call menu Displays/Loops
         self.menu.intro()
 
+        #Get informations about multiplayer/singleplayer
         self.multiplayer_on = self.menu.have_client
         if self.multiplayer_on:
             self.server_client = self.menu.server_client
 
+
+        #Set mouse invisible
         pg.mouse.set_visible(0)
 
         self.delta_time = 0

@@ -11,12 +11,12 @@ This project was made for OOP(CES-22) class by three students:
 
 It consists of a Top-Down Shooter game. 
 
-##Requirements
+## Requirements
 
 * [Python 3.6](https://www.python.org/)
 * [Pygame 1.9.3](https://www.pygame.org)
 
-##How to run
+## How to run
 
 **Linux:**
 
@@ -29,13 +29,13 @@ python3.6 pyshooter.py
 py pyshooter.py
 
 ```
-##How to play
+## How to play
 
-###Objectives
+### Objectives
 
 Primordially is win points by killing Zombies and others players. But that is not implemented yet.
 
-###Commands
+### Commands
 
 * **Move:** W, A, S and D;
 * **Shoot:** mouse left click;

@@ -256,8 +256,6 @@ class Player(pygame.sprite.Sprite):
                 self.is_reloading = True
                 pygame.mixer.Channel(1).play(self.sound.reload)
             if event.button == 1:
-                if not self.is_shooting:
-                    pygame.mixer.Channel(1).play(self.sound.shoot, -1)
                 self.is_shooting = True
     
         elif event.type == pygame.MOUSEBUTTONUP:

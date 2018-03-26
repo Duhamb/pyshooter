@@ -99,16 +99,19 @@ class Main:
         self.second_get_ticks = 0
         self.fire_rate = 0
 
-    def on_event(self, event):
-        if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
-            self._running = False
+    def on_event(self, event_queue):
+        for event in event_queue:
 
-        self.players.handle_event(event)
+            if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
+                self._running = False
+
+            self.players.handle_event(event)
         
         if self.player.is_shooting and self.fire_rate > 100:
             bullet = Projectiles(self.player.position_on_scenario, self.player.position_on_screen, self.BULLET_IMAGE, self.background)
             self.bullet_list.add(bullet)
             self.fire_rate = 0
+            pygame.mixer.Channel(1).play(self.player_sound.shoot, -1)
         
     def display_fps(self):
         pg.display.set_caption("{} - FPS: {:.2f}".format("PyShooter", self.clock.get_fps()))
@@ -164,8 +167,7 @@ class Main:
         self.on_init()
 
         while (self._running):
-            for event in pg.event.get():
-                self.on_event(event)
+            self.on_event(pg.event.get())
             self.on_loop()
             self.on_render()
         self.on_cleanup()

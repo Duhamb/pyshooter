@@ -4,8 +4,8 @@ from helpers import *
 
 class Background():
     def __init__(self):
-        self.front = pg.image.load("Assets/Images/map.jpg").convert_alpha()
-        self.back = pg.image.load("Assets/Images/map_back.png").convert_alpha()
+        self.front = pg.image.load("Assets/Images/map-min.jpg").convert_alpha()
+        self.back = pg.image.load("Assets/Images/map_back-min.png").convert_alpha()
         self.rect = self.front.get_rect()
         self.mask = pg.mask.from_surface(self.back)
 
@@ -17,4 +17,3 @@ class Background():
 
     def update_position(self, player):
         self.rect.center = background_center_position(player.position_on_screen, player.position_on_scenario)
-

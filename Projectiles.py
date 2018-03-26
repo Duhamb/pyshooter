@@ -1,4 +1,6 @@
 import pygame as pg
+from helpers import *
+import math
 
 class Projectiles(pg.sprite.Sprite):
     def __init__(self, origin_scenario, origin_screen, image, background):
@@ -8,18 +10,29 @@ class Projectiles(pg.sprite.Sprite):
         self.mask = pg.mask.from_surface(image)
         self.player_position = pg.math.Vector2(origin_screen)
 
-        #Start position correction
-        self.direction = pg.mouse.get_pos() - self.player_position
-        self.direction2 = self.direction.rotate(90)
-        self.position_on_screen = pg.math.Vector2(origin_screen)+75*self.direction.normalize()+13*self.direction2.normalize()
-        self.position_on_scenario = pg.math.Vector2(origin_scenario)+75*self.direction.normalize()+13*self.direction2.normalize()
-
-        self.image = image
-        self.rect = self.image.get_rect(center=self.position_on_screen)
+        # vector between player head and rifle
+        self.vector_offset = pg.math.Vector2((172.5/2.7, 32/2.7))
 
         #Angle correction
         _, angle = (pg.mouse.get_pos() - self.player_position).as_polar()
+        try:
+            D = (pg.mouse.get_pos()-self.player_position).length()
+            add_angle = math.degrees(math.asin(32/(2.7*D)))
+            angle -= add_angle
+        except:
+            pass
+        
+        correction_angle = math.degrees(math.atan(32/172))
+        self.direction = self.vector_offset.rotate(angle-correction_angle)
+
+        #Start position correction
+        self.new_vector = self.vector_offset.rotate(angle)
+        self.position_on_screen = self.player_position + self.new_vector
+        self.position_on_scenario = screen_to_scenario(self.position_on_screen, self.background.rect)
+
+        self.image = image
         self.image = pg.transform.rotozoom(self.image, -angle, 1)
+        self.rect = self.image.get_rect(center=self.position_on_screen)
 
         self.distance = 0
         self.is_colliding = False

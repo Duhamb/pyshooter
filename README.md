@@ -1,5 +1,5 @@
 # Pyshooter
-Game Development by graduating students of Instituto Tecnólogico de Aeronáutica (ITA).
+Game Development by graduating students of Instituto Tecnológico de Aeronáutica (ITA).
 This project was made for OOP(CES-22) class by three students:
 
 * [Claudio Felipe Lázaro da Silva](https://github.com/claudiocfls)

@@ -11,7 +11,7 @@ class Player:
     @classmethod
     def load(cls):
         # if len(cls.move) == 0:
-        cls.shoot = pg.mixer.Sound('Assets/Sounds/ak47_shoot.wav')
+        cls.shoot = pg.mixer.Sound('Assets/Sounds/ak47_shoot2.wav')
         cls.reload = pg.mixer.Sound('Assets/Sounds/ak47_reload.wav')
         cls.footstep = pg.mixer.Sound('Assets/Sounds/footstep.wav')
         cls.zoa = pg.mixer.Sound('Assets/Sounds/tacaopau.wav')

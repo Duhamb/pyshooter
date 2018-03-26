@@ -3,10 +3,12 @@ from helpers import *
 import math
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, location_on_scenario, location_on_screen, animation, sound, background):
+    def __init__(self, location_on_scenario, location_on_screen, animation, sound, background, tela):
         super().__init__()
 
         self.velocity = 5
+
+        self.tela = tela
 
         # set all animations
         self.animation = animation
@@ -115,10 +117,11 @@ class Player(pygame.sprite.Sprite):
                 if not big_size:
                     for j in angles:
                         i = j[0]
-                        new_direction = pygame.math.Vector2((1,0)).rotate(i + 90)
-                        new_direction = new_direction.dot(self.velocity*direction) * new_direction
+                        # new_direction = pygame.math.Vector2((1,0)).rotate(i + 90)
+                        # new_direction = new_direction.dot(self.velocity*direction) * new_direction
+                        normal_vector = pygame.math.Vector2((1,0)).rotate(i)
+                        new_direction = remove_parallel_component(normal_vector, direction)
                         direction = new_direction
-
         try:
             self.position_on_scenario += self.velocity*(direction.normalize())
         except:

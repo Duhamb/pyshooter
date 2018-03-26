@@ -101,12 +101,11 @@ class Main:
 
     def on_event(self, event_queue):
         for event in event_queue:
-
             if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
                 self._running = False
 
             self.players.handle_event(event)
-        
+            
         if self.player.is_shooting and self.fire_rate > 100:
             bullet = Projectiles(self.player.position_on_scenario, self.player.position_on_screen, self.BULLET_IMAGE, self.background)
             self.bullet_list.add(bullet)
@@ -154,8 +153,8 @@ class Main:
 
         self.bullet_list.update()
         self.bullet_list.draw(self.screen)
-
-        self.screen.blit(self.CROSS_IMAGE, pg.mouse.get_pos())
+        self.cross_rect = self.CROSS_IMAGE.get_rect(center = pg.mouse.get_pos())
+        self.screen.blit(self.CROSS_IMAGE, self.cross_rect)
 
         self.light.draw(self.screen)
         self.stats.draw(self.screen)

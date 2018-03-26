@@ -1,61 +1,12 @@
 import pygame
 from helpers import *
-
-# esse método de colisão tá bugado, mas apresenta desempenho minimamente razoável
-# continuarei pensando em como consertar essa parte
-def get_normal(position_on_scenario, back_mask, back_rect):
-    qtd = 60
-    vetor_base = pygame.math.Vector2( (35,0) )
-    angulo = 0
-    lista_de_angulos = []
-    angulo_inicial = None
-    angulo_final = None
-
-    position_on_screen = back_rect.center + position_on_scenario
-
-    for i in range(0,qtd):
-        vetor_rotacionado = pygame.math.Vector2(position_on_screen) + vetor_base.rotate(angulo)
-        pos_scenario =  -pygame.math.Vector2(back_rect.topleft) + vetor_rotacionado
-        x = int(pos_scenario[0])
-        y = int(pos_scenario[1])
-
-        if back_mask.get_at((x,y)):
-            if angulo_inicial == None:
-                angulo_inicial = angulo
-            else:
-                angulo_final = angulo
-        else:
-            if angulo_final != None:
-                diff = [angulo_inicial, angulo_final]
-                lista_de_angulos.append( diff )
-                
-                angulo_final = None
-                angulo_inicial = None
-
-        angulo += 360/qtd
-    if angulo_inicial != None and angulo_final != None:
-        diff = [angulo_inicial, angulo_final]
-        lista_de_angulos.append( diff )
-
-    first = lista_de_angulos[0]
-    last = lista_de_angulos[-1]
-    if first[0] == 0 and last[1] == 354:
-        first[0] = last[0]
-        del lista_de_angulos[-1]
-
-    for i in range(0, len(lista_de_angulos)):
-        a = lista_de_angulos[i][0]
-        b = lista_de_angulos[i][1]
-        if a > b:
-            lista_de_angulos[i] = [(a+b)/2-180, b-a+360]
-        else:
-            lista_de_angulos[i] = [(a+b)/2, b-a]
-
-    return lista_de_angulos
+import math
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, location_on_scenario, location_on_screen, animation, sound, background):
         super().__init__()
+
+        self.velocity = 5
 
         # set all animations
         self.animation = animation
@@ -130,9 +81,9 @@ class Player(pygame.sprite.Sprite):
         self.float_index = 0
 
     def update(self):
-        self.react_to_event()
         self.choose_animation()
         self.rotate()
+        self.react_to_event()
 
     def draw(self, screen):
         screen.blit(self.feet, self.feet.get_rect(center=self.position_on_screen).topleft)
@@ -154,7 +105,7 @@ class Player(pygame.sprite.Sprite):
 
     def move(self, direction):
         if not self.is_possible_direction(direction):
-            angles = get_normal(self.next_position_on_scenario, self.background.mask, self.background.rect)
+            angles = get_normal(self.next_position_on_scenario, self.background)
             if len(angles) <= 1:
                 big_size = False
                 for k in angles:
@@ -165,45 +116,38 @@ class Player(pygame.sprite.Sprite):
                     for j in angles:
                         i = j[0]
                         new_direction = pygame.math.Vector2((1,0)).rotate(i + 90)
-                        try:
-                            new_direction = new_direction.dot(5*pygame.math.Vector2(direction/(direction.length()))) * new_direction
-                        except:
-                            new_direction = pygame.math.Vector2(0,0)
+                        new_direction = new_direction.dot(self.velocity*direction) * new_direction
                         direction = new_direction
 
-                    try:
-                        self.position_on_scenario += 5*(direction/(direction.length()))
-                    except:
-                        self.position_on_scenario += 5*(direction)
-        else:
-            try:
-                self.position_on_scenario += 5*(direction/(direction.length()))
-            except: 
-                self.position_on_scenario += 5*(direction)
+        try:
+            self.position_on_scenario += self.velocity*(direction.normalize())
+        except:
+            pass
 
     def is_possible_direction(self, direction):
-        # prevê o estado caso o movimento ocorra
-        self.next_position_on_scenario = self.position_on_scenario + 5*pygame.math.Vector2(direction/ (direction.length()))
-        self.next_index_animation_move = increment(self.index_animation_move, 1, len(self.animation.move))
-  
-        self.next_rect = self.image.get_rect(center = self.new_rect_center)
-        self.next_mask = pygame.mask.from_surface(self.collider_image)
-
-        self.next_rect_background = self.background.rect.copy()
-
+        self.next_position_on_scenario = self.position_on_scenario + self.velocity*direction
+        next_rect = self.rect
+        next_mask = self.mask
+        next_rect_background = self.background.rect.copy()
         # this command obtain the next position of background
-        self.next_rect_background.center = background_center_position(self.position_on_screen, self.next_position_on_scenario)
+        next_rect_background.center = background_center_position(self.position_on_screen, self.next_position_on_scenario)
+        offset = ((next_rect.left - next_rect_background.left ), (next_rect.top - next_rect_background.top))
+        is_colliding = self.background.mask.overlap(next_mask, offset)
 
-        self.offset = ((self.next_rect.left - self.next_rect_background.left ), (self.next_rect.top - self.next_rect_background.top))
-        self.is_colliding = self.background.mask.overlap(self.next_mask, self.offset)
-
-        if self.is_colliding:
+        if is_colliding:
             return False
         return True
 
     def rotate(self):
         # get the angle between mouse and player
         _, angle = (pygame.mouse.get_pos()-self.position_on_screen).as_polar()
+        
+        try:
+            D = (pygame.mouse.get_pos()-self.position_on_screen).length()
+            angle -= math.degrees(math.asin(32/(2.7*D)))
+        except:
+            pass
+
         self.angle_vision = angle
         # gira todas as imagens
         self.image = pygame.transform.rotozoom(self.original_image, -angle, 1)
@@ -269,22 +213,30 @@ class Player(pygame.sprite.Sprite):
             self.mouse_position = pygame.mouse.get_pos()
             self.vector_position = self.mouse_position - self.actual_position
 
+            # react to multiples move commands
             if self.pressionou_w:
-                self.direction_of_move = (self.vector_position)
-                self.move(self.direction_of_move)
-
-            if self.pressionou_s:
-                self.direction_of_move = -(self.vector_position)
-                self.move(self.direction_of_move)
-
-            if self.pressionou_a:
+                if self.pressionou_a:
+                    self.direction_of_move = (self.vector_position).rotate(-45)
+                elif self.pressionou_d:
+                    self.direction_of_move = (self.vector_position).rotate(45)
+                else:                    
+                    self.direction_of_move = (self.vector_position)
+            elif self.pressionou_s:
+                if self.pressionou_a:
+                    self.direction_of_move = -(self.vector_position).rotate(45)
+                elif self.pressionou_d:
+                    self.direction_of_move = -(self.vector_position).rotate(-45)
+                else:                    
+                    self.direction_of_move = -(self.vector_position)
+            elif self.pressionou_a:
                 self.direction_of_move = -(self.vector_position).rotate(90)
-                self.move(self.direction_of_move)
-
-            if self.pressionou_d:
+            elif self.pressionou_d:
                 self.direction_of_move = (self.vector_position).rotate(90)
-                self.move(self.direction_of_move)
-    
+            try:
+                self.move(self.direction_of_move.normalize())  
+            except:
+                pass
+
     def choose_animation(self):
         # body animation
         if self.is_shooting:

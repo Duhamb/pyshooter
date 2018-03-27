@@ -53,6 +53,8 @@ class Server(MastermindServerTCP):
         cmd = data[0]
         if cmd == "player":
             self.add_player(data[1])
+        #elif cmd == "zombie"
+
         elif cmd == "update_player":
             self.update_player(data[1])
         elif cmd == "leave":

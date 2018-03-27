@@ -54,6 +54,7 @@ class pyshooterClient():
 
     def disconnect(self):
         self.client.disconnect()
+
     def push_player(self, player, can_render_bullet):
         send = player.get_server_info()
         send['is_shooting'] = can_render_bullet
@@ -65,8 +66,16 @@ class pyshooterClient():
             reply = self.client.receive(False)
         self.players_info = reply
 
+    def push_zombies(self, player, can_render_bullet):
+        send = player.get_server_info()
+        send['is_shooting'] = can_render_bullet
+        self.client.send(["zombie", [self.name, {self.name: send}]], None)
 
-        #print(self.players_info)
+    def pull_zombies(self):
+        reply = None
+        while reply == None:
+            reply = self.client.receive(False)
+        self.zombies_info = reply
 
 
     def main(self):

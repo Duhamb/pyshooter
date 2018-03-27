@@ -2,6 +2,7 @@ import pygame as pg
 from helpers import *
 
 class Bot(pg.sprite.Sprite):
+
     def __init__(self, location_on_scenario, surface, background, player, animation):
         super().__init__()
 

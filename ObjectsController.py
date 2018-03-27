@@ -24,6 +24,9 @@ class ObjectsController:
         self.zombie_animation = Animation.Zombie
         self.zombie_animation.load()
 
+        self.bot_draw = Bot((0, 0), self.screen, self.background, self.player, self.zombie_animation)
+
+
         self.bot0 = Bot((100, -1400), self.screen, self.background, self.player, self.zombie_animation)
         self.bot1 = Bot((-100, -1400), self.screen, self.background, self.player, self.zombie_animation)
         self.bot2 = Bot((200, -1400), self.screen, self.background, self.player, self.zombie_animation)
@@ -94,7 +97,7 @@ class ObjectsController:
                                          self.BULLET_IMAGE, self.background, actual_player['mouse_position'])
                     self.bullet_list.add(bullet)
             #Zombie Syn
-            #Host send
+            #Host send zombie list
             if is_host:
                 zombie_server_list = {}
                 id = 0
@@ -104,11 +107,11 @@ class ObjectsController:
                 server_client.push_zombies(zombie_server_list, True)
             else:
                 server_client.push_zombies({}, False)
-            #receive
+            #receive zombie list
             server_client.pull_zombies()
             zombie_list = server_client.zombies_info
             for zombie_id in zombie_list:
-                self.bot0.draw_multiplayer(self.screen, zombie_list[zombie_id])
+                self.bot_draw.draw_multiplayer(self.screen, zombie_list[zombie_id])
 
         else:
             players.draw(self.screen)

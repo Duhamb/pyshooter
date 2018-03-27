@@ -46,9 +46,9 @@ class Menu():
         pg.key.set_repeat(*KEY_REPEAT_SETTING)
 
         #music configuration
-        self.music = pg.mixer.Sound('Assets/Sounds/BestMusic.wav')
+        self.music = pg.mixer.Sound('Assets/Sounds/menu_sound.wav')
         self.music.set_volume(0.5)
-        self.music.play()
+        self.music.play(-1)
 
     def singleplayer_multiplayer_display(self, event):
         self.singleplayer_multiplayer_interactive(event)

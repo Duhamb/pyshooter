@@ -68,7 +68,7 @@ class Main:
         self.zombie_animation = Animation.Zombie
         self.zombie_animation.load()
         self.background = Background()
-        self.player = Player((0,-1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background)
+        self.player = Player((0,-1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background, self.screen)
         self.bot0 = Bot((100,-1400), self.screen, self.background, self.player, self.zombie_animation)
         self.bot1 = Bot((-100,-1400), self.screen, self.background, self.player, self.zombie_animation)
         self.bot2 = Bot((200,-1400), self.screen, self.background, self.player, self.zombie_animation)
@@ -112,9 +112,11 @@ class Main:
             bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background, screen_to_scenario_server(pg.mouse.get_pos(), self.background.rect))
             self.bullet_list.add(bullet)
             self.fire_rate = 0
-            pygame.mixer.Channel(1).play(self.player_sound.shoot, -1)
+            self.player_sound.shoot.stop()
+            pygame.mixer.Channel(1).play(self.player_sound.shoot)
         else:
             self.can_render_bullet = False
+
         
     def display_fps(self):
         pg.display.set_caption("{} - FPS: {:.2f}".format("PyShooter", self.clock.get_fps()))

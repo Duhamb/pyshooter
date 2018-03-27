@@ -5,12 +5,10 @@ import pygame as pg
 from Menu import *
 from Player import *
 from Background import *
-from Bot import *
-from Projectiles import *
-from ExtendedGroup import *
 from Statistics import *
 from Light import *
 from helpers import *
+from ObjectsController import *
 
 import Animation
 import Sound
@@ -55,9 +53,6 @@ class Main:
         self.PLAY_IMAGE_BACK = pg.image.load("Assets/Images/back_player.png")
         self.PLAY_IMAGE_BACK = pg.transform.scale(self.PLAY_IMAGE_BACK, (75,75))
         
-        self.BOT_IMAGE = pg.image.load("Assets/Images/player2.png")
-        self.BOT_IMAGE = pg.transform.scale(self.BOT_IMAGE, (75,75))
-
         self.CROSS_IMAGE = pg.image.load("Assets/Images/cross.png").convert_alpha()
         self.CROSS_IMAGE = pg.transform.scale(self.CROSS_IMAGE, (15,15))
         
@@ -65,23 +60,15 @@ class Main:
         self.player_animation.load()
         self.player_sound = Sound.Player 
         self.player_sound.load()
-        self.zombie_animation = Animation.Zombie
-        self.zombie_animation.load()
+
         self.background = Background()
         self.player = Player((0,-1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background)
-        self.bot0 = Bot((100,-1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot1 = Bot((-100,-1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot2 = Bot((200,-1400), self.screen, self.background, self.player, self.zombie_animation)
+
         self.stats = Statistics(self.player, self.screen.get_rect().size)
         self.light = Light(self.size, self.player)
+
         # esse grupo herda da sprite group
         self.players = ExtendedGroup(self.player)
-        self.bots = ExtendedGroup(self.bot0)
-        self.bots.add(self.bot1)
-        self.bots.add(self.bot2)
-        self.bullet_list = ExtendedGroup()
-        self.BULLET_IMAGE = pg.image.load("Assets/Images/bullets/bullet1.png")
-        self.BULLET_IMAGE = pg.transform.scale(self.BULLET_IMAGE, (15, 3))
 
         #call menu Displays/Loops
         self.menu.intro()
@@ -91,13 +78,10 @@ class Main:
         if self.multiplayer_on:
             self.server_client = self.menu.server_client
 
-
         #Set mouse invisible
         pg.mouse.set_visible(0)
 
-        self.delta_time = 0
-        self.second_get_ticks = 0
-        self.fire_rate = 0
+        self.ObjectsController = ObjectsController(self.player, self.background)
 
     def on_event(self, event_queue):
         for event in event_queue:
@@ -106,26 +90,14 @@ class Main:
 
             self.players.handle_event(event)
             
-        if self.player.is_shooting and self.fire_rate > 100:
-            bullet = Projectiles(self.player.position_on_scenario, self.player.position_on_screen, self.BULLET_IMAGE, self.background)
-            self.bullet_list.add(bullet)
-            self.fire_rate = 0
-            pygame.mixer.Channel(1).play(self.player_sound.shoot, -1)
+        self.ObjectsController.handle_event()
         
     def display_fps(self):
         pg.display.set_caption("{} - FPS: {:.2f}".format("PyShooter", self.clock.get_fps()))
 
     def on_loop(self):
         self.clock.tick(self.fps)
-
-        self.first_get_ticks = self.second_get_ticks
-        self.second_get_ticks = pg.time.get_ticks()
-        self.delta_time = self.second_get_ticks - self.first_get_ticks
-        self.fire_rate += self.delta_time
-
-        for bullet in self.bullet_list:
-            if bullet.distance > 300 or bullet.is_colliding:
-                self.bullet_list.remove(bullet)
+        self.ObjectsController.update()
 
     def on_cleanup(self):
         pg.quit()
@@ -138,7 +110,6 @@ class Main:
         self.background.draw(self.screen, self.player)
 
         self.players.update()
-        self.bots.update()
 
         if self.multiplayer_on:
             self.server_client.push_player(self.player)
@@ -149,10 +120,9 @@ class Main:
 
         else:
             self.players.draw(self.screen)
-            self.bots.draw(self.screen)
 
-        self.bullet_list.update()
-        self.bullet_list.draw(self.screen)
+        self.ObjectsController.draw()
+
         self.cross_rect = self.CROSS_IMAGE.get_rect(center = pg.mouse.get_pos())
         self.screen.blit(self.CROSS_IMAGE, self.cross_rect)
 

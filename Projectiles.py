@@ -1,4 +1,3 @@
-import pygame as pg
 from helpers import *
 import math
 

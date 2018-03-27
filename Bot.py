@@ -5,16 +5,12 @@ class Bot(pg.sprite.Sprite):
     def __init__(self, location_on_scenario, surface, background, player, animation):
         super().__init__()
 
-        # image and rect will be defined according with the animation
-        self.image = None
-        self.rect = None
-        
-        # original_image will be used in rotate
-        self.original_image = None
-
         # load all objects necessary for bot interaction
         self.player = player
         self.background = background
+
+        # original_image will be used in rotate
+        self.original_image = None
 
         # surface to draw
         self.surface = surface
@@ -22,6 +18,11 @@ class Bot(pg.sprite.Sprite):
         # represent the position in relation to map
         # when drawing, this coordinate should be converted to position in screen
         self.position_on_scenario = pg.math.Vector2(location_on_scenario)
+
+        # image and rect will be defined according with the animation
+        self.image = animation.idle[0]
+        self.center = scenario_to_screen(self.position_on_scenario, self.background.rect)
+        self.rect = self.image.get_rect(center=self.center)
 
         # the center of sprite isnt the center of the own image file
         # so, this is needed to find the real center
@@ -44,6 +45,10 @@ class Bot(pg.sprite.Sprite):
         self.index_animation_move = 0
         self.index_animation_attack = 0
         self.float_index = 0
+
+        # life inicial status
+        self.life = 3
+        self.is_dead = False
 
     def update(self):
         self.choose_action()
@@ -90,7 +95,7 @@ class Bot(pg.sprite.Sprite):
     def move(self):
         direction = self.player.position_on_scenario - self.position_on_scenario
         direction.normalize_ip()
-        direction = direction * 4
+        direction = direction * 2
         self.position_on_scenario += direction
 
     def choose_action(self):
@@ -105,3 +110,8 @@ class Bot(pg.sprite.Sprite):
         else:
             self.is_attacking = False
             self.is_moving = False
+
+    def gets_hit(self):
+        self.life -= 1
+        if self.life <= 0:
+            self.is_dead = True

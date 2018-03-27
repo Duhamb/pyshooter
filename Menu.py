@@ -36,6 +36,7 @@ class Menu():
         self.name = None
         self.server_ip = None
         self.have_client = False
+        self.is_host = False
 
         #surface
         self.surface = pg.display.get_surface()
@@ -108,6 +109,7 @@ class Menu():
                 self.server_client = pyshooterClient(self.name)
                 self.server_client.start()
                 self.have_client = True
+                self.is_host = True
                 self._in_menu = False
         else:
             self.surface.blit(self.SERVER_OFF, (150, 450))

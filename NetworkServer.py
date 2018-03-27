@@ -10,16 +10,10 @@ class Server(MastermindServerTCP):
     def __init__(self):
         MastermindServerTCP.__init__(self, 0.5, 0.5, 10.0)  # server refresh, connections' refresh, connection timeout
 
-        self.chat = [None] * scrollback
         self.players = {}
+        self.zombies = {}
         self.mutex = threading.Lock()
 
-    def add_message(self, msg):
-        timestamp = strftime("%H:%M:%S", gmtime())
-
-        self.mutex.acquire()
-        self.chat = self.chat[1:] + [timestamp + " | " + msg]
-        self.mutex.release()
 
     def add_player(self, data):
 
@@ -27,7 +21,11 @@ class Server(MastermindServerTCP):
         self.players[data[0]] = data[1][data[0]]
         self.mutex.release()
 
+    def add_zombie(self, data):
 
+        self.mutex.acquire()
+        self.zombies = data
+        self.mutex.release()
 
     def callback_connect(self):
         # Something could go here
@@ -53,11 +51,12 @@ class Server(MastermindServerTCP):
         cmd = data[0]
         if cmd == "player":
             self.add_player(data[1])
-        elif cmd == "update_player":
-            self.update_player(data[1])
-        elif cmd == "leave":
-            self.add_message("Server: " + data[1] + " has left.")
-        self.callback_client_send(connection_object, self.players)
+            self.callback_client_send(connection_object, ["players", self.players])
+        elif cmd == "zombie_host":
+            self.add_zombie(data[1])
+            self.callback_client_send(connection_object, ["zombies", self.zombies])
+        elif cmd == "zombie_client":
+            self.callback_client_send(connection_object, ["zombies", self.zombies])
 
     def callback_client_send(self, connection_object, data, compression=None):
         # Something could go here

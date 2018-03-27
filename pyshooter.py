@@ -98,6 +98,7 @@ class Main:
         self.delta_time = 0
         self.second_get_ticks = 0
         self.fire_rate = 0
+        self.can_render_bullet = False
 
     def on_event(self, event_queue):
         for event in event_queue:
@@ -107,10 +108,13 @@ class Main:
             self.players.handle_event(event)
             
         if self.player.is_shooting and self.fire_rate > 100:
-            bullet = Projectiles(self.player.position_on_scenario, self.player.position_on_screen, self.BULLET_IMAGE, self.background)
+            self.can_render_bullet = True
+            bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background, screen_to_scenario_server(pg.mouse.get_pos(), self.background.rect))
             self.bullet_list.add(bullet)
             self.fire_rate = 0
             pygame.mixer.Channel(1).play(self.player_sound.shoot, -1)
+        else:
+            self.can_render_bullet = False
         
     def display_fps(self):
         pg.display.set_caption("{} - FPS: {:.2f}".format("PyShooter", self.clock.get_fps()))
@@ -141,11 +145,17 @@ class Main:
         self.bots.update()
 
         if self.multiplayer_on:
-            self.server_client.push_player(self.player)
+            self.server_client.push_player(self.player, self.can_render_bullet)
             self.server_client.pull_players()
             player_list = self.server_client.players_info
             for player_name in player_list:
-                self.player.draw_multiplayer(self.screen, player_list[player_name])
+                actual_player = player_list[player_name]
+                self.player.draw_multiplayer(self.screen, actual_player)
+                if actual_player['is_shooting'] and player_name != self.menu.name:
+                    bullet = Projectiles(actual_player['position_on_scenario'],
+                                         self.BULLET_IMAGE, self.background, actual_player['mouse_position'])
+                    self.bullet_list.add(bullet)
+
 
         else:
             self.players.draw(self.screen)

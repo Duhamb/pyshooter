@@ -15,7 +15,7 @@ def scenario_to_screen(position_on_scenario, scenario_rect):
 # this function return the position on scenario based on other coordinates
 # see comments of scenario_to_screen function
 def screen_to_scenario(position_on_screen, scenario_rect):
-    return position_on_screen - scenario_rect.center
+    return position_on_screen - pg.math.Vector2(scenario_rect.center)
 
 def screen_to_scenario_server(position_on_screen, scenario_rect):
     x = position_on_screen[0] - scenario_rect.centerx

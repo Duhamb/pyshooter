@@ -289,7 +289,9 @@ class Player(pygame.sprite.Sprite):
     def get_server_info(self):
         # acho que o servidor não consegue tratar o tipo pg.math.Vector2
         info = {'position_on_scenario': (self.position_on_scenario[0], self.position_on_scenario[1]),
+         'position_on_screen': (self.position_on_screen[0], self.position_on_screen[1]),
          'angle': self.angle_vision,
+         'mouse_position': screen_to_scenario_server(pg.mouse.get_pos(), self.background.rect),
          'animation_body': self.animation_body,
          'animation_body_index': self.animation_body_index,
          'animation_feet': self.animation_feet,

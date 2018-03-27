@@ -5,8 +5,9 @@ class Statistics():
 		self.player = player
 		self.screen_size = screen_size
 		
-		self.image_weapon = pg.image.load("Assets/Images/ak47.png").convert_alpha()
-		self.rect_weapon = self.image_weapon.get_rect(bottomright=(screen_size[0]-20, screen_size[1]-20))
+		self.image_weapon_rifle = pg.image.load("Assets/Images/ak47.png").convert_alpha()
+		self.image_weapon_shotgun = pg.image.load("Assets/Images/shotgun.png").convert_alpha()
+		self.rect_weapon = self.image_weapon_rifle.get_rect(bottomright=(screen_size[0]-20, screen_size[1]-20))
 
 		self.image_minimap = pg.image.load("Assets/Images/minimap.png").convert_alpha()
 		self.rect_minimap = self.image_minimap.get_rect(bottomleft=(0 + 15,self.screen_size[1] - 15))
@@ -24,7 +25,10 @@ class Statistics():
 		self.draw_minimap(screen)
 
 	def draw_weapon(self, screen):
-		screen.blit(self.image_weapon, self.rect_weapon)
+		if self.player.actual_weapon == 'rifle':
+			screen.blit(self.image_weapon_rifle, self.rect_weapon)
+		else:
+			screen.blit(self.image_weapon_shotgun, self.rect_weapon)
 
 	def draw_score(self, screen):
 		points = str(self.player.index_animation_move)

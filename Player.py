@@ -12,6 +12,13 @@ class Player(pygame.sprite.Sprite):
 
         # set all animations
         self.animation = animation
+        self.animation_move = self.animation.rifle_move
+        self.animation_idle = self.animation.rifle_idle
+        self.animation_reload = self.animation.rifle_reload
+        self.animation_shoot = self.animation.rifle_shoot
+        self.animation_meleeattack = self.animation.rifle_meleeattack
+
+        self.actual_weapon = 'rifle'
 
         # set all sounds (shoot, move, reload)
         self.sound = sound
@@ -38,7 +45,7 @@ class Player(pygame.sprite.Sprite):
         self.delta_center_position = pygame.math.Vector2((+56/2.7,-19/2.7))
 
         # the sprite and rect of player
-        self.image = animation.idle[0]
+        self.image = self.animation_idle[0]
         self.rect = self.image.get_rect(center = location_on_screen)
 
         # positions
@@ -50,6 +57,7 @@ class Player(pygame.sprite.Sprite):
         self.index_animation_shoot = 0
         self.index_animation_idle = 0
         self.index_animation_reload = 0
+        self.index_animation_meleeattack = 0
         self.index_animation_feet_walk = 0
         self.index_animation_feet_strafe_left = 0
         self.index_animation_feet_strafe_right = 0
@@ -60,6 +68,7 @@ class Player(pygame.sprite.Sprite):
         self.is_moving_right = False
         self.is_shooting = False
         self.is_reloading = False
+        self.is_meleeattack = False
         self.is_idle = True
 
         # flags for sounds
@@ -78,6 +87,7 @@ class Player(pygame.sprite.Sprite):
         self.animation_body_index = None
         self.animation_feet = None
         self.animation_feet_index = None
+        self.prefix_animation_name = 'rifle_'
 
         # slower animations
         self.float_index = 0
@@ -93,14 +103,17 @@ class Player(pygame.sprite.Sprite):
 
     def draw_multiplayer(self, screen, server_info ):
         position_on_screen = scenario_to_screen_server(server_info['position_on_scenario'], self.background.rect)
+        
         # body
         animation = getattr(self.animation, server_info['animation_body'])
         original_image = animation[server_info['animation_body_index']]
         [imageMultiplayer, rect_multiplayer] = rotate_fake_center(original_image, server_info['angle'], self.delta_center_position, position_on_screen)
+        
         # feet
         animation_feet = getattr(self.animation, server_info['animation_feet'])
         original_image = animation_feet[server_info['animation_feet_index']]
         [imageFeet, rect_feet] = rotate_fake_center(original_image, server_info['angle'], pg.math.Vector2((0,0)), position_on_screen)
+        
         # draw images
         screen.blit(imageFeet, rect_feet)
         screen.blit(imageMultiplayer, rect_multiplayer)
@@ -117,8 +130,6 @@ class Player(pygame.sprite.Sprite):
                 if not big_size:
                     for j in angles:
                         i = j[0]
-                        # new_direction = pygame.math.Vector2((1,0)).rotate(i + 90)
-                        # new_direction = new_direction.dot(self.velocity*direction) * new_direction
                         normal_vector = pygame.math.Vector2((1,0)).rotate(i)
                         new_direction = remove_parallel_component(normal_vector, direction)
                         direction = new_direction
@@ -198,17 +209,30 @@ class Player(pygame.sprite.Sprite):
                 self.sound.footstep.stop()
                 self.sound_footstep_playing = False
         
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 3:
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_r:
                 self.is_reloading = True
                 pygame.mixer.Channel(1).play(self.sound.reload)
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 self.is_shooting = True
+            if event.button == 3:
+                self.is_meleeattack = True
+                pygame.mixer.Channel(1).play(self.sound.meleeattack)
     
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
                 self.is_shooting = False
                 self.sound.shoot.fadeout(125)
+
+        # change weapon
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_1:
+                self.change_weapon(1)
+            elif event.key == pygame.K_2:
+                self.change_weapon(2)
+        
 
     def react_to_event(self):
         if self.pressionou_w or self.pressionou_d or self.pressionou_a or self.pressionou_s:
@@ -240,32 +264,60 @@ class Player(pygame.sprite.Sprite):
             except:
                 pass
 
+    def change_weapon(self, weapon_number):
+        if weapon_number == 1:
+            self.animation_move = self.animation.rifle_move
+            self.animation_shoot = self.animation.rifle_shoot
+            self.animation_idle = self.animation.rifle_idle
+            self.animation_reload = self.animation.rifle_reload
+            self.animation_meleeattack = self.animation.rifle_meleeattack
+            self.prefix_animation_name = 'rifle_'
+            self.actual_weapon = 'rifle'
+            # self.delta_center_position
+        elif weapon_number == 2:
+            self.animation_move = self.animation.shotgun_move
+            self.animation_shoot = self.animation.shotgun_shoot
+            self.animation_idle = self.animation.shotgun_idle
+            self.animation_reload = self.animation.shotgun_reload
+            self.animation_meleeattack = self.animation.shotgun_meleeattack
+            self.prefix_animation_name = 'shotgun_'
+            self.actual_weapon = 'shotgun'
+
     def choose_animation(self):
         # body animation
         if self.is_shooting:
-            self.index_animation_shoot = increment(self.index_animation_shoot, 1, 2)
-            self.original_image = self.animation.shoot[self.index_animation_shoot]
-            self.animation_body = 'shoot'
+            self.index_animation_shoot = increment(self.index_animation_shoot, 1, len(self.animation_shoot)-1)
+            self.original_image = self.animation_shoot[self.index_animation_shoot]
+            self.animation_body = self.prefix_animation_name + 'shoot'
             self.animation_body_index = self.index_animation_shoot
         elif self.is_reloading:
             self.float_index = increment(self.float_index, 0.5, 1)
-            self.index_animation_reload = increment(self.index_animation_reload,int(self.float_index),19)
-            self.animation_body = 'rifle_reload'
+            self.index_animation_reload = increment(self.index_animation_reload, int(self.float_index),len(self.animation_reload)-1)
+            self.animation_body = self.prefix_animation_name + 'reload'
             self.animation_body_index = self.index_animation_reload
-            if self.index_animation_reload == 19:
+            if self.index_animation_reload == len(self.animation_reload)-1:
                 self.is_reloading = False
                 self.index_animation_reload = 0
-            self.original_image = self.animation.rifle_reload[self.index_animation_reload]
+            self.original_image = self.animation_reload[self.index_animation_reload]
+        elif self.is_meleeattack:
+            self.float_index = increment(self.float_index, 0.5, 1)
+            self.index_animation_meleeattack = increment(self.index_animation_meleeattack, int(self.float_index),len(self.animation_meleeattack)-1)
+            self.animation_body = self.prefix_animation_name + 'meleeattack'
+            self.animation_body_index = self.index_animation_meleeattack
+            if self.index_animation_meleeattack == len(self.animation_meleeattack)-1:
+                self.is_meleeattack = False
+                self.index_animation_meleeattack = 0
+            self.original_image = self.animation_meleeattack[self.index_animation_meleeattack]
         elif self.is_idle:
             self.float_index = increment(self.float_index, 0.25, 1)
-            self.index_animation_idle = increment(self.index_animation_idle, int(self.float_index), 19)
-            self.original_image = self.animation.idle[self.index_animation_idle]
-            self.animation_body = 'idle'
+            self.index_animation_idle = increment(self.index_animation_idle, int(self.float_index), len(self.animation_idle)-1)
+            self.original_image = self.animation_idle[self.index_animation_idle]
+            self.animation_body = self.prefix_animation_name + 'idle'
             self.animation_body_index = self.index_animation_idle
         elif self.is_moving_forward or self.is_moving_left or self.is_moving_right:
-            self.index_animation_move = increment(self.index_animation_move, 1, 19)
-            self.original_image = self.animation.move[self.index_animation_move]
-            self.animation_body = 'move'
+            self.index_animation_move = increment(self.index_animation_move, 1, len(self.animation_move)-1)
+            self.original_image = self.animation_move[self.index_animation_move]
+            self.animation_body = self.prefix_animation_name + 'move'
             self.animation_body_index = self.index_animation_move
         
         # feet animation

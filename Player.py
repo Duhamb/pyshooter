@@ -19,6 +19,7 @@ class Player(pygame.sprite.Sprite):
         self.animation_meleeattack = self.animation.rifle_meleeattack
 
         self.actual_weapon = 'rifle'
+        self.bullet_counter = 15
 
         # set all sounds (shoot, move, reload)
         self.sound = sound
@@ -212,6 +213,7 @@ class Player(pygame.sprite.Sprite):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_r:
                 self.is_reloading = True
+                self.bullet_counter = 15
                 pygame.mixer.Channel(1).play(self.sound.reload)
 
         if event.type == pygame.MOUSEBUTTONDOWN:

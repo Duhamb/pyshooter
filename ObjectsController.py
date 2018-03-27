@@ -45,15 +45,17 @@ class ObjectsController:
         self.can_render_bullet = False
 
     def handle_event(self):
-        if self.player.is_shooting and self.fire_rate > 100:
-            self.can_render_bullet = True
-            bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background, screen_to_scenario_server(pg.mouse.get_pos(), self.background.rect))
-            self.bullet_list.add(bullet)
-            self.fire_rate = 0
-            self.player_sound.shoot.stop()
-            pygame.mixer.Channel(1).play(self.player_sound.shoot)
-        else:
-            self.can_render_bullet = False
+        if self.player.bullet_counter > 0:
+            if self.player.is_shooting and self.fire_rate > 300:
+                self.can_render_bullet = True
+                bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background, screen_to_scenario_server(pg.mouse.get_pos(), self.background.rect))
+                self.bullet_list.add(bullet)
+                self.fire_rate = 0
+                self.player.bullet_counter -= 1
+                self.player_sound.shoot.stop()
+                pygame.mixer.Channel(1).play(self.player_sound.shoot)
+            else:
+                self.can_render_bullet = False
 
     def update(self):
         # Time references
@@ -62,6 +64,7 @@ class ObjectsController:
         self.delta_time = self.second_get_ticks - self.first_get_ticks
         self.fire_rate += self.delta_time
 
+        # Collisions between zombies and bullets
         collisions = pg.sprite.groupcollide(self.bot_list, self.bullet_list, dokilla=False, dokillb=True)
         for zombie in collisions:
             zombie.gets_hit()
@@ -112,7 +115,6 @@ class ObjectsController:
             zombie_list = server_client.zombies_info
             for zombie_id in zombie_list:
                 self.bot_draw.draw_multiplayer(self.screen, zombie_list[zombie_id])
-
         else:
             players.draw(self.screen)
             self.bot_list.draw(self.screen)

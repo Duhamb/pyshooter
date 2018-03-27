@@ -167,3 +167,14 @@ def remove_parallel_component(reference_vector, original_vector):
     except:
         new_direction = pg.math.Vector2((0,0))
     return new_direction
+
+
+#### debbuger functions
+
+def draw_rect_list(surface, rect_list):
+    if rect_list:
+        for rect in rect_list:
+            pg.draw.line(surface, (255,0,0), rect.topleft, rect.topright)
+            pg.draw.line(surface, (255,0,0), rect.topleft, rect.bottomleft)
+            pg.draw.line(surface, (255,0,0), rect.topright, rect.bottomright)
+            pg.draw.line(surface, (255,0,0), rect.bottomleft, rect.bottomright)

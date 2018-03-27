@@ -62,7 +62,8 @@ class Main:
         self.player_sound.load()
 
         self.background = Background()
-        self.player = Player((0,-1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background)
+
+        self.player = Player((0, -1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background, self.screen)
 
         self.stats = Statistics(self.player, self.screen.get_rect().size)
         self.light = Light(self.size, self.player)
@@ -73,6 +74,8 @@ class Main:
         #call menu Displays/Loops
         self.menu.intro()
 
+        self.server_client = None
+
         #Get informations about multiplayer/singleplayer
         self.multiplayer_on = self.menu.have_client
         if self.multiplayer_on:
@@ -82,16 +85,16 @@ class Main:
         pg.mouse.set_visible(0)
 
         self.ObjectsController = ObjectsController(self.player, self.background)
-
+        
     def on_event(self, event_queue):
         for event in event_queue:
             if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
                 self._running = False
 
             self.players.handle_event(event)
-            
+
         self.ObjectsController.handle_event()
-        
+
     def display_fps(self):
         pg.display.set_caption("{} - FPS: {:.2f}".format("PyShooter", self.clock.get_fps()))
 
@@ -111,17 +114,7 @@ class Main:
 
         self.players.update()
 
-        if self.multiplayer_on:
-            self.server_client.push_player(self.player)
-            self.server_client.pull_players()
-            player_list = self.server_client.players_info
-            for player_name in player_list:
-                self.player.draw_multiplayer(self.screen, player_list[player_name])
-
-        else:
-            self.players.draw(self.screen)
-
-        self.ObjectsController.draw()
+        self.ObjectsController.draw(self.multiplayer_on, self.server_client, self.menu, self.players)
 
         self.cross_rect = self.CROSS_IMAGE.get_rect(center = pg.mouse.get_pos())
         self.screen.blit(self.CROSS_IMAGE, self.cross_rect)

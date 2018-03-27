@@ -2,10 +2,17 @@ import pygame as pg
 from helpers import *
 
 class Player:
-    move = []
-    shoot = []
-    idle = []
+    rifle_move = []
+    rifle_shoot = []
+    rifle_idle = []
     rifle_reload = []
+    rifle_meleeattack = []
+
+    shotgun_move = []
+    shotgun_shoot = []
+    shotgun_idle = []
+    shotgun_reload = []
+    shotgun_meleeattack = []
     
     feet_walk = []
     feet_idle = []
@@ -14,27 +21,59 @@ class Player:
 
     @classmethod
     def load(cls):
-        
+        #---------------------------------------------------------------------------
         default_directory = 'Assets/Images/player/rifle/move/survivor-move_rifle_'
         extension_file = '.png'
-        cls.move = load_image_list(default_directory, extension_file, 20)
-        cls.move = scale_image_list(cls.move, 2.7)
+        cls.rifle_move = load_image_list(default_directory, extension_file, 20)
+        cls.rifle_move = scale_image_list(cls.rifle_move, 2.7)
 
         default_directory = 'Assets/Images/player/rifle/shoot/survivor-shoot_rifle_'
         extension_file = '.png'
-        cls.shoot = load_image_list(default_directory, extension_file, 3)
-        cls.shoot = scale_image_list(cls.shoot, 2.7)
+        cls.rifle_shoot = load_image_list(default_directory, extension_file, 3)
+        cls.rifle_shoot = scale_image_list(cls.rifle_shoot, 2.7)
 
         default_directory = 'Assets/Images/player/rifle/idle/survivor-idle_rifle_'
         extension_file = '.png'
-        cls.idle = load_image_list(default_directory, extension_file, 20)
-        cls.idle = scale_image_list(cls.idle, 2.7)
+        cls.rifle_idle = load_image_list(default_directory, extension_file, 20)
+        cls.rifle_idle = scale_image_list(cls.rifle_idle, 2.7)
 
         default_directory = 'Assets/Images/player/rifle/reload/survivor-reload_rifle_'
         extension_file = '.png'
         cls.rifle_reload = load_image_list(default_directory, extension_file, 20)
         cls.rifle_reload = scale_image_list(cls.rifle_reload, 2.7)
 
+        default_directory = 'Assets/Images/player/rifle/meleeattack/survivor-meleeattack_rifle_'
+        extension_file = '.png'
+        cls.rifle_meleeattack = load_image_list(default_directory, extension_file, 15)
+        cls.rifle_meleeattack = scale_image_list(cls.rifle_meleeattack, 2.7)
+        #---------------------------------------------------------------------------
+
+        #---------------------------------------------------------------------------
+        default_directory = 'Assets/Images/player/shotgun/move/survivor-move_shotgun_'
+        extension_file = '.png'
+        cls.shotgun_move = load_image_list(default_directory, extension_file, 20)
+        cls.shotgun_move = scale_image_list(cls.shotgun_move, 2.7)
+
+        default_directory = 'Assets/Images/player/shotgun/shoot/survivor-shoot_shotgun_'
+        extension_file = '.png'
+        cls.shotgun_shoot = load_image_list(default_directory, extension_file, 3)
+        cls.shotgun_shoot = scale_image_list(cls.shotgun_shoot, 2.7)
+
+        default_directory = 'Assets/Images/player/shotgun/idle/survivor-idle_shotgun_'
+        extension_file = '.png'
+        cls.shotgun_idle = load_image_list(default_directory, extension_file, 20)
+        cls.shotgun_idle = scale_image_list(cls.shotgun_idle, 2.7)
+
+        default_directory = 'Assets/Images/player/shotgun/reload/survivor-reload_shotgun_'
+        extension_file = '.png'
+        cls.shotgun_reload = load_image_list(default_directory, extension_file, 20)
+        cls.shotgun_reload = scale_image_list(cls.shotgun_reload, 2.7)
+
+        default_directory = 'Assets/Images/player/shotgun/meleeattack/survivor-meleeattack_shotgun_'
+        extension_file = '.png'
+        cls.shotgun_meleeattack = load_image_list(default_directory, extension_file, 15)
+        cls.shotgun_meleeattack = scale_image_list(cls.shotgun_meleeattack, 2.7)
+        #---------------------------------------------------------------------------
 
         default_directory = 'Assets/Images/player/feet/strafe_left/survivor-strafe_left_'
         extension_file = '.png'

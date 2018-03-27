@@ -5,7 +5,6 @@ import pygame as pg
 
 ######################   FUNCTIONS    ##################################
 
-
 # this function return the position on screen based on other coordinates
 # is needed because all orientation is made by scenario position and
 # render functions use screen position
@@ -15,7 +14,7 @@ def scenario_to_screen(position_on_scenario, scenario_rect):
 # this function return the position on scenario based on other coordinates
 # see comments of scenario_to_screen function
 def screen_to_scenario(position_on_screen, scenario_rect):
-    return position_on_screen - scenario_rect.center
+    return position_on_screen - pg.math.Vector2(scenario_rect.center)
 
 def screen_to_scenario_server(position_on_screen, scenario_rect):
     x = position_on_screen[0] - scenario_rect.centerx
@@ -148,3 +147,23 @@ def get_normal(position_on_scenario, background):
             lista_de_angulos[i] = [(a+b)/2, b-a]
 
     return lista_de_angulos
+
+def tuple_of_ints(tuple_of_float):
+    a = int(tuple_of_float[0])
+    b = int(tuple_of_float[1])
+    return (a,b)
+
+def get_character_center_position(rect, offset_vector, angle_rotation):
+    delta_position = pg.math.Vector2(rect.center) - pg.math.Vector2(rect.topleft)
+    offset = (-offset_vector).rotate(angle_rotation)
+    actual_position = delta_position + offset
+    return  tuple_of_ints(actual_position)
+
+def remove_parallel_component(reference_vector, original_vector):
+    perpendicular_vector = reference_vector.rotate(90)
+    new_direction = perpendicular_vector.dot(original_vector) * perpendicular_vector
+    try:
+        new_direction = new_direction.normalize()
+    except:
+        new_direction = pg.math.Vector2((0,0))
+    return new_direction

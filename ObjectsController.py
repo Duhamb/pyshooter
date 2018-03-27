@@ -39,13 +39,18 @@ class ObjectsController:
         self.delta_time = 0
         self.second_get_ticks = 0
         self.fire_rate = 0
+        self.can_render_bullet = False
 
     def handle_event(self):
-        if self.player.is_shooting and self.fire_rate > 300:
-            bullet = Projectiles(self.player.position_on_scenario, self.player.position_on_screen, self.BULLET_IMAGE, self.background)
+        if self.player.is_shooting and self.fire_rate > 100:
+            self.can_render_bullet = True
+            bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background, screen_to_scenario_server(pg.mouse.get_pos(), self.background.rect))
             self.bullet_list.add(bullet)
             self.fire_rate = 0
-            pygame.mixer.Channel(1).play(self.player_sound.shoot, -1)
+            self.player_sound.shoot.stop()
+            pygame.mixer.Channel(1).play(self.player_sound.shoot)
+        else:
+            self.can_render_bullet = False
 
     def update(self):
         # Time references
@@ -68,10 +73,26 @@ class ObjectsController:
             if bullet.distance > 300 or bullet.is_colliding:
                 self.bullet_list.remove(bullet)
 
-    def draw(self):
+    def draw(self, multiplayer_on, server_client, menu, players):
 
         self.bot_list.update()
         self.bullet_list.update()
 
         self.bullet_list.draw(self.screen)
         self.bot_list.draw(self.screen)
+
+        if multiplayer_on:
+            server_client.push_player(self.player, self.can_render_bullet)
+            server_client.pull_players()
+            player_list = server_client.players_info
+            for player_name in player_list:
+                actual_player = player_list[player_name]
+                self.player.draw_multiplayer(self.screen, actual_player)
+                if actual_player['is_shooting'] and player_name != menu.name:
+                    bullet = Projectiles(actual_player['position_on_scenario'],
+                                         self.BULLET_IMAGE, self.background, actual_player['mouse_position'])
+                    self.bullet_list.add(bullet)
+
+
+        else:
+            players.draw(self.screen)

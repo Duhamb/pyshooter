@@ -2,32 +2,33 @@ from helpers import *
 import math
 
 class Projectiles(pg.sprite.Sprite):
-    def __init__(self, origin_scenario, origin_screen, image, background):
+    def __init__(self, origin_scenario, image, background, destination_scenario):
         pg.sprite.Sprite.__init__(self)
 
         self.background = background
         self.mask = pg.mask.from_surface(image)
-        self.player_position = pg.math.Vector2(origin_screen)
+        self.player_position = pg.math.Vector2(origin_scenario)
 
         # vector between player head and rifle
         self.vector_offset = pg.math.Vector2((172.5/2.7, 32/2.7))
 
         #Angle correction
-        _, angle = (pg.mouse.get_pos() - self.player_position).as_polar()
+        self.first_direction = destination_scenario - self.player_position
+        _, angle = self.first_direction.as_polar()
         try:
-            D = (pg.mouse.get_pos()-self.player_position).length()
+            D = self.first_direction.length()
             add_angle = math.degrees(math.asin(32/(2.7*D)))
             angle -= add_angle
         except:
             pass
         
         correction_angle = math.degrees(math.atan(32/172))
-        self.direction = self.vector_offset.rotate(angle-correction_angle)
+        self.final_direction = self.vector_offset.rotate(angle-correction_angle)
 
         #Start position correction
         self.new_vector = self.vector_offset.rotate(angle)
-        self.position_on_screen = self.player_position + self.new_vector
-        self.position_on_scenario = screen_to_scenario(self.position_on_screen, self.background.rect)
+        self.position_on_scenario = self.player_position + self.new_vector
+        self.position_on_screen = scenario_to_screen(self.position_on_scenario, self.background.rect)
 
         self.image = image
         self.image = pg.transform.rotozoom(self.image, -angle, 1)
@@ -37,7 +38,7 @@ class Projectiles(pg.sprite.Sprite):
         self.is_colliding = False
 
     def is_possible_direction(self):
-        self.next_position_on_scenario = self.position_on_scenario + 10 * self.direction.normalize()
+        self.next_position_on_scenario = self.position_on_scenario + 10 * self.final_direction.normalize()
 
         self.next_rect = self.image.get_rect(center=self.position_on_screen)
         self.next_mask = pg.mask.from_surface(self.image)
@@ -56,7 +57,7 @@ class Projectiles(pg.sprite.Sprite):
 
     def update(self):
         self.is_possible_direction()
-        self.position_on_screen += 10 * self.direction.normalize()
+        self.position_on_screen += 10 * self.final_direction.normalize()
         self.position_on_scenario = self.next_position_on_scenario
 
         self.distance += 10

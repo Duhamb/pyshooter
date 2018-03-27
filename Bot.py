@@ -113,5 +113,5 @@ class Bot(pg.sprite.Sprite):
 
     def gets_hit(self):
         self.life -= 1
-        if self.life == 0:
+        if self.life <= 0:
             self.is_dead = True

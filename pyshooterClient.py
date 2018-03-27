@@ -54,8 +54,10 @@ class pyshooterClient():
 
     def disconnect(self):
         self.client.disconnect()
-    def push_player(self, player):
-        self.client.send(["player", [self.name, {self.name: player.get_server_info()}]], None)
+    def push_player(self, player, can_render_bullet):
+        send = player.get_server_info()
+        send['is_shooting'] = can_render_bullet
+        self.client.send(["player", [self.name, {self.name: send}]], None)
 
     def pull_players(self):
         reply = None

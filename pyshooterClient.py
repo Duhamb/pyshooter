@@ -12,17 +12,15 @@ class pyshooterClient():
 
         self.client = None
         self.server = None
+        self.zombies_info = {}
+        self.players_info = {}
 
     def blocking_receive(self):
         try:
             reply = None
             while reply == None:
                 reply = self.client.receive(False)
-            self.players_info = reply  # The entire history of the chat
-
-
-            #print(self.players_info)
-
+            self.players_info = reply
         except MastermindError:
             self.continuing = False
 
@@ -62,20 +60,21 @@ class pyshooterClient():
 
     def pull_players(self):
         reply = None
-        while reply == None:
+        while (reply == None or reply[0] != "players"):
             reply = self.client.receive(False)
-        self.players_info = reply
+        self.players_info = reply[1]
 
-    def push_zombies(self, player, can_render_bullet):
-        send = player.get_server_info()
-        send['is_shooting'] = can_render_bullet
-        self.client.send(["zombie", [self.name, {self.name: send}]], None)
+    def push_zombies(self, zombie_list, is_host):
+        if is_host:
+            self.client.send(["zombie", zombie_list], None)
+        else:
+            self.client.send(["zombie2", zombie_list], None)
 
     def pull_zombies(self):
         reply = None
-        while reply == None:
+        while (reply == None or reply[0] != "zombies"):
             reply = self.client.receive(False)
-        self.zombies_info = reply
+        self.zombies_info = reply[1]
 
 
     def main(self):

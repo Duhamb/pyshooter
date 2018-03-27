@@ -73,15 +73,16 @@ class ObjectsController:
             if bullet.distance > 300 or bullet.is_colliding:
                 self.bullet_list.remove(bullet)
 
-    def draw(self, multiplayer_on, server_client, menu, players):
-
-        self.bot_list.update()
+    def draw(self, multiplayer_on, server_client, menu, players, is_host):
+        if is_host:
+            self.bot_list.update()
         self.bullet_list.update()
 
         self.bullet_list.draw(self.screen)
-        self.bot_list.draw(self.screen)
 
         if multiplayer_on:
+
+            #Player Syn
             server_client.push_player(self.player, self.can_render_bullet)
             server_client.pull_players()
             player_list = server_client.players_info
@@ -92,7 +93,23 @@ class ObjectsController:
                     bullet = Projectiles(actual_player['position_on_scenario'],
                                          self.BULLET_IMAGE, self.background, actual_player['mouse_position'])
                     self.bullet_list.add(bullet)
-
+            #Zombie Syn
+            #Host send
+            if is_host:
+                zombie_server_list = {}
+                id = 0
+                for zombie in self.bot_list:
+                    zombie_server_list[id] = zombie.get_server_info()
+                    id = id +1
+                server_client.push_zombies(zombie_server_list, True)
+            else:
+                server_client.push_zombies({}, False)
+            #receive
+            server_client.pull_zombies()
+            zombie_list = server_client.zombies_info
+            for zombie_id in zombie_list:
+                self.bot0.draw_multiplayer(self.screen, zombie_list[zombie_id])
 
         else:
             players.draw(self.screen)
+            self.bot_list.draw(self.screen)

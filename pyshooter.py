@@ -75,11 +75,13 @@ class Main:
         self.menu.intro()
 
         self.server_client = None
+        self.is_host = None
 
         #Get informations about multiplayer/singleplayer
         self.multiplayer_on = self.menu.have_client
         if self.multiplayer_on:
             self.server_client = self.menu.server_client
+            self.is_host = self.menu.is_host
 
         #Set mouse invisible
         pg.mouse.set_visible(0)
@@ -114,7 +116,7 @@ class Main:
 
         self.players.update()
 
-        self.ObjectsController.draw(self.multiplayer_on, self.server_client, self.menu, self.players)
+        self.ObjectsController.draw(self.multiplayer_on, self.server_client, self.menu, self.players, self.is_host)
 
         self.cross_rect = self.CROSS_IMAGE.get_rect(center = pg.mouse.get_pos())
         self.screen.blit(self.CROSS_IMAGE, self.cross_rect)

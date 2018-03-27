@@ -12,6 +12,7 @@ class Server(MastermindServerTCP):
 
         self.chat = [None] * scrollback
         self.players = {}
+        self.zombies = {}
         self.mutex = threading.Lock()
 
     def add_message(self, msg):
@@ -25,6 +26,12 @@ class Server(MastermindServerTCP):
 
         self.mutex.acquire()
         self.players[data[0]] = data[1][data[0]]
+        self.mutex.release()
+
+    def add_zombie(self, data):
+
+        self.mutex.acquire()
+        self.zombies = data
         self.mutex.release()
 
 
@@ -53,13 +60,17 @@ class Server(MastermindServerTCP):
         cmd = data[0]
         if cmd == "player":
             self.add_player(data[1])
-        #elif cmd == "zombie"
-
+            self.callback_client_send(connection_object, ["players", self.players])
+        elif cmd == "zombie":
+            self.add_zombie(data[1])
+            self.callback_client_send(connection_object, ["zombies", self.zombies])
+        elif cmd == "zombie2":
+            self.callback_client_send(connection_object, ["zombies", self.zombies])
         elif cmd == "update_player":
             self.update_player(data[1])
         elif cmd == "leave":
             self.add_message("Server: " + data[1] + " has left.")
-        self.callback_client_send(connection_object, self.players)
+
 
     def callback_client_send(self, connection_object, data, compression=None):
         # Something could go here

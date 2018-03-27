@@ -2,6 +2,7 @@
 
 import pygame as pg
 
+
 ######################   FUNCTIONS    ##################################
 
 # this function return the position on screen based on other coordinates

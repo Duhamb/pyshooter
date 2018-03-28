@@ -13,6 +13,7 @@ class pyshooterClient():
         self.server = None
         self.zombies_info = {}
         self.players_info = {}
+        self.minimaps_info = {}
 
     def start(self):
         self.client = MastermindClientTCP(client_timeout_connect, client_timeout_receive)
@@ -64,3 +65,13 @@ class pyshooterClient():
         while (reply == None or reply[0] != "zombies"):
             reply = self.client.receive(False)
         self.zombies_info = reply[1]
+
+    def push_minimap(self, position_on_screen):
+        self.client.send(["minimaps", [self.name, {self.name: position_on_screen}]], None)
+
+
+    def pull_minimaps(self):
+        reply = None
+        while (reply == None or reply[0] != "minimaps"):
+            reply = self.client.receive(False)
+        self.minimaps_info = reply[1]

@@ -65,7 +65,6 @@ class Main:
 
         self.player = Player((0, -1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background)
 
-        self.stats = Statistics(self.player, self.screen.get_rect().size)
         self.light = Light(self.size, self.player)
 
         # esse grupo herda da sprite group
@@ -83,10 +82,13 @@ class Main:
             self.server_client = self.menu.server_client
             self.is_host = self.menu.is_host
 
+        self.stats = Statistics(self.player, self.screen.get_rect().size, self.multiplayer_on, self.server_client)
+
         #Set mouse invisible
         pg.mouse.set_visible(0)
 
-        self.ObjectsController = ObjectsController(self.player, self.background)
+        #Define Objects Controller
+        self.ObjectsController = ObjectsController(self.player, self.background,self.multiplayer_on, self.server_client, self.menu, self.players, self.is_host)
         
     def on_event(self, event_queue):
         for event in event_queue:
@@ -94,7 +96,6 @@ class Main:
                 self._running = False
 
             self.players.handle_event(event)
-
         self.ObjectsController.handle_event()
 
     def display_fps(self):
@@ -116,7 +117,7 @@ class Main:
 
         self.players.update()
 
-        self.ObjectsController.draw(self.multiplayer_on, self.server_client, self.menu, self.players, self.is_host)
+        self.ObjectsController.draw()
 
         self.cross_rect = self.CROSS_IMAGE.get_rect(center = pg.mouse.get_pos())
         self.screen.blit(self.CROSS_IMAGE, self.cross_rect)

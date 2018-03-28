@@ -4,7 +4,7 @@ class Statistics():
     def __init__(self, player, screen_size):
         self.player = player
         self.screen_size = screen_size
-		
+
         self.image_weapon_rifle = pg.image.load("Assets/Images/ak47.png").convert_alpha()
         self.image_weapon_shotgun = pg.image.load("Assets/Images/shotgun.png").convert_alpha()
         self.rect_weapon = self.image_weapon_rifle.get_rect(bottomright=(screen_size[0]-20, screen_size[1]-20))
@@ -13,7 +13,7 @@ class Statistics():
         self.rect_minimap = self.image_minimap.get_rect(bottomleft=(0 + 15,self.screen_size[1] - 15))
         self.center_position_minimap = pg.math.Vector2(self.rect_minimap.center)
         self.ratio = 89.7
-		
+
         self.font_text_25 = pg.font.Font("Assets/Fonts/BebasNeue-Regular.otf", 25)
         self.font_text_18 = pg.font.Font("Assets/Fonts/BebasNeue-Regular.otf", 18)
         self.score_label = self.font_text_18.render("SCORE", 1, (255,255,255))

@@ -86,7 +86,8 @@ class Main:
         #Set mouse invisible
         pg.mouse.set_visible(0)
 
-        self.ObjectsController = ObjectsController(self.player, self.background)
+        #Define Objects Controller
+        self.ObjectsController = ObjectsController(self.player, self.background,self.multiplayer_on, self.server_client, self.menu, self.players, self.is_host)
         
     def on_event(self, event_queue):
         for event in event_queue:
@@ -94,7 +95,6 @@ class Main:
                 self._running = False
 
             self.players.handle_event(event)
-
         self.ObjectsController.handle_event()
 
     def display_fps(self):
@@ -116,7 +116,7 @@ class Main:
 
         self.players.update()
 
-        self.ObjectsController.draw(self.multiplayer_on, self.server_client, self.menu, self.players, self.is_host)
+        self.ObjectsController.draw()
 
         self.cross_rect = self.CROSS_IMAGE.get_rect(center = pg.mouse.get_pos())
         self.screen.blit(self.CROSS_IMAGE, self.cross_rect)

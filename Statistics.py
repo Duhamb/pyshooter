@@ -1,9 +1,12 @@
 import pygame as pg
 
 class Statistics():
-    def __init__(self, player, screen_size):
+    def __init__(self, player, screen_size, multiplayer_on, server_client):
         self.player = player
         self.screen_size = screen_size
+        self.multiplayer_on = multiplayer_on
+        self.server_client = server_client
+        self.position_on_screen = None
 
         self.image_weapon_rifle = pg.image.load("Assets/Images/ak47.png").convert_alpha()
         self.image_weapon_shotgun = pg.image.load("Assets/Images/shotgun.png").convert_alpha()
@@ -24,6 +27,8 @@ class Statistics():
         self.draw_weapon(screen)
         self.draw_minimap(screen)
         self.draw_ammo(screen)
+        if self.multiplayer_on:
+            self.draw_minimap_multiplayer(screen)
 
     def draw_weapon(self, screen):
         if self.player.actual_weapon == 'rifle':
@@ -41,9 +46,18 @@ class Statistics():
     def draw_minimap(self, screen):
         screen.blit(self.image_minimap, self.rect_minimap)
         position_on_minimap = self.player.position_on_scenario/self.ratio
-        position_on_screen = position_on_minimap + self.center_position_minimap
-        position_on_screen = (int(position_on_screen[0]), int(position_on_screen[1]))
-        pg.draw.circle(screen, (255,0,0), position_on_screen, 2, 1)
+        self.position_on_screen = position_on_minimap + self.center_position_minimap
+        self.position_on_screen = (int(self.position_on_screen[0]), int(self.position_on_screen[1]))
+        pg.draw.circle(screen, (255,0,0), self.position_on_screen, 2, 1)
+
+    def draw_minimap_multiplayer(self, screen):
+        self.server_client.push_minimap(self.position_on_screen)
+        self.server_client.pull_minimaps()
+        positions_list = self.server_client.minimaps_info
+        for player_name in positions_list:
+            if player_name != self.server_client.name:
+                pg.draw.circle(screen, (0, 255, 0), positions_list[player_name], 2, 1)
+
 
     def draw_ammo(self, screen):
         ammo = str(self.player.bullet_counter) + "/15"

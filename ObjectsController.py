@@ -87,9 +87,6 @@ class ObjectsController:
 
     def draw(self):
 
-        self.bullet_list.update()
-        self.bullet_list.draw(self.screen)
-
         if self.multiplayer_on:
 
             #Player Syn
@@ -124,3 +121,6 @@ class ObjectsController:
             self.bot_list.update()
             self.players.draw(self.screen)
             self.bot_list.draw(self.screen)
+
+        self.bullet_list.update()
+        self.bullet_list.draw(self.screen)

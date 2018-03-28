@@ -65,7 +65,6 @@ class Main:
 
         self.player = Player((0, -1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background, self.screen)
 
-        self.stats = Statistics(self.player, self.screen.get_rect().size)
         self.light = Light(self.size, self.player)
 
         # esse grupo herda da sprite group
@@ -82,6 +81,8 @@ class Main:
         if self.multiplayer_on:
             self.server_client = self.menu.server_client
             self.is_host = self.menu.is_host
+
+        self.stats = Statistics(self.player, self.screen.get_rect().size, self.multiplayer_on, self.server_client)
 
         #Set mouse invisible
         pg.mouse.set_visible(0)

@@ -9,6 +9,7 @@ class Player(pygame.sprite.Sprite):
         self.velocity = 5
 
         self.tela = tela
+        self.score = 0
 
         # set all animations
         self.animation = animation

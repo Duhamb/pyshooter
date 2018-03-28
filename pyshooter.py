@@ -63,13 +63,6 @@ class Main:
 
         self.background = Background()
 
-        self.player = Player((0, -1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background, self.screen)
-
-        self.light = Light(self.size, self.player)
-
-        # esse grupo herda da sprite group
-        self.players = ExtendedGroup(self.player)
-
         #call menu Displays/Loops
         self.menu.intro()
 
@@ -82,7 +75,14 @@ class Main:
             self.server_client = self.menu.server_client
             self.is_host = self.menu.is_host
 
-        self.stats = Statistics(self.player, self.screen.get_rect().size, self.multiplayer_on, self.server_client)
+        self.player = Player((0, -1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background, self.screen)
+
+        self.light = Light(self.size, self.player)
+
+        # esse grupo herda da sprite group
+        self.players = ExtendedGroup(self.player)
+
+        self.stats = Statistics(self.player, self.screen.get_rect().size, self.multiplayer_on, self.server_client, self.is_host)
 
         #Set mouse invisible
         pg.mouse.set_visible(0)

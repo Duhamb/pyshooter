@@ -1,10 +1,11 @@
 import pygame as pg
 
 class Statistics():
-    def __init__(self, player, screen_size, multiplayer_on, server_client):
+    def __init__(self, player, screen_size, multiplayer_on, server_client, is_host):
         self.player = player
         self.screen_size = screen_size
         self.multiplayer_on = multiplayer_on
+        self.is_host = is_host
         self.server_client = server_client
         self.position_on_screen = None
 
@@ -29,6 +30,7 @@ class Statistics():
         self.draw_ammo(screen)
         if self.multiplayer_on:
             self.draw_minimap_multiplayer(screen)
+            self.draw_score_multiplayer(screen)
 
     def draw_weapon(self, screen):
         if self.player.actual_weapon == 'rifle':
@@ -37,7 +39,7 @@ class Statistics():
             screen.blit(self.image_weapon_shotgun, self.rect_weapon)
 
     def draw_score(self, screen):
-        points = str(self.player.index_animation_move)
+        points = str(self.player.score)
         points = self.font_text_25.render(points, 1, (255,255,255))
         screen.blit(self.score_label, (15, 15))
         screen.blit(self.score_value, (15, 41))
@@ -57,6 +59,15 @@ class Statistics():
         for player_name in positions_list:
             if player_name != self.server_client.name:
                 pg.draw.circle(screen, (0, 255, 0), positions_list[player_name], 2, 1)
+
+    def draw_score_multiplayer(self, screen):
+        #self.server_client.push_score(,is_host)
+
+        points = str(self.player.score)
+        points = self.font_text_25.render(points, 1, (255,255,255))
+        screen.blit(self.score_label, (15, 15))
+        screen.blit(self.score_value, (15, 41))
+        screen.blit(points, (15, 67))
 
 
     def draw_ammo(self, screen):

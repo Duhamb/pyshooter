@@ -14,6 +14,7 @@ class pyshooterClient():
         self.zombies_info = {}
         self.players_info = {}
         self.minimaps_info = {}
+        self.scores = {}
 
     def start(self):
         self.client = MastermindClientTCP(client_timeout_connect, client_timeout_receive)
@@ -75,3 +76,18 @@ class pyshooterClient():
         while (reply == None or reply[0] != "minimaps"):
             reply = self.client.receive(False)
         self.minimaps_info = reply[1]
+
+    def add_points(self, shooter_name):
+        self.scores[shooter_name] = self.scores.get(shooter_name, 0) + 100
+
+    def push_scores(self, zombie_list, is_host):
+        if is_host:
+            self.client.send(["zombie_host", zombie_list], None)
+        else:
+            self.client.send(["zombie_client", zombie_list], None)
+
+    def pull_scores(self):
+        reply = None
+        while (reply == None or reply[0] != "zombies"):
+            reply = self.client.receive(False)
+        self.zombies_info = reply[1]

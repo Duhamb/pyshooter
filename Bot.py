@@ -150,4 +150,3 @@ class Bot(pg.sprite.Sprite):
         self.life -= 1
         if self.life <= 0:
             self.is_dead = True
-

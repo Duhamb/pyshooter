@@ -10,13 +10,19 @@ import Animation
 import Sound
 
 class ObjectsController:
-    def __init__(self, player, background):
+    def __init__(self, player, background, multiplayer_on, server_client, menu, players, is_host):
 
         self.screen = pg.display.get_surface()
         self.player = player
         self.background = background
         self.player_sound = Sound.Player
         self.player_sound.load()
+
+        self.multiplayer_on = multiplayer_on
+        self.server_client = server_client
+        self.menu = menu
+        self.players = players
+        self.is_host = is_host
 
         self.BOT_IMAGE = pg.image.load("Assets/Images/player2.png")
         self.BOT_IMAGE = pg.transform.scale(self.BOT_IMAGE, (75, 75))
@@ -79,42 +85,42 @@ class ObjectsController:
             if bullet.distance > 300 or bullet.is_colliding:
                 self.bullet_list.remove(bullet)
 
-    def draw(self, multiplayer_on, server_client, menu, players, is_host):
+    def draw(self):
 
-        self.bullet_list.update()
-        self.bullet_list.draw(self.screen)
-
-        if multiplayer_on:
+        if self.multiplayer_on:
 
             #Player Syn
-            server_client.push_player(self.player, self.can_render_bullet)
-            server_client.pull_players()
-            player_list = server_client.players_info
+            self.server_client.push_player(self.player, self.can_render_bullet)
+            self.server_client.pull_players()
+            player_list = self.server_client.players_info
             for player_name in player_list:
                 actual_player = player_list[player_name]
                 self.player.draw_multiplayer(self.screen, actual_player)
-                if actual_player['is_shooting'] and player_name != menu.name:
+                if actual_player['is_shooting'] and player_name != self.menu.name:
                     bullet = Projectiles(actual_player['position_on_scenario'],
                                          self.BULLET_IMAGE, self.background, actual_player['mouse_position'])
                     self.bullet_list.add(bullet)
             #Zombie Syn
             #Host send zombie list
-            if is_host:
+            if self.is_host:
                 self.bot_list.update()
                 zombie_server_list = {}
                 id = 0
                 for zombie in self.bot_list:
                     zombie_server_list[id] = zombie.get_server_info()
                     id = id +1
-                server_client.push_zombies(zombie_server_list, True)
+                self.server_client.push_zombies(zombie_server_list, True)
             else:
-                server_client.push_zombies({}, False)
+                self.server_client.push_zombies({}, False)
             #receive zombie list
-            server_client.pull_zombies()
-            zombie_list = server_client.zombies_info
+            self.server_client.pull_zombies()
+            zombie_list = self.server_client.zombies_info
             for zombie_id in zombie_list:
                 self.bot_draw.draw_multiplayer(self.screen, zombie_list[zombie_id])
         else:
             self.bot_list.update()
-            players.draw(self.screen)
+            self.players.draw(self.screen)
             self.bot_list.draw(self.screen)
+
+        self.bullet_list.update()
+        self.bullet_list.draw(self.screen)

@@ -80,10 +80,8 @@ class ObjectsController:
                 self.bullet_list.remove(bullet)
 
     def draw(self, multiplayer_on, server_client, menu, players, is_host):
-        if is_host:
-            self.bot_list.update()
-        self.bullet_list.update()
 
+        self.bullet_list.update()
         self.bullet_list.draw(self.screen)
 
         if multiplayer_on:
@@ -102,6 +100,7 @@ class ObjectsController:
             #Zombie Syn
             #Host send zombie list
             if is_host:
+                self.bot_list.update()
                 zombie_server_list = {}
                 id = 0
                 for zombie in self.bot_list:
@@ -116,5 +115,6 @@ class ObjectsController:
             for zombie_id in zombie_list:
                 self.bot_draw.draw_multiplayer(self.screen, zombie_list[zombie_id])
         else:
+            self.bot_list.update()
             players.draw(self.screen)
             self.bot_list.draw(self.screen)

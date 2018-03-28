@@ -56,8 +56,11 @@ class ObjectsController:
             if self.player.is_shooting and self.fire_rate > 300:
                 self.can_render_bullet = True
                 if self.multiplayer_on:
-                    bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background, screen_to_scenario_server(pg.mouse.get_pos(), self.background.rect), self.server_client.name)
-                bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background,
+                    bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background,
+                                         screen_to_scenario_server(pg.mouse.get_pos(), self.background.rect),
+                                         self.server_client.name)
+                else:
+                    bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background,
                                      screen_to_scenario_server(pg.mouse.get_pos(), self.background.rect), None)
                 self.bullet_list.add(bullet)
                 self.fire_rate = 0

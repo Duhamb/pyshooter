@@ -61,13 +61,17 @@ class Statistics():
                 pg.draw.circle(screen, (0, 255, 0), positions_list[player_name], 2, 1)
 
     def draw_score_multiplayer(self, screen):
-        #self.server_client.push_score(,is_host)
-
-        points = str(self.player.score)
-        points = self.font_text_25.render(points, 1, (255,255,255))
-        screen.blit(self.score_label, (15, 15))
-        screen.blit(self.score_value, (15, 41))
-        screen.blit(points, (15, 67))
+        self.server_client.push_scores(self.is_host)
+        self.server_client.pull_scores(self.is_host)
+        scores_list = self.server_client.scores
+        y = 0
+        for scores_name in scores_list:
+            points = str(scores_name) +": "+ str(scores_list[scores_name])
+            points = self.font_text_25.render(points, 1, (255,255,255))
+            screen.blit(self.score_label, (15, 15+y))
+            screen.blit(self.score_value, (15, 41+y))
+            screen.blit(points, (15, 67+y))
+            y = y+15
 
 
     def draw_ammo(self, screen):

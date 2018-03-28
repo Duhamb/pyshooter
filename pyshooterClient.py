@@ -80,14 +80,15 @@ class pyshooterClient():
     def add_points(self, shooter_name):
         self.scores[shooter_name] = self.scores.get(shooter_name, 0) + 100
 
-    def push_scores(self, zombie_list, is_host):
+    def push_scores(self, is_host):
         if is_host:
-            self.client.send(["zombie_host", zombie_list], None)
+            self.client.send(["scores_host", self.scores], None)
         else:
-            self.client.send(["zombie_client", zombie_list], None)
+            self.client.send(["scores_client", {}], None)
 
-    def pull_scores(self):
+    def pull_scores(self, is_host):
         reply = None
-        while (reply == None or reply[0] != "zombies"):
+        while (reply == None or reply[0] != "scores"):
             reply = self.client.receive(False)
-        self.zombies_info = reply[1]
+        if not is_host:
+            self.scores = reply[1]

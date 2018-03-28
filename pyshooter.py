@@ -63,7 +63,7 @@ class Main:
 
         self.background = Background()
 
-        self.player = Player((0, -1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background, self.screen)
+        self.player = Player((0, -1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background)
 
         self.stats = Statistics(self.player, self.screen.get_rect().size)
         self.light = Light(self.size, self.player)

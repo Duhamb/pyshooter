@@ -1,14 +1,13 @@
 import pygame
 from helpers import *
 import math
+import Collider
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, location_on_scenario, location_on_screen, animation, sound, background, tela):
+    def __init__(self, location_on_scenario, location_on_screen, animation, sound, background):
         super().__init__()
 
         self.velocity = 5
-
-        self.tela = tela
 
         # set all animations
         self.animation = animation
@@ -29,7 +28,7 @@ class Player(pygame.sprite.Sprite):
         self.collider_image = scale_image(self.collider_image, 2.7)
         self.rect_back = self.collider_image.get_rect(center = location_on_screen)
         self.mask = pygame.mask.from_surface(self.collider_image)
-
+        self.rect_for_collisions = self.mask.get_bounding_rects()[0]
         # this surface wont be modified on the execution
         self.original_back_image = self.collider_image
 
@@ -48,6 +47,7 @@ class Player(pygame.sprite.Sprite):
         # the sprite and rect of player
         self.image = self.animation_idle[0]
         self.rect = self.image.get_rect(center = location_on_screen)
+        self.collider = Collider.Collider(self.rect_for_collisions, self.background.rect, None)
 
         # positions
         self.position_on_screen = pygame.math.Vector2(location_on_screen)
@@ -120,38 +120,13 @@ class Player(pygame.sprite.Sprite):
         screen.blit(imageMultiplayer, rect_multiplayer)
 
     def move(self, direction):
-        if not self.is_possible_direction(direction):
-            angles = get_normal(self.next_position_on_scenario, self.background)
-            if len(angles) <= 1:
-                big_size = False
-                for k in angles:
-                    if k[1] > 150:
-                        big_size = True
-                        break
-                if not big_size:
-                    for j in angles:
-                        i = j[0]
-                        normal_vector = pygame.math.Vector2((1,0)).rotate(i)
-                        new_direction = remove_parallel_component(normal_vector, direction)
-                        direction = new_direction
-        try:
-            self.position_on_scenario += self.velocity*(direction.normalize())
-        except:
-            pass
-
-    def is_possible_direction(self, direction):
-        self.next_position_on_scenario = self.position_on_scenario + self.velocity*direction
-        next_rect = self.rect
-        next_mask = self.mask
-        next_rect_background = self.background.rect.copy()
-        # this command obtain the next position of background
-        next_rect_background.center = background_center_position(self.position_on_screen, self.next_position_on_scenario)
-        offset = ((next_rect.left - next_rect_background.left ), (next_rect.top - next_rect_background.top))
-        is_colliding = self.background.mask.overlap(next_mask, offset)
-
-        if is_colliding:
-            return False
-        return True
+        self.position_on_scenario += self.velocity*direction
+        self.collider.update(self.position_on_scenario)
+        collisions = pg.sprite.spritecollide(self.collider, self.background.collider_group, False)
+        
+        if collisions:
+            move_on_collision(self.collider, collisions, direction)
+            self.position_on_scenario = image_to_scenario(self.collider.rect.center, self.background.rect)
 
     def rotate(self):
         # get the angle between mouse and player
@@ -235,7 +210,6 @@ class Player(pygame.sprite.Sprite):
             elif event.key == pygame.K_2:
                 self.change_weapon(2)
         
-
     def react_to_event(self):
         if self.pressionou_w or self.pressionou_d or self.pressionou_a or self.pressionou_s:
             self.actual_position = self.position_on_screen

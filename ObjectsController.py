@@ -17,6 +17,7 @@ class ObjectsController:
         self.background = background
         self.player_sound = Sound.Player
         self.player_sound.load()
+        self.players_fire_rates = {}
 
         self.multiplayer_on = multiplayer_on
         self.server_client = server_client
@@ -48,36 +49,55 @@ class ObjectsController:
         self.second_get_ticks = 0
         self.fire_rate = 0
         self.can_render_bullet = False
+        self.shooter_name = None
 
     def handle_event(self):
         if self.player.bullet_counter > 0:
             if self.player.is_shooting and self.fire_rate > 300:
                 self.can_render_bullet = True
-                bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background, screen_to_scenario_server(pg.mouse.get_pos(), self.background.rect))
+                if self.multiplayer_on:
+                    bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background,
+                                         screen_to_scenario_server(pg.mouse.get_pos(), self.background.rect),
+                                         self.server_client.name)
+                else:
+                    bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background,
+                                     screen_to_scenario_server(pg.mouse.get_pos(), self.background.rect), None)
                 self.bullet_list.add(bullet)
                 self.fire_rate = 0
                 self.player.bullet_counter -= 1
                 self.player_sound.shoot.stop()
                 pygame.mixer.Channel(1).play(self.player_sound.shoot)
-            else:
-                self.can_render_bullet = False
+
+
 
     def update(self):
+        if not self.player.is_shooting or self.player.bullet_counter == 0:
+            self.can_render_bullet = False
         # Time references
         self.first_get_ticks = self.second_get_ticks
         self.second_get_ticks = pg.time.get_ticks()
         self.delta_time = self.second_get_ticks - self.first_get_ticks
         self.fire_rate += self.delta_time
+        for names in self.players_fire_rates:
+            self.players_fire_rates[names] += self.delta_time
 
         # Collisions between zombies and bullets
-        collisions = pg.sprite.groupcollide(self.bot_list, self.bullet_list, dokilla=False, dokillb=True)
-        for zombie in collisions:
+        collisions_bullets = pg.sprite.groupcollide(self.bullet_list, self.bot_list, dokilla=False, dokillb=False)
+        for bullet in collisions_bullets:
+            self.shooter_name = bullet.shooter_name
+        collisions_zombies = pg.sprite.groupcollide(self.bot_list, self.bullet_list, dokilla=False, dokillb=True)
+        for zombie in collisions_zombies:
             zombie.gets_hit()
+
 
         # Update for zombies
         for bot in self.bot_list:
             if bot.is_dead:
                 self.bot_list.remove(bot)
+                if self.shooter_name == None:
+                    self.player.score = self.player.score + 100
+                else:
+                    self.server_client.add_points(self.shooter_name)
 
         # Update for bullets
         for bullet in self.bullet_list:
@@ -92,13 +112,17 @@ class ObjectsController:
             self.server_client.push_player(self.player, self.can_render_bullet)
             self.server_client.pull_players()
             player_list = self.server_client.players_info
+            #print(player_list)
             for player_name in player_list:
                 actual_player = player_list[player_name]
                 self.player.draw_multiplayer(self.screen, actual_player)
-                if actual_player['is_shooting'] and player_name != self.menu.name:
+                if actual_player['is_shooting'] and player_name != self.menu.name and self.players_fire_rates.get(player_name, 400) > 300:
+                    self.players_fire_rates[player_name] = 0
                     bullet = Projectiles(actual_player['position_on_scenario'],
-                                         self.BULLET_IMAGE, self.background, actual_player['mouse_position'])
+                                         self.BULLET_IMAGE, self.background, actual_player['mouse_position'],
+                                         player_name)
                     self.bullet_list.add(bullet)
+
             #Zombie Syn
             #Host send zombie list
             if self.is_host:

@@ -2,8 +2,10 @@ from helpers import *
 import math
 
 class Projectiles(pg.sprite.Sprite):
-    def __init__(self, origin_scenario, image, background, destination_scenario):
+    def __init__(self, origin_scenario, image, background, destination_scenario, shooter_name):
         pg.sprite.Sprite.__init__(self)
+
+        self.shooter_name = shooter_name
 
         self.background = background
         self.mask = pg.mask.from_surface(image)

@@ -1,10 +1,14 @@
 import pygame as pg
 from helpers import *
+import Collider
+from ExtendedGroup import *
 
 class Bot(pg.sprite.Sprite):
 
     def __init__(self, location_on_scenario, surface, background, player, animation):
         super().__init__()
+
+        self.velocity = 2
 
         # load all objects necessary for bot interaction
         self.player = player
@@ -24,6 +28,9 @@ class Bot(pg.sprite.Sprite):
         self.image = animation.idle[0]
         self.center = scenario_to_screen(self.position_on_scenario, self.background.rect)
         self.rect = self.image.get_rect(center=self.center)
+
+        # add collider to bot
+        self.collider = Collider.Collider(self.rect, self.background.rect, None)
 
         # the center of sprite isnt the center of the own image file
         # so, this is needed to find the real center
@@ -47,7 +54,6 @@ class Bot(pg.sprite.Sprite):
         self.index_animation_attack = 0
         self.float_index = 0
 
-
         #multiplayer animation
         self.animation_name = None
         self.animation_index = None
@@ -56,11 +62,10 @@ class Bot(pg.sprite.Sprite):
         self.life = 3
         self.is_dead = False
 
-
     def update(self):
-        self.choose_action()
         self.choose_animation()
         self.rotate()
+        self.choose_action()
 
         distance_to_player = self.position_on_scenario.distance_to(self.player.position_on_scenario)
         if distance_to_player < 500:
@@ -69,6 +74,10 @@ class Bot(pg.sprite.Sprite):
                 self.channel.play(self.grunt, -1)
             self.grunt.set_volume(1-distance_to_player/500)
         else:
+            self.grunt.stop()
+            self.is_grunting = False
+
+        if self.is_dead and self.is_grunting:
             self.grunt.stop()
             self.is_grunting = False
 
@@ -87,6 +96,7 @@ class Bot(pg.sprite.Sprite):
 
         # atualiza o rect da imagem com o novo centro correto
         self.rect = self.image.get_rect(center=self.new_rect_center)
+        # self.collider.rect = self.rect
 
     def choose_animation(self):
         if self.is_attacking:
@@ -109,24 +119,34 @@ class Bot(pg.sprite.Sprite):
         self.animation_index = self.index_animation_attack
 
     def move(self):
+        # define direction to move
         direction = self.player.position_on_scenario - self.position_on_scenario
         direction.normalize_ip()
-        direction = direction * 2
+        direction = direction * self.velocity
+        # move 
         self.position_on_scenario += direction
+
+        # verify collision
+        self.collider.update(self.position_on_scenario)
+        collisions = pg.sprite.spritecollide(self.collider, self.background.collider_group, False)
+        
+        if collisions:
+            move_on_collision(self.collider, collisions, direction)
+            # fix position if necessary based on collision
+            self.position_on_scenario = image_to_scenario(self.collider.rect.center, self.background.rect)
 
     def choose_action(self):
         distance_to_player = self.position_on_scenario.distance_to(self.player.position_on_scenario)
         if distance_to_player < 50:
             self.is_moving = False
             self.is_attacking = True
-        elif distance_to_player < 300:
+        elif distance_to_player < 600:
             self.is_moving = True
             self.is_attacking = False
             self.move()
         else:
             self.is_attacking = False
             self.is_moving = False
-
 
     def get_server_info(self):
         # acho que o servidor não consegue tratar o tipo pg.math.Vector2

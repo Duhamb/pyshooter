@@ -63,6 +63,15 @@ class Main:
 
         self.background = Background()
 
+
+        self.player = Player((0, -1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background)
+
+        self.light = Light(self.size, self.player)
+
+        # esse grupo herda da sprite group
+        self.players = ExtendedGroup(self.player)
+
+
         #call menu Displays/Loops
         self.menu.intro()
 
@@ -75,7 +84,7 @@ class Main:
             self.server_client = self.menu.server_client
             self.is_host = self.menu.is_host
 
-        self.player = Player((0, -1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background, self.screen)
+        self.player = Player((0, -1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background)
 
         self.light = Light(self.size, self.player)
 

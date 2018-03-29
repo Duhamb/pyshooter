@@ -33,8 +33,7 @@ class ObjectsController:
 
         self.bot_draw = Bot((0, 0), self.screen, self.background, self.player, self.zombie_animation)
 
-
-        self.bot0 = Bot((100, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        self.bot0 = Bot((0, -1400), self.screen, self.background, self.player, self.zombie_animation)
         self.bot1 = Bot((-100, -1400), self.screen, self.background, self.player, self.zombie_animation)
         self.bot2 = Bot((200, -1400), self.screen, self.background, self.player, self.zombie_animation)
 

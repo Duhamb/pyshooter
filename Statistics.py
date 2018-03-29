@@ -39,11 +39,13 @@ class Statistics():
             screen.blit(self.image_weapon_shotgun, self.rect_weapon)
 
     def draw_score(self, screen):
-        points = str(self.player.score)
+
+        points = "Your score: " + str(self.player.score)
         points = self.font_text_25.render(points, 1, (255,255,255))
-        screen.blit(self.score_label, (15, 15))
-        screen.blit(self.score_value, (15, 41))
-        screen.blit(points, (15, 67))
+        if self.multiplayer_on:
+            name = self.font_text_18.render(self.server_client.name, 1, (255, 255, 255))
+            screen.blit(name, (15, 15))
+        screen.blit(points, (15, 41))
 
     def draw_minimap(self, screen):
         screen.blit(self.image_minimap, self.rect_minimap)
@@ -66,12 +68,13 @@ class Statistics():
         scores_list = self.server_client.scores
         y = 0
         for scores_name in scores_list:
-            points = str(scores_name) +": "+ str(scores_list[scores_name])
-            points = self.font_text_25.render(points, 1, (255,255,255))
-            screen.blit(self.score_label, (15, 15+y))
-            screen.blit(self.score_value, (15, 41+y))
-            screen.blit(points, (15, 67+y))
-            y = y+15
+            if scores_name == self.server_client.name:
+                self.player.score = scores_list[scores_name]
+            else:
+                points = str(scores_name) +": "+ str(scores_list[scores_name])
+                points = self.font_text_25.render(points, 1, (255,255,255))
+                screen.blit(points, (15, 80+y))
+                y = y + 30
 
 
     def draw_ammo(self, screen):

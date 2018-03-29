@@ -11,7 +11,6 @@ class Player(pygame.sprite.Sprite):
 
         self.score = 0
 
-
         # set all animations
         self.animation = animation
         self.animation_move = self.animation.rifle_move
@@ -106,7 +105,7 @@ class Player(pygame.sprite.Sprite):
         screen.blit(self.image, self.rect)
 
     def draw_multiplayer(self, screen, server_info ):
-        position_on_screen = scenario_to_screen_server(server_info['position_on_scenario'], self.background.rect)
+        position_on_screen = scenario_to_screen(server_info['position_on_scenario'], self.background, False)
         
         # body
         animation = getattr(self.animation, server_info['animation_body'])
@@ -325,7 +324,7 @@ class Player(pygame.sprite.Sprite):
         info = {'position_on_scenario': (self.position_on_scenario[0], self.position_on_scenario[1]),
          'position_on_screen': (self.position_on_screen[0], self.position_on_screen[1]),
          'angle': self.angle_vision,
-         'mouse_position': screen_to_scenario_server(pg.mouse.get_pos(), self.background.rect),
+         'mouse_position': screen_to_scenario(pg.mouse.get_pos(), self.background, False),
          'animation_body': self.animation_body,
          'animation_body_index': self.animation_body_index,
          'animation_feet': self.animation_feet,

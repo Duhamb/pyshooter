@@ -30,7 +30,7 @@ class Projectiles(pg.sprite.Sprite):
         #Start position correction
         self.new_vector = self.vector_offset.rotate(angle)
         self.position_on_scenario = self.player_position + self.new_vector
-        self.position_on_screen = scenario_to_screen(self.position_on_scenario, self.background.rect)
+        self.position_on_screen = scenario_to_screen(self.position_on_scenario, self.background)
 
         self.image = image
         self.image = pg.transform.rotozoom(self.image, -angle, 1)

@@ -8,55 +8,39 @@ import pygame as pg
 # this function return the position on screen based on other coordinates
 # is needed because all orientation is made by scenario position and
 # render functions use screen position
-def scenario_to_screen(position_on_scenario, scenario_rect, vector2=True):
-    x = position_on_scenario[0]+scenario_rect.center[0]
-    y = position_on_scenario[1]+scenario_rect.center[1]
-    if vector2:
-        return pg.math.Vector2((x,y))
-    else:
-        return (x,y)
 
-def scenario_to_screen2(position_on_scenario, topleft):
+# renomear essa função
+def image_to_screen(position_on_scenario, topleft):
     a = position_on_scenario[0]
     b = position_on_scenario[1]
     x = topleft[0]
     y = topleft[1]
     return (a+x, b+y)
 
-# this function return the position on scenario based on other coordinates
-# see comments of scenario_to_screen function
-def screen_to_scenario(position_on_screen, scenario_rect, vector2=True):
-    x = position_on_screen[0]-scenario_rect.center[0]
-    y = position_on_screen[1]-scenario_rect.center[1]
-    if vector2:
-        return pg.math.Vector2((x,y))
-    else:
-        return (x,y)
-
-def screen_to_scenario_server(position_on_screen, scenario_rect):
-    x = position_on_screen[0] - scenario_rect.centerx
-    y = position_on_screen[1] - scenario_rect.centery
-    return (x,y)
-
-def scenario_to_screen_server(position_on_scenario, scenario_rect):
-    x = position_on_scenario[0] + scenario_rect.centerx
-    y = position_on_scenario[1] + scenario_rect.centery
-    return (x,y)
-
 # this function return the center of background image based on other coordinates
 def background_center_position(position_on_screen, position_on_scenario):
     return position_on_screen - position_on_scenario
 
-def convert_scenario_to_screen(background, position_on_scenario):
+def scenario_to_screen(position_on_scenario, background, vector2=True):
     change_basis = change_basis_matrix(background)
     position_on_screen = matrix_vector_mult(change_basis, position_on_scenario)
-    return pg.math.Vector2(position_on_screen) + background.origin_axis
+    answer_vector = pg.math.Vector2(position_on_screen) + background.origin_axis
+    
+    if vector2:
+        return pg.math.Vector2((answer_vector[0],answer_vector[1]))
+    else:
+        return (answer_vector[0],answer_vector[1])
 
-def convert_screen_to_scenario(background, position_on_screen):
+def screen_to_scenario(position_on_screen, background, vector2=True):
     change_basis = change_basis_matrix(background)
     change_basis = matrix_inverse(change_basis)
     position_on_scenario = matrix_vector_mult(change_basis, position_on_screen)
-    return pg.math.Vector2(position_on_scenario) - background.origin_axis
+    answer_vector = pg.math.Vector2(position_on_scenario) - background.origin_axis
+    
+    if vector2:
+        return pg.math.Vector2((answer_vector[0],answer_vector[1]))
+    else:
+        return (answer_vector[0],answer_vector[1])
 
 # translate an image coordinate to scenario coordinate
 # scenario origin is the center
@@ -80,22 +64,22 @@ def scenario_to_image(position_on_scenario, background_rect, vector=True):
 # create che change basis matrix from background and screen coordinates
 # change screen to scenario
 def change_basis_matrix(background):
-    a11 = background.x_axis.dot(pg.math.Vector2((1, 0)))
-    a12 = background.y_axis.dot(pg.math.Vector2((1, 0)))
-    a21 = background.x_axis.dot(pg.math.Vector2((0, 1)))
-    a22 = background.y_axis.dot(pg.math.Vector2((0, 1)))
+    a11 = background.x_axis[0]
+    a12 = background.y_axis[0]
+    a21 = background.x_axis[1]
+    a22 = background.y_axis[1]
     return [[a11, a12], [a21, a22]]
 
 def matrix_inverse(matrix):
-    det = matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
+    # det = matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
     aux = matrix[0][0]
     matrix[0][0] = matrix[1][1]
     matrix[1][1] = aux
     matrix[1][0] *= -1
     matrix[0][1] *= -1
-    for i in range(0, 2):
-        for j in range(0, 2):
-            matrix[i][j] /= det
+    # for i in range(0, 2):
+    #     for j in range(0, 2):
+    #         matrix[i][j] /= det
     return matrix
 
 def matrix_vector_mult(matrix, vector):
@@ -158,14 +142,19 @@ def remove_parallel_component(reference_vector, original_vector):
 def convert_vector_to_tuple(vector):
     return (vector[0], vector[1])
 
-def draw_rect_list(surface, rect_list, background_rect):
+def to_int(vector):
+    x = int(vector[0])
+    y = int(vector[1])
+    return (x,y)
+
+def draw_rect_list(surface, rect_list, back_topleft):
     if rect_list:
         for rect in rect_list:
-            center = scenario_to_screen2(rect.center, background_rect)
-            topleft = scenario_to_screen2(rect.topleft, background_rect)
-            topright = scenario_to_screen2(rect.topright, background_rect)
-            bottomleft = scenario_to_screen2(rect.bottomleft, background_rect)
-            bottomright = scenario_to_screen2(rect.bottomright, background_rect)
+            center = image_to_screen(rect.center, back_topleft)
+            topleft = image_to_screen(rect.topleft, back_topleft)
+            topright = image_to_screen(rect.topright, back_topleft)
+            bottomleft = image_to_screen(rect.bottomleft, back_topleft)
+            bottomright = image_to_screen(rect.bottomright, back_topleft)
 
             if (bottomright[0] < 0 and bottomright[1] < 0) or (topleft[0] > 800 and topleft[1] > 600):
                 pass

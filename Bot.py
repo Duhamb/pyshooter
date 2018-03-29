@@ -26,7 +26,7 @@ class Bot(pg.sprite.Sprite):
 
         # image and rect will be defined according with the animation
         self.image = animation.idle[0]
-        self.center = scenario_to_screen(self.position_on_scenario, self.background.rect)
+        self.center = scenario_to_screen(self.position_on_scenario, self.background)
         self.rect = self.image.get_rect(center=self.center)
 
         # add collider to bot
@@ -92,7 +92,7 @@ class Bot(pg.sprite.Sprite):
         # gira em torno do centro real
         # encontra a nova posição do centro do rect
         self.rotated_center = self.delta_center_position.rotate(+self.angle)
-        self.new_rect_center = self.rotated_center + scenario_to_screen(self.position_on_scenario, self.background.rect)
+        self.new_rect_center = self.rotated_center + scenario_to_screen(self.position_on_scenario, self.background)
 
         # atualiza o rect da imagem com o novo centro correto
         self.rect = self.image.get_rect(center=self.new_rect_center)
@@ -149,8 +149,7 @@ class Bot(pg.sprite.Sprite):
             self.is_moving = False
 
     def get_server_info(self):
-        # acho que o servidor não consegue tratar o tipo pg.math.Vector2
-        info = {'position_on_scenario': (self.position_on_scenario[0], self.position_on_scenario[1]),
+        info = {'position_on_scenario': tuple(self.position_on_scenario),
          'angle': self.angle,
          'animation_name': self.animation_name,
          'animation_index': self.animation_index
@@ -158,7 +157,7 @@ class Bot(pg.sprite.Sprite):
         return info
 
     def draw_multiplayer(self, screen, server_info ):
-        position_on_screen = scenario_to_screen_server(server_info['position_on_scenario'], self.background.rect)
+        position_on_screen = scenario_to_screen(server_info['position_on_scenario'], self.background, False)
         # body
         animation = getattr(self.animation, server_info['animation_name'])
         original_image = animation[server_info['animation_index']]

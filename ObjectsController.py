@@ -34,12 +34,26 @@ class ObjectsController:
         self.bot_draw = Bot((0, 0), self.screen, self.background, self.player, self.zombie_animation)
 
         self.bot0 = Bot((0, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot1 = Bot((-100, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot2 = Bot((200, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        # self.bot1 = Bot((-100, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        # self.bot2 = Bot((100, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        # self.bot3 = Bot((200, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        # self.bot4 = Bot((300, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        # self.bot5 = Bot((400, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        # self.bot6 = Bot((500, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        # self.bot7 = Bot((600, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        # self.bot8 = Bot((700, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        # self.bot9 = Bot((800, -1400), self.screen, self.background, self.player, self.zombie_animation)
 
         self.bot_list = ExtendedGroup(self.bot0)
-        self.bot_list.add(self.bot1)
-        self.bot_list.add(self.bot2)
+        # self.bot_list.add(self.bot1)
+        # self.bot_list.add(self.bot2)
+        # self.bot_list.add(self.bot3)
+        # self.bot_list.add(self.bot4)
+        # self.bot_list.add(self.bot5)
+        # self.bot_list.add(self.bot6)
+        # self.bot_list.add(self.bot7)
+        # self.bot_list.add(self.bot8)
+        # self.bot_list.add(self.bot9)
 
         self.bullet_list = ExtendedGroup()
         self.BULLET_IMAGE = pg.image.load("Assets/Images/bullets/bullet1.png")
@@ -141,6 +155,8 @@ class ObjectsController:
             for zombie_id in zombie_list:
                 self.bot_draw.draw_multiplayer(self.screen, zombie_list[zombie_id])
         else:
+            self.background.draw(self.screen, self.players.sprites()[0])
+            
             self.bot_list.update()
             self.players.draw(self.screen)
             self.bot_list.draw(self.screen)

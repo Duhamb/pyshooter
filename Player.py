@@ -139,7 +139,6 @@ class Player(pygame.sprite.Sprite):
             angle -= math.degrees(math.asin(32/(2.7*D)))
         except:
             pass
-
         self.angle_vision = angle
         # gira todas as imagens
         self.image = pygame.transform.rotozoom(self.original_image, -angle, 1)
@@ -214,10 +213,9 @@ class Player(pygame.sprite.Sprite):
         
     def react_to_event(self):
         if self.pressionou_w or self.pressionou_d or self.pressionou_a or self.pressionou_s:
-            self.actual_position = self.position_on_screen
-            self.mouse_position = pygame.mouse.get_pos()
+            self.actual_position = screen_to_scenario(self.position_on_screen, self.background)
+            self.mouse_position = screen_to_scenario(pygame.mouse.get_pos(), self.background)
             self.vector_position = self.mouse_position - self.actual_position
-
             # react to multiples move commands
             if self.pressionou_w:
                 if self.pressionou_a:

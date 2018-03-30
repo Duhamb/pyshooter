@@ -18,8 +18,16 @@ def image_to_screen(position_on_scenario, topleft):
     return (a+x, b+y)
 
 # this function return the center of background image based on other coordinates
-def background_center_position(position_on_screen, position_on_scenario):
-    return position_on_screen - position_on_scenario
+def background_center_position(position_on_screen, position_on_scenario, angle):
+    # pygame returns -90 when player is correct
+    if angle!=None:
+        real_angle = angle # fix angle necessary
+    else:
+        real_angle = 0
+    rotated_position_on_scenario = position_on_scenario.rotate(real_angle)
+    rotated_center = position_on_screen - rotated_position_on_scenario
+    return rotated_center
+    # return position_on_screen - position_on_scenario
 
 def scenario_to_screen(position_on_scenario, background, vector2=True):
     change_basis = change_basis_matrix(background)
@@ -32,8 +40,7 @@ def scenario_to_screen(position_on_scenario, background, vector2=True):
         return (answer_vector[0],answer_vector[1])
 
 def screen_to_scenario(position_on_screen, background, vector2=True):
-    change_basis = change_basis_matrix(background)
-    change_basis = matrix_inverse(change_basis)
+    change_basis = matrix_inverse(change_basis_matrix(background))
     position_on_scenario = matrix_vector_mult(change_basis, position_on_screen)
     answer_vector = pg.math.Vector2(position_on_scenario) - background.origin_axis
     
@@ -71,15 +78,11 @@ def change_basis_matrix(background):
     return [[a11, a12], [a21, a22]]
 
 def matrix_inverse(matrix):
-    # det = matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
     aux = matrix[0][0]
     matrix[0][0] = matrix[1][1]
     matrix[1][1] = aux
     matrix[1][0] *= -1
     matrix[0][1] *= -1
-    # for i in range(0, 2):
-    #     for j in range(0, 2):
-    #         matrix[i][j] /= det
     return matrix
 
 def matrix_vector_mult(matrix, vector):
@@ -164,6 +167,13 @@ def draw_rect_list(surface, rect_list, back_topleft):
                 pg.draw.line(surface, (255,0,0), topright, bottomright)
                 pg.draw.line(surface, (255,0,0), bottomleft, bottomright)
 
+def draw_rect(rect, screen):
+    pg.draw.line(screen, (255,0,0), rect.topleft, rect.topright, 2)
+    pg.draw.line(screen, (255,0,0), rect.topleft, rect.bottomleft, 2)
+    pg.draw.line(screen, (255,0,0), rect.topright, rect.bottomright, 2)
+    pg.draw.line(screen, (255,0,0), rect.bottomleft, rect.bottomright, 2)
+    pg.draw.line(screen, (0,255,0), rect.center, (400,300), 3)
+    pg.draw.circle(screen, (0,255,0), to_int(rect.center),3, 2)
 
 def transform_corners_to_rects(corner_list):
     rect_list = []

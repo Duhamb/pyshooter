@@ -26,7 +26,7 @@ class Bot(pg.sprite.Sprite):
 
         # image and rect will be defined according with the animation
         self.image = animation.idle[0]
-        self.center = scenario_to_screen(self.position_on_scenario, self.background)
+        self.center = scenario_to_screen(self.position_on_scenario, self.background, False)
         self.rect = self.image.get_rect(center=self.center)
 
         # add collider to bot
@@ -81,11 +81,15 @@ class Bot(pg.sprite.Sprite):
             self.grunt.stop()
             self.is_grunting = False
 
-        self.animation
 
     def rotate(self):
-        _, self.angle = (self.player.position_on_scenario-self.position_on_scenario).as_polar()
-
+        player_position = self.player.position_on_screen
+        # print(self.position_on_scenario)
+        bot_position = scenario_to_screen(self.position_on_scenario, self.background)
+        # bot_position = pg.math.Vector2(self.rect.center)
+        # print(self.background.origin_axis, end=" ")
+        _, self.angle = (player_position-bot_position).as_polar()
+        self.angle = self.angle
         # gira todas as imagens
         self.image = pg.transform.rotozoom(self.original_image, -self.angle, 1)
 
@@ -93,9 +97,14 @@ class Bot(pg.sprite.Sprite):
         # encontra a nova posição do centro do rect
         self.rotated_center = self.delta_center_position.rotate(+self.angle)
         self.new_rect_center = self.rotated_center + scenario_to_screen(self.position_on_scenario, self.background)
+        # print(scenario_to_screen(self.position_on_scenario, self.background))
+        # print(scenario_to_screen(self.player.position_on_scenario, self.background))
+        # print(self.player.position_on_screen)
 
         # atualiza o rect da imagem com o novo centro correto
         self.rect = self.image.get_rect(center=self.new_rect_center)
+        # print(self.rect.center, end=" ")
+        # print(self.background.x_axis," ",self.background.y_axis)
         # self.collider.rect = self.rect
 
     def choose_animation(self):
@@ -121,6 +130,7 @@ class Bot(pg.sprite.Sprite):
     def move(self):
         # define direction to move
         direction = self.player.position_on_scenario - self.position_on_scenario
+
         direction.normalize_ip()
         direction = direction * self.velocity
         # move 

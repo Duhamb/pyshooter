@@ -63,15 +63,6 @@ class Main:
 
         self.background = Background()
 
-
-        self.player = Player((0, -1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background)
-
-        self.light = Light(self.size, self.player)
-
-        # esse grupo herda da sprite group
-        self.players = ExtendedGroup(self.player)
-
-
         #call menu Displays/Loops
         self.menu.intro()
 
@@ -122,7 +113,7 @@ class Main:
         self.screen.fill((0,0,0))
 
         # sem sprite ainda
-        self.background.draw(self.screen, self.player)
+        # self.background.draw(self.screen, self.player)
 
         self.players.update()
 

@@ -9,13 +9,6 @@ import pygame as pg
 # is needed because all orientation is made by scenario position and
 # render functions use screen position
 
-# renomear essa função
-def image_to_screen(position_on_scenario, topleft):
-    a = position_on_scenario[0]
-    b = position_on_scenario[1]
-    x = topleft[0]
-    y = topleft[1]
-    return (a+x, b+y)
 
 # this function return the center of background image based on other coordinates
 def background_center_position(position_on_screen, position_on_scenario, angle):
@@ -39,15 +32,46 @@ def scenario_to_screen(position_on_scenario, background, vector2=True):
     else:
         return (answer_vector[0],answer_vector[1])
 
-def screen_to_scenario(position_on_screen, background, vector2=True):
+def screen_to_scenario(position_on_screen_original, background, vector2=True):
+    position_on_screen = pg.math.Vector2(position_on_screen_original) - pg.math.Vector2(background.origin_axis)
     change_basis = matrix_inverse(change_basis_matrix(background))
     position_on_scenario = matrix_vector_mult(change_basis, position_on_screen)
-    answer_vector = pg.math.Vector2(position_on_scenario) - background.origin_axis
+    answer_vector = pg.math.Vector2(position_on_scenario) 
     
     if vector2:
         return pg.math.Vector2((answer_vector[0],answer_vector[1]))
     else:
         return (answer_vector[0],answer_vector[1])
+
+
+def mult(a,b):
+    c00 = a[0][0]*b[0][0]+a[0][1]*b[1][0]
+    c01 = a[0][0]*b[0][1]+a[0][1]*b[1][1]
+    c10 = a[1][0]*b[0][0]+a[1][1]*b[1][0]
+    c11 = a[1][0]*b[0][1]+a[1][1]*b[1][1]
+    return [[c00,c01],[c10,c11]]
+
+
+# create che change basis matrix from background and screen coordinates
+# change screen to scenario
+def change_basis_matrix(background):
+    a11 = background.x_axis[0]
+    a12 = background.y_axis[0]
+    a21 = background.x_axis[1]
+    a22 = background.y_axis[1]
+    return [[a11, a12], [a21, a22]]
+
+def matrix_inverse(matrix):
+    a11 = matrix[1][1]
+    a12 = -matrix[0][1]
+    a21 = -matrix[1][0]
+    a22 = matrix[0][0]
+    return [[a11, a12], [a21, a22]]
+
+def matrix_vector_mult(matrix, vector):
+    a11 = matrix[0][0] * vector[0] + matrix[0][1] * vector[1]
+    a21 = matrix[1][0] * vector[0] + matrix[1][1] * vector[1]
+    return (a11, a21)
 
 # translate an image coordinate to scenario coordinate
 # scenario origin is the center
@@ -68,27 +92,12 @@ def scenario_to_image(position_on_scenario, background_rect, vector=True):
     else:
         return (x,y)
 
-# create che change basis matrix from background and screen coordinates
-# change screen to scenario
-def change_basis_matrix(background):
-    a11 = background.x_axis[0]
-    a12 = background.y_axis[0]
-    a21 = background.x_axis[1]
-    a22 = background.y_axis[1]
-    return [[a11, a12], [a21, a22]]
-
-def matrix_inverse(matrix):
-    aux = matrix[0][0]
-    matrix[0][0] = matrix[1][1]
-    matrix[1][1] = aux
-    matrix[1][0] *= -1
-    matrix[0][1] *= -1
-    return matrix
-
-def matrix_vector_mult(matrix, vector):
-    a11 = matrix[0][0] * vector[0] + matrix[0][1] * vector[1]
-    a21 = matrix[1][0] * vector[0] + matrix[1][1] * vector[1]
-    return (a11, a21)
+def image_to_screen(position_on_scenario, topleft):
+    a = position_on_scenario[0]
+    b = position_on_scenario[1]
+    x = topleft[0]
+    y = topleft[1]
+    return (a+x, b+y)
 
 def scale_image_list(image_list, ratio):
     list_size = len(image_list)

@@ -91,7 +91,8 @@ class Bot(pg.sprite.Sprite):
         _, self.angle = (player_position-bot_position).as_polar()
         self.angle = self.angle
         # gira todas as imagens
-        self.image = pg.transform.rotozoom(self.original_image, -self.angle, 1)
+        # self.image = pg.transform.rotozoom(self.original_image, -self.angle, 1)
+        self.image = pg.transform.rotate(self.original_image, -self.angle)
 
         # gira em torno do centro real
         # encontra a nova posição do centro do rect

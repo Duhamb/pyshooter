@@ -99,7 +99,9 @@ class Player(pygame.sprite.Sprite):
         self.choose_animation()
         self.rotate()
         self.react_to_event()
-
+        # print(self.position_on_scenario)
+        # print(screen_to_scenario(self.position_on_screen, self.background))
+        # print(scenario_to_screen(screen_to_scenario(self.position_on_screen, self.background), self.background))
     def draw(self, screen):
         screen.blit(self.feet, self.feet.get_rect(center=self.position_on_screen).topleft)
         screen.blit(self.image, self.rect)
@@ -141,9 +143,12 @@ class Player(pygame.sprite.Sprite):
             pass
         self.angle_vision = angle
         # gira todas as imagens
-        self.image = pygame.transform.rotozoom(self.original_image, -angle, 1)
-        self.feet = pygame.transform.rotozoom(self.original_feet, -angle, 1)
-        self.collider_image = pygame.transform.rotozoom(self.original_back_image, -angle, 1)
+        # self.image = pygame.transform.rotozoom(self.original_image, -angle, 1)
+        # self.feet = pygame.transform.rotozoom(self.original_feet, -angle, 1)
+        # self.collider_image = pygame.transform.rotozoom(self.original_back_image, -angle, 1)
+        self.image = pygame.transform.rotate(self.original_image, -angle)
+        self.feet = pygame.transform.rotate(self.original_feet, -angle)
+        self.collider_image = pygame.transform.rotate(self.original_back_image, -angle)
 
         # gira em torno do centro real
         # encontra a nova posição do centro do rect

@@ -33,6 +33,7 @@ class Projectiles(pg.sprite.Sprite):
         self.position_on_screen = scenario_to_screen(self.position_on_scenario, self.background)
 
         self.image = image
+        self.original_image = image
         self.image = pg.transform.rotozoom(self.image, -angle, 1)
         self.rect = self.image.get_rect(center=self.position_on_screen)
 
@@ -59,8 +60,13 @@ class Projectiles(pg.sprite.Sprite):
 
     def update(self):
         self.is_possible_direction()
-        self.position_on_screen += 10 * self.final_direction.normalize()
-        self.position_on_scenario = self.next_position_on_scenario
+        actual_position = scenario_to_screen(self.position_on_scenario, self.background)
+        self.position_on_scenario += 10 * self.final_direction.normalize()
+        next_position = scenario_to_screen(self.position_on_scenario, self.background)
 
+        _, angle = (next_position-actual_position).as_polar()
+        self.image = pg.transform.rotozoom(self.original_image, -angle, 1)
+        self.rect = self.image.get_rect()
+        self.rect.center = scenario_to_screen(self.position_on_scenario, self.background, False)
+        
         self.distance += 10
-        self.rect.center = self.position_on_screen

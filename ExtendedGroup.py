@@ -20,5 +20,5 @@ class ExtendedGroup(pygame.sprite.Group):
                 spr.draw(surface)
             except:
                 self.spritedict[spr] = surface_blit(spr.image, spr.rect)
-            draw_rect(spr.rect, surface)
+            # draw_rect(spr.rect, surface)
         self.lostsprites = []

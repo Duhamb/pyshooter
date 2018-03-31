@@ -113,13 +113,13 @@ class Main:
         self.screen.fill((0,0,0))
 
         # sem sprite ainda
-        # self.background.draw(self.screen, self.player)
+        self.background.draw(self.screen, self.player)
 
         self.players.update()
 
         self.ObjectsController.draw()
 
-        self.cross_rect = self.CROSS_IMAGE.get_rect(center = pg.mouse.get_pos())
+        self.cross_rect = self.CROSS_IMAGE.get_rect(center = (400,200))
         self.screen.blit(self.CROSS_IMAGE, self.cross_rect)
 
         self.light.draw(self.screen)

@@ -135,7 +135,7 @@ class Player(pygame.sprite.Sprite):
     def rotate(self):
         # get the angle between mouse and player
         _, angle = (pygame.mouse.get_pos()-self.position_on_screen).as_polar()
-        
+        angle = -90
         try:
             D = (pygame.mouse.get_pos()-self.position_on_screen).length()
             angle -= math.degrees(math.asin(32/(2.7*D)))
@@ -219,7 +219,8 @@ class Player(pygame.sprite.Sprite):
     def react_to_event(self):
         if self.pressionou_w or self.pressionou_d or self.pressionou_a or self.pressionou_s:
             self.actual_position = screen_to_scenario(self.position_on_screen, self.background)
-            self.mouse_position = screen_to_scenario(pygame.mouse.get_pos(), self.background)
+            # self.mouse_position = screen_to_scenario(pygame.mouse.get_pos(), self.background)
+            self.mouse_position = screen_to_scenario((400,200), self.background)
             self.vector_position = self.mouse_position - self.actual_position
             # react to multiples move commands
             if self.pressionou_w:

@@ -156,7 +156,7 @@ class ObjectsController:
             for zombie_id in zombie_list:
                 self.bot_draw.draw_multiplayer(self.screen, zombie_list[zombie_id])
         else:
-            self.background.draw(self.screen, self.players.sprites()[0])
+            # self.background.draw(self.screen, self.players.sprites()[0])
             
             self.bot_list.update()
             self.players.draw(self.screen)

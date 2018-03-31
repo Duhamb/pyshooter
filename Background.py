@@ -26,6 +26,7 @@ class Background():
         self.angle = 0
         self.turn_velocity = -4
         self.player_position_on_scenario = None
+        self.last_mouse_position = pg.math.Vector2((400, 200))
 
     def draw(self, surface, player):
         self.update_position(player)
@@ -46,10 +47,11 @@ class Background():
 
     def update_position(self, player):
         
-        if player.angle_vision != None:
-            self.angle = player.angle_vision + 90
-        else:
-            self.angle = 0
+        # if player.angle_vision != None:
+        #     self.angle = player.angle_vision + 90
+        # else:
+        #     self.angle = 0
+        self.update_angle()
         self.rect.center = background_center_position(player.position_on_screen, player.position_on_scenario, self.turn_velocity*self.angle)
         self.origin_axis = self.rect.center
         self.x_axis = pg.math.Vector2((1,0))
@@ -61,7 +63,6 @@ class Background():
         except:
             pass
         self.player_position_on_scenario = player.position_on_scenario
-
     def create_group(self):
 
         self.collider_group = ExtendedGroup()
@@ -78,3 +79,11 @@ class Background():
         except:
             pass
         self.area_rect = self.area.get_rect(center=(400,300))
+
+    def update_angle(self):
+        actual_mouse_position = pg.mouse.get_pos()
+        delta_position = actual_mouse_position[0] - self.last_mouse_position[0]
+        self.last_mouse_position[0] = actual_mouse_position[0]
+        step = 1
+        angle_step = 2
+        self.angle += int(delta_position/step)*angle_step

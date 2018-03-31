@@ -5,11 +5,6 @@ import pygame as pg
 
 ######################   FUNCTIONS    ##################################
 
-# this function return the position on screen based on other coordinates
-# is needed because all orientation is made by scenario position and
-# render functions use screen position
-
-
 # this function return the center of background image based on other coordinates
 def background_center_position(position_on_screen, position_on_scenario, angle):
     # pygame returns -90 when player is correct
@@ -42,14 +37,6 @@ def screen_to_scenario(position_on_screen_original, background, vector2=True):
         return pg.math.Vector2((answer_vector[0],answer_vector[1]))
     else:
         return (answer_vector[0],answer_vector[1])
-
-
-def mult(a,b):
-    c00 = a[0][0]*b[0][0]+a[0][1]*b[1][0]
-    c01 = a[0][0]*b[0][1]+a[0][1]*b[1][1]
-    c10 = a[1][0]*b[0][0]+a[1][1]*b[1][0]
-    c11 = a[1][0]*b[0][1]+a[1][1]*b[1][1]
-    return [[c00,c01],[c10,c11]]
 
 
 # create che change basis matrix from background and screen coordinates
@@ -131,16 +118,11 @@ def rotate_fake_center(image, angle, offset, position_on_screen):
     rect = new_image.get_rect(center=new_rect_center)
     return [new_image, rect]
 
-def tuple_of_ints(tuple_of_float):
-    a = int(tuple_of_float[0])
-    b = int(tuple_of_float[1])
-    return (a,b)
-
 def get_character_center_position(rect, offset_vector, angle_rotation):
     delta_position = pg.math.Vector2(rect.center) - pg.math.Vector2(rect.topleft)
     offset = (-offset_vector).rotate(angle_rotation)
     actual_position = delta_position + offset
-    return  tuple_of_ints(actual_position)
+    return  to_int(actual_position)
 
 def remove_parallel_component(reference_vector, original_vector):
     perpendicular_vector = reference_vector.rotate(90)

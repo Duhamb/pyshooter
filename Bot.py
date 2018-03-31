@@ -180,3 +180,8 @@ class Bot(pg.sprite.Sprite):
         self.life -= 1
         if self.life <= 0:
             self.is_dead = True
+
+    def stop_grunt(self):
+        if self.is_grunting:
+            self.grunt.stop()
+   

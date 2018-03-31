@@ -1,6 +1,7 @@
 import pygame as pg
 from pyshooterClient import *
 from textbox import TextBox
+import constants
 
 KEY_REPEAT_SETTING = (200, 70)
 
@@ -26,6 +27,60 @@ class Menu():
         self.CONNECT_OFF = pg.transform.scale(self.CONNECT_OFF, (200, 50))
         self.CONNECT_ON = pg.image.load("Assets/Images/menu/button_connect_on.png")
         self.CONNECT_ON = pg.transform.scale(self.CONNECT_ON, (200, 50))
+
+        #### new menu
+        self.options_width = 300 #background options width
+        self.spacing = 50 #space between the center of two options
+        self.first_option_position = constants.SCREEN_SIZE[0]/2, constants.SCREEN_SIZE[1]/2 #center position of first menu option
+        self.font_text = pg.font.Font("Assets/Fonts/BebasNeue-Regular.otf", 35)
+        
+        ### single player
+        self.single_off = self.font_text.render("SINGLEPLAYER", 1, constants.WHITE)
+        self.rect_single = self.single_off.get_rect()
+        
+        self.surface_single_off = pg.Surface((self.options_width, self.rect_single.height))
+        self.surface_single_rect = self.surface_single_off.get_rect(center=self.first_option_position)
+        crop_area = self.surface_single_rect.topleft[0], self.surface_single_rect[1], self.surface_single_rect.width, self.surface_single_rect.height
+        self.surface_single_rect.topleft = (0,0)
+        center_of_surface = self.surface_single_rect.center 
+        self.surface_single_off.blit(self.MENU_IMAGE, (0,0), crop_area)
+        self.rect_single.center = center_of_surface
+        self.surface_single_off.blit(self.single_off, self.rect_single)
+        
+        self.surface_single_on = pg.Surface((self.options_width, self.rect_single.height))
+        self.surface_single_rect.topleft = (0,0)
+        center_of_surface = self.surface_single_rect.center 
+        self.rect_single.center = center_of_surface
+        self.surface_single_on.fill(constants.BLACK)
+        self.surface_single_on.blit(self.single_off, self.rect_single)
+        
+        self.surface_single_rect.center = self.first_option_position
+
+        ###################################################
+        ## multiplayer
+        self.multi_off = self.font_text.render("MULTIPLAYER", 1, constants.WHITE)
+        self.rect_multi = self.multi_off.get_rect()
+        
+        self.surface_multi_off = pg.Surface((self.options_width, self.rect_multi.height))
+        self.surface_multi_rect = self.surface_multi_off.get_rect(center=(self.first_option_position[0], self.first_option_position[1]+self.spacing))
+        crop_area = self.surface_multi_rect.topleft[0], self.surface_multi_rect[1], self.surface_multi_rect.width, self.surface_multi_rect.height
+        self.surface_multi_rect.topleft = (0,0)
+        center_of_surface = self.surface_multi_rect.center 
+        self.surface_multi_off.blit(self.MENU_IMAGE, (0,0), crop_area)
+        self.rect_multi.center = center_of_surface
+        self.surface_multi_off.blit(self.multi_off, self.rect_multi)
+
+        self.surface_multi_on = pg.Surface((self.options_width, self.rect_multi.height))
+        self.surface_multi_rect.topleft = (0,0)
+        center_of_surface = self.surface_multi_rect.center 
+        self.rect_multi.center = center_of_surface
+        self.surface_multi_on.fill(constants.BLACK)
+        self.surface_multi_on.blit(self.multi_off, self.rect_multi)
+        
+        self.surface_multi_rect.center = (self.first_option_position[0], self.first_option_position[1]+self.spacing)
+
+        self.mouse_rect = pg.Rect(0,0,10,10)
+        ####
 
     def on_init(self):
         #FlowCrontoller inital value
@@ -81,16 +136,17 @@ class Menu():
 
     def singleplayer_multiplayer_interactive(self, event):
         mouse = pg.mouse.get_pos()
-
-        if 150+200 > mouse[0] > 150 and 450+50 > mouse[1] > 450:
-            self.surface.blit(self.SINGLE_ON, (150, 450))
+        self.mouse_rect.center = mouse 
+        
+        if self.mouse_rect.colliderect(self.surface_single_rect):
+            self.surface.blit(self.surface_single_on, self.surface_single_rect)
             if event.type == pg.MOUSEBUTTONDOWN:
                 self._in_menu = False
         else:
-            self.surface.blit(self.SINGLE_OFF, (150, 450))
+            self.surface.blit(self.surface_single_off, self.surface_single_rect)
 
-        if 450+200 > mouse[0] > 450 and 450+50 > mouse[1] > 450:
-            self.surface.blit(self.MULTI_ON, (450, 450))
+        if self.mouse_rect.colliderect(self.surface_multi_rect):
+            self.surface.blit(self.surface_multi_on, self.surface_multi_rect)
             if event.type == pg.MOUSEBUTTONDOWN:
                 self.input = TextBox((300, 300, 200, 30), command=self.change_name,
                                      clear_on_enter=True, inactive_on_enter=False)
@@ -98,7 +154,7 @@ class Menu():
                 self.menu_state = "multiplayer_get_name"
 
         else:
-            self.surface.blit(self.MULTI_OFF, (450, 450))
+            self.surface.blit(self.surface_multi_off, self.surface_multi_rect)
 
     def multiplayer_create_connect_interactive(self, event):
         mouse = pg.mouse.get_pos()
@@ -125,32 +181,29 @@ class Menu():
             self.surface.blit(self.CONNECT_OFF, (450, 450))
 
     def change_name(self, id, name):
-
         self.name = str(name)
         self.menu_state = "multiplayer_create/connect"
         self.surface.blit(self.MENU_IMAGE, (0, 0))
 
     def change_ip(self,id,ip):
-
         self.server_ip = str(ip)
         self.menu_state = "connect"
         self.surface.blit(self.MENU_IMAGE, (0, 0))
 
     def connect(self):
-
         self.server_client = pyshooterClient(self.name)
         self.have_client = self.server_client.start_connect(self.server_ip)
         self._in_menu = False
 
 
     def make_prompt(self, message):
-        font = pg.font.SysFont("arial", 20)
+        # font = pg.font.SysFont("arial", 20)
+        font = pg.font.Font("Assets/Fonts/BebasNeue-Regular.otf", 20)
         rend = font.render(message, True, pg.Color("black"))
         return (rend, rend.get_rect(topleft=(270, 270)))
 
 
     def intro(self):
-
         #music and other variables
         self.on_init()
 

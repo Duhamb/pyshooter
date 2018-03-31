@@ -137,7 +137,7 @@ class Player(pygame.sprite.Sprite):
         _, angle = (pygame.mouse.get_pos()-self.position_on_screen).as_polar()
         angle = -90
         try:
-            D = (pygame.mouse.get_pos()-self.position_on_screen).length()
+            D = (pg.math.Vector2((400,200))-self.position_on_screen).length()
             angle -= math.degrees(math.asin(32/(2.7*D)))
         except:
             pass

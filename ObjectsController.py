@@ -5,6 +5,7 @@ from Background import *
 from Bot import *
 from ExtendedGroup import *
 from Projectiles import *
+import constants
 
 import Animation
 import Sound
@@ -69,7 +70,7 @@ class ObjectsController:
         if self.player.bullet_counter > 0:
             if self.player.is_shooting and self.fire_rate > 300:
                 self.can_render_bullet = True
-                mouse_position = pg.mouse.get_pos()
+                mouse_position = constants.MOUSE_POSITION_SCREEN
                 if self.multiplayer_on:
                     bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background,
                                          screen_to_scenario(mouse_position, self.background, False),
@@ -108,6 +109,7 @@ class ObjectsController:
         # Update for zombies
         for bot in self.bot_list:
             if bot.is_dead:
+                bot.stop_grunt()
                 self.bot_list.remove(bot)
                 if self.shooter_name == None:
                     self.player.score = self.player.score + 100

@@ -29,6 +29,9 @@ class Menu():
         self.CONNECT_ON = pg.transform.scale(self.CONNECT_ON, (200, 50))
 
         #### new menu
+        self.is_selected = False
+        self.switch_sound = pg.mixer.Sound('Assets/Sounds/switch_sound.wav')
+        self.switch_sound.set_volume(1)
         self.options_width = 300 #background options width
         self.spacing = 50 #space between the center of two options
         self.first_option_position = constants.SCREEN_SIZE[0]/2, constants.SCREEN_SIZE[1]/2 #center position of first menu option
@@ -79,7 +82,7 @@ class Menu():
         
         self.surface_multi_rect.center = (self.first_option_position[0], self.first_option_position[1]+self.spacing)
 
-        self.mouse_rect = pg.Rect(0,0,10,10)
+        self.mouse_rect = pg.Rect(0,0,3,3)
         ####
 
     def on_init(self):
@@ -138,21 +141,29 @@ class Menu():
         mouse = pg.mouse.get_pos()
         self.mouse_rect.center = mouse 
         
-        if self.mouse_rect.colliderect(self.surface_single_rect):
+        single_is_selected = self.mouse_rect.colliderect(self.surface_single_rect)
+        multi_is_selected = self.mouse_rect.colliderect(self.surface_multi_rect)
+        if single_is_selected or multi_is_selected:
+            if not self.is_selected:
+                self.is_selected = True
+                self.switch_sound.play()
+        else:
+            self.is_selected = False
+
+        if single_is_selected:
             self.surface.blit(self.surface_single_on, self.surface_single_rect)
             if event.type == pg.MOUSEBUTTONDOWN:
                 self._in_menu = False
         else:
             self.surface.blit(self.surface_single_off, self.surface_single_rect)
 
-        if self.mouse_rect.colliderect(self.surface_multi_rect):
+        if multi_is_selected:
             self.surface.blit(self.surface_multi_on, self.surface_multi_rect)
             if event.type == pg.MOUSEBUTTONDOWN:
                 self.input = TextBox((300, 300, 200, 30), command=self.change_name,
                                      clear_on_enter=True, inactive_on_enter=False)
                 self.surface.blit(self.MENU_IMAGE, (0, 0))
                 self.menu_state = "multiplayer_get_name"
-
         else:
             self.surface.blit(self.surface_multi_off, self.surface_multi_rect)
 

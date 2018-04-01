@@ -1,5 +1,5 @@
 import pygame as pg
-from helpers import *
+import helpers
 import Collider
 from ExtendedGroup import *
 
@@ -26,7 +26,7 @@ class Bot(pg.sprite.Sprite):
 
         # image and rect will be defined according with the animation
         self.image = animation.idle[0]
-        self.center = scenario_to_screen(self.position_on_scenario, self.background, False)
+        self.center = helpers.scenario_to_screen(self.position_on_scenario, self.background, False)
         self.rect = self.image.get_rect(center=self.center)
 
         # add collider to bot
@@ -84,10 +84,8 @@ class Bot(pg.sprite.Sprite):
 
     def rotate(self):
         player_position = self.player.position_on_screen
-        # print(self.position_on_scenario)
-        bot_position = scenario_to_screen(self.position_on_scenario, self.background)
+        bot_position = helpers.scenario_to_screen(self.position_on_scenario, self.background)
         # bot_position = pg.math.Vector2(self.rect.center)
-        # print(self.background.origin_axis, end=" ")
         _, self.angle = (player_position-bot_position).as_polar()
         self.angle = self.angle
         # gira todas as imagens
@@ -97,32 +95,26 @@ class Bot(pg.sprite.Sprite):
         # gira em torno do centro real
         # encontra a nova posição do centro do rect
         self.rotated_center = self.delta_center_position.rotate(+self.angle)
-        self.new_rect_center = self.rotated_center + scenario_to_screen(self.position_on_scenario, self.background)
-        # print(scenario_to_screen(self.position_on_scenario, self.background))
-        # print(scenario_to_screen(self.player.position_on_scenario, self.background))
-        # print(self.player.position_on_screen)
+        self.new_rect_center = self.rotated_center + helpers.scenario_to_screen(self.position_on_scenario, self.background)
 
         # atualiza o rect da imagem com o novo centro correto
         self.rect = self.image.get_rect(center=self.new_rect_center)
-        # print(self.rect.center, end=" ")
-        # print(self.background.x_axis," ",self.background.y_axis)
-        # self.collider.rect = self.rect
 
     def choose_animation(self):
         if self.is_attacking:
-            self.float_index = increment(self.float_index, 0.5, 1)
-            self.index_animation_attack = increment(self.index_animation_attack, int(self.float_index), 8)
+            self.float_index = helpers.increment(self.float_index, 0.5, 1)
+            self.index_animation_attack = helpers.increment(self.index_animation_attack, int(self.float_index), 8)
             self.original_image = self.animation.attack[self.index_animation_attack]
             self.animation_name = "attack"
 
         elif self.is_moving:
-            self.index_animation_move = increment(self.index_animation_move, 1, 16)
+            self.index_animation_move = helpers.increment(self.index_animation_move, 1, 16)
             self.original_image = self.animation.move[self.index_animation_move]
             self.animation_name = "move"
 
         else:
-            self.float_index = increment(self.float_index, 0.25, 1)
-            self.index_animation_idle = increment(self.index_animation_idle, int(self.float_index), 16)
+            self.float_index = helpers.increment(self.float_index, 0.25, 1)
+            self.index_animation_idle = helpers.increment(self.index_animation_idle, int(self.float_index), 16)
             self.original_image = self.animation.idle[self.index_animation_idle]
             self.animation_name = "idle"
 
@@ -142,9 +134,9 @@ class Bot(pg.sprite.Sprite):
         collisions = pg.sprite.spritecollide(self.collider, self.background.collider_group, False)
         
         if collisions:
-            move_on_collision(self.collider, collisions, direction)
+            helpers.move_on_collision(self.collider, collisions, direction)
             # fix position if necessary based on collision
-            self.position_on_scenario = image_to_scenario(self.collider.rect.center, self.background.rect)
+            self.position_on_scenario = helpers.image_to_scenario(self.collider.rect.center, self.background.rect)
 
     def choose_action(self):
         distance_to_player = self.position_on_scenario.distance_to(self.player.position_on_scenario)
@@ -167,14 +159,19 @@ class Bot(pg.sprite.Sprite):
          }
         return info
 
+    def draw(self, screen):
+        if helpers.is_visible_area(self.rect.center):
+            screen.blit(self.image, self.rect)
+
     def draw_multiplayer(self, screen, server_info ):
-        position_on_screen = scenario_to_screen(server_info['position_on_scenario'], self.background, False)
+        position_on_screen = helpers.scenario_to_screen(server_info['position_on_scenario'], self.background, False)
         # body
-        animation = getattr(self.animation, server_info['animation_name'])
-        original_image = animation[server_info['animation_index']]
-        [imageMultiplayer, rect_multiplayer] = rotate_fake_center(original_image, server_info['angle'], self.delta_center_position, position_on_screen)
-        # draw images
-        screen.blit(imageMultiplayer, rect_multiplayer)
+        if helpers.is_visible_area(position_on_screen):
+            animation = getattr(self.animation, server_info['animation_name'])
+            original_image = animation[server_info['animation_index']]
+            [imageMultiplayer, rect_multiplayer] = helpers.rotate_fake_center(original_image, server_info['angle'], self.delta_center_position, position_on_screen)
+            # draw images
+            screen.blit(imageMultiplayer, rect_multiplayer)
 
     def gets_hit(self):
         self.life -= 1

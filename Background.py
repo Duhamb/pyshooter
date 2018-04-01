@@ -1,8 +1,8 @@
 import pygame as pg
-from helpers import *
+import helpers
+import constants
 from ExtendedGroup import *
 from Collider import *
-import constants
 
 class Background():
     def __init__(self):
@@ -12,13 +12,12 @@ class Background():
         self.size = self.rect.size
         self.mask = pg.mask.from_surface(self.back)
 
-        self.crop_size = (600,600)
+        self.crop_size = (2*constants.VISIBLE_RADIUS, 2*constants.VISIBLE_RADIUS)
 
         # rects representing walls
-        self.corner_list = BACKGROUND_RECTS
-        self.rect_list = transform_corners_to_rects(self.corner_list)
-        self.collider_group = None #keep all walls
-        self.create_group()
+        self.corner_list = constants.BACKGROUND_RECTS
+        self.rect_list = helpers.transform_corners_to_rects(self.corner_list)
+        self.collider_group = self.create_group()
 
         # coordinates
         self.x_axis = pg.math.Vector2((1,0))
@@ -36,7 +35,7 @@ class Background():
  
     def update_position(self, player):
         self.update_angle()
-        self.rect.center = background_center_position(player.position_on_screen, player.position_on_scenario, self.turn_velocity*self.angle)
+        self.rect.center = helpers.background_center_position(player.position_on_screen, player.position_on_scenario, self.turn_velocity*self.angle)
         self.origin_axis = self.rect.center
         self.x_axis = pg.math.Vector2((1,0))
         self.y_axis = pg.math.Vector2((0,1)) 
@@ -47,10 +46,11 @@ class Background():
         self.player_position_on_scenario = player.position_on_scenario
 
     def create_group(self):
-        self.collider_group = ExtendedGroup()
+        collider_group = ExtendedGroup()
         for rect in self.rect_list:
             collider = Collider(rect, self.rect, None)
-            self.collider_group.add(collider)
+            collider_group.add(collider)
+        return collider_group
             
     def define_area(self):
         self.area = pg.Surface(self.crop_size)
@@ -62,7 +62,7 @@ class Background():
     def update_angle(self):
         actual_mouse_position = pg.mouse.get_pos()
         delta_position = actual_mouse_position[0] - self.last_mouse_position[0]
-        self.last_mouse_position = actual_mouse_position
-        step = 2
-        angle_step = 1
-        self.angle += int(delta_position/step)*angle_step
+        self.last_mouse_position = constants.MOUSE_POSITION_SCREEN
+        pg.mouse.set_pos(constants.MOUSE_POSITION_SCREEN)
+        step = 8
+        self.angle += (delta_position/step)

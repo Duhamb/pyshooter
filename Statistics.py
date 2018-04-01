@@ -23,6 +23,8 @@ class Statistics():
         self.score_label = self.font_text_18.render("SCORE", 1, (255,255,255))
         self.score_value = self.font_text_25.render("000000000", 1, (255,255,255))
 
+        self.initial_radius = 10
+
     def draw(self, screen):
         self.draw_score(screen)
         self.draw_weapon(screen)
@@ -52,7 +54,9 @@ class Statistics():
         position_on_minimap = self.player.position_on_scenario/self.ratio
         self.position_on_screen = position_on_minimap + self.center_position_minimap
         self.position_on_screen = (int(self.position_on_screen[0]), int(self.position_on_screen[1]))
-        pg.draw.circle(screen, (255,0,0), self.position_on_screen, 2, 1)
+        pg.draw.circle(screen, (255,0,0), self.position_on_screen, int(self.initial_radius), 2)
+        if self.initial_radius > 3.2:
+            self.initial_radius -= 0.1
 
     def draw_minimap_multiplayer(self, screen):
         self.server_client.push_minimap(self.position_on_screen)
@@ -76,8 +80,8 @@ class Statistics():
                 screen.blit(points, (15, 80+y))
                 y = y + 30
 
-
     def draw_ammo(self, screen):
         ammo = str(self.player.bullet_counter) + "/15"
         ammo = self.font_text_25.render(ammo, 1, (255, 255, 255))
         screen.blit(ammo, (740, 555))
+        

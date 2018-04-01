@@ -13,5 +13,5 @@ class Light():
 		self.fog.blit(self.light_mask, self.light_rect)
 
 	def draw(self, screen):
-
 		screen.blit(self.fog, (0, 0), special_flags=pg.BLEND_MULT)
+		

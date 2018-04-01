@@ -1,4 +1,5 @@
-from helpers import *
+import pygame as pg
+import helpers
 import math
 
 class Projectiles(pg.sprite.Sprite):
@@ -18,8 +19,8 @@ class Projectiles(pg.sprite.Sprite):
         self.first_direction = destination_scenario - self.player_position
         _, angle = self.first_direction.as_polar()
         try:
-            D = self.first_direction.length()
-            add_angle = math.degrees(math.asin(32/(2.7*D)))
+            hypotenuse = self.first_direction.length()
+            add_angle = math.degrees(math.asin(32/(2.7*hypotenuse)))
             angle -= add_angle
         except:
             pass
@@ -30,7 +31,7 @@ class Projectiles(pg.sprite.Sprite):
         #Start position correction
         self.new_vector = self.vector_offset.rotate(angle)
         self.position_on_scenario = self.player_position + self.new_vector
-        self.position_on_screen = scenario_to_screen(self.position_on_scenario, self.background)
+        self.position_on_screen = helpers.scenario_to_screen(self.position_on_scenario, self.background)
 
         self.image = image
         self.original_image = image
@@ -60,13 +61,13 @@ class Projectiles(pg.sprite.Sprite):
 
     def update(self):
         self.is_possible_direction()
-        actual_position = scenario_to_screen(self.position_on_scenario, self.background)
+        actual_position = helpers.scenario_to_screen(self.position_on_scenario, self.background)
         self.position_on_scenario += 10 * self.final_direction.normalize()
-        next_position = scenario_to_screen(self.position_on_scenario, self.background)
+        next_position = helpers.scenario_to_screen(self.position_on_scenario, self.background)
 
         _, angle = (next_position-actual_position).as_polar()
         self.image = pg.transform.rotozoom(self.original_image, -angle, 1)
         self.rect = self.image.get_rect()
-        self.rect.center = scenario_to_screen(self.position_on_scenario, self.background, False)
+        self.rect.center = helpers.scenario_to_screen(self.position_on_scenario, self.background, False)
         
         self.distance += 10

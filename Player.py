@@ -1,5 +1,6 @@
+import pygame as pg
 import pygame
-from helpers import *
+import helpers
 import math
 import Collider
 
@@ -27,7 +28,7 @@ class Player(pygame.sprite.Sprite):
 
         # define the collider shape
         self.collider_image = pg.image.load("Assets/Images/back_player.png").convert_alpha()
-        self.collider_image = scale_image(self.collider_image, 2.7)
+        self.collider_image = helpers.scale_image(self.collider_image, 2.7)
         self.rect_back = self.collider_image.get_rect(center = location_on_screen)
         self.mask = pygame.mask.from_surface(self.collider_image)
         self.rect_for_collisions = self.mask.get_bounding_rects()[0]
@@ -99,25 +100,23 @@ class Player(pygame.sprite.Sprite):
         self.choose_animation()
         self.rotate()
         self.react_to_event()
-        # print(self.position_on_scenario)
-        # print(screen_to_scenario(self.position_on_screen, self.background))
-        # print(scenario_to_screen(screen_to_scenario(self.position_on_screen, self.background), self.background))
+
     def draw(self, screen):
         screen.blit(self.feet, self.feet.get_rect(center=self.position_on_screen).topleft)
         screen.blit(self.image, self.rect)
 
     def draw_multiplayer(self, screen, server_info ):
-        position_on_screen = scenario_to_screen(server_info['position_on_scenario'], self.background, False)
+        position_on_screen = helpers.scenario_to_screen(server_info['position_on_scenario'], self.background, False)
         
         # body
         animation = getattr(self.animation, server_info['animation_body'])
         original_image = animation[server_info['animation_body_index']]
-        [imageMultiplayer, rect_multiplayer] = rotate_fake_center(original_image, server_info['angle'], self.delta_center_position, position_on_screen)
+        [imageMultiplayer, rect_multiplayer] = helpers.rotate_fake_center(original_image, server_info['angle'], self.delta_center_position, position_on_screen)
         
         # feet
         animation_feet = getattr(self.animation, server_info['animation_feet'])
         original_image = animation_feet[server_info['animation_feet_index']]
-        [imageFeet, rect_feet] = rotate_fake_center(original_image, server_info['angle'], pg.math.Vector2((0,0)), position_on_screen)
+        [imageFeet, rect_feet] = helpers.rotate_fake_center(original_image, server_info['angle'], pg.math.Vector2((0,0)), position_on_screen)
         
         # draw images
         screen.blit(imageFeet, rect_feet)
@@ -129,8 +128,8 @@ class Player(pygame.sprite.Sprite):
         collisions = pg.sprite.spritecollide(self.collider, self.background.collider_group, False)
         
         if collisions:
-            move_on_collision(self.collider, collisions, direction)
-            self.position_on_scenario = image_to_scenario(self.collider.rect.center, self.background.rect)
+            helpers.move_on_collision(self.collider, collisions, direction)
+            self.position_on_scenario = helpers.image_to_scenario(self.collider.rect.center, self.background.rect)
 
     def rotate(self):
         # get the angle between mouse and player
@@ -218,9 +217,9 @@ class Player(pygame.sprite.Sprite):
         
     def react_to_event(self):
         if self.pressionou_w or self.pressionou_d or self.pressionou_a or self.pressionou_s:
-            self.actual_position = screen_to_scenario(self.position_on_screen, self.background)
+            self.actual_position = helpers.screen_to_scenario(self.position_on_screen, self.background)
             # self.mouse_position = screen_to_scenario(pygame.mouse.get_pos(), self.background)
-            self.mouse_position = screen_to_scenario((400,200), self.background)
+            self.mouse_position = helpers.screen_to_scenario((400,200), self.background)
             self.vector_position = self.mouse_position - self.actual_position
             # react to multiples move commands
             if self.pressionou_w:
@@ -268,13 +267,13 @@ class Player(pygame.sprite.Sprite):
     def choose_animation(self):
         # body animation
         if self.is_shooting:
-            self.index_animation_shoot = increment(self.index_animation_shoot, 1, len(self.animation_shoot)-1)
+            self.index_animation_shoot = helpers.increment(self.index_animation_shoot, 1, len(self.animation_shoot)-1)
             self.original_image = self.animation_shoot[self.index_animation_shoot]
             self.animation_body = self.prefix_animation_name + 'shoot'
             self.animation_body_index = self.index_animation_shoot
         elif self.is_reloading:
-            self.float_index = increment(self.float_index, 0.5, 1)
-            self.index_animation_reload = increment(self.index_animation_reload, int(self.float_index),len(self.animation_reload)-1)
+            self.float_index = helpers.increment(self.float_index, 0.5, 1)
+            self.index_animation_reload = helpers.increment(self.index_animation_reload, int(self.float_index),len(self.animation_reload)-1)
             self.animation_body = self.prefix_animation_name + 'reload'
             self.animation_body_index = self.index_animation_reload
             if self.index_animation_reload == len(self.animation_reload)-1:
@@ -282,8 +281,8 @@ class Player(pygame.sprite.Sprite):
                 self.index_animation_reload = 0
             self.original_image = self.animation_reload[self.index_animation_reload]
         elif self.is_meleeattack:
-            self.float_index = increment(self.float_index, 0.5, 1)
-            self.index_animation_meleeattack = increment(self.index_animation_meleeattack, int(self.float_index),len(self.animation_meleeattack)-1)
+            self.float_index = helpers.increment(self.float_index, 0.5, 1)
+            self.index_animation_meleeattack = helpers.increment(self.index_animation_meleeattack, int(self.float_index),len(self.animation_meleeattack)-1)
             self.animation_body = self.prefix_animation_name + 'meleeattack'
             self.animation_body_index = self.index_animation_meleeattack
             if self.index_animation_meleeattack == len(self.animation_meleeattack)-1:
@@ -291,13 +290,13 @@ class Player(pygame.sprite.Sprite):
                 self.index_animation_meleeattack = 0
             self.original_image = self.animation_meleeattack[self.index_animation_meleeattack]
         elif self.is_idle:
-            self.float_index = increment(self.float_index, 0.25, 1)
-            self.index_animation_idle = increment(self.index_animation_idle, int(self.float_index), len(self.animation_idle)-1)
+            self.float_index = helpers.increment(self.float_index, 0.25, 1)
+            self.index_animation_idle = helpers.increment(self.index_animation_idle, int(self.float_index), len(self.animation_idle)-1)
             self.original_image = self.animation_idle[self.index_animation_idle]
             self.animation_body = self.prefix_animation_name + 'idle'
             self.animation_body_index = self.index_animation_idle
         elif self.is_moving_forward or self.is_moving_left or self.is_moving_right:
-            self.index_animation_move = increment(self.index_animation_move, 1, len(self.animation_move)-1)
+            self.index_animation_move = helpers.increment(self.index_animation_move, 1, len(self.animation_move)-1)
             self.original_image = self.animation_move[self.index_animation_move]
             self.animation_body = self.prefix_animation_name + 'move'
             self.animation_body_index = self.index_animation_move
@@ -307,17 +306,17 @@ class Player(pygame.sprite.Sprite):
             self.original_feet = self.animation.feet_walk[self.index_animation_feet_walk]
             self.animation_feet_index = self.index_animation_feet_walk
             self.animation_feet = 'feet_walk'
-            self.index_animation_feet_walk = increment(self.index_animation_feet_walk, 1, 19)
+            self.index_animation_feet_walk = helpers.increment(self.index_animation_feet_walk, 1, 19)
         elif self.is_moving_left:
             self.original_feet = self.animation.feet_strafe_left[self.index_animation_feet_strafe_left]
             self.animation_feet_index = self.index_animation_feet_strafe_left
             self.animation_feet = 'feet_strafe_left'
-            self.index_animation_feet_strafe_left = increment(self.index_animation_feet_strafe_left, 1, 19)
+            self.index_animation_feet_strafe_left = helpers.increment(self.index_animation_feet_strafe_left, 1, 19)
         elif self.is_moving_right:
             self.original_feet = self.animation.feet_strafe_right[self.index_animation_feet_strafe_right]
             self.animation_feet_index = self.index_animation_feet_strafe_right
             self.animation_feet = 'feet_strafe_right'
-            self.index_animation_feet_strafe_right = increment(self.index_animation_feet_strafe_right, 1, 19)
+            self.index_animation_feet_strafe_right = helpers.increment(self.index_animation_feet_strafe_right, 1, 19)
         else:
             self.original_feet = self.animation.feet_idle[0]
             self.animation_feet_index = 0
@@ -328,7 +327,7 @@ class Player(pygame.sprite.Sprite):
         info = {'position_on_scenario': (self.position_on_scenario[0], self.position_on_scenario[1]),
          'position_on_screen': (self.position_on_screen[0], self.position_on_screen[1]),
          'angle': self.angle_vision,
-         'mouse_position': screen_to_scenario(pg.mouse.get_pos(), self.background, False),
+         'mouse_position': helpers.screen_to_scenario(pg.mouse.get_pos(), self.background, False),
          'animation_body': self.animation_body,
          'animation_body_index': self.animation_body_index,
          'animation_feet': self.animation_feet,

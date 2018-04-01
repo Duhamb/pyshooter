@@ -7,10 +7,10 @@ from Player import *
 from Background import *
 from Statistics import *
 from Light import *
-from helpers import *
 from ObjectsController import *
-import constants
 
+import helpers
+import constants
 import Animation
 import Sound
 
@@ -56,6 +56,7 @@ class Main:
         
         self.CROSS_IMAGE = pg.image.load("Assets/Images/cross.png").convert_alpha()
         self.CROSS_IMAGE = pg.transform.scale(self.CROSS_IMAGE, (15,15))
+        self.cross_rect = self.CROSS_IMAGE.get_rect(center = constants.MOUSE_POSITION_SCREEN)
         
         self.player_animation = Animation.Player
         self.player_animation.load()
@@ -77,12 +78,8 @@ class Main:
             self.is_host = self.menu.is_host
 
         self.player = Player(constants.PLAYER_POSITION_SCENARIO, self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background)
-
         self.light = Light(self.player)
-
-        # esse grupo herda da sprite group
         self.players = ExtendedGroup(self.player)
-
         self.stats = Statistics(self.player, constants.SCREEN_SIZE, self.multiplayer_on, self.server_client, self.is_host)
 
         #Set mouse invisible
@@ -112,26 +109,18 @@ class Main:
 
     def on_render(self):
         self.screen.fill(constants.BLACK)
-
-        # sem sprite ainda
         self.background.draw(self.screen, self.player)
-
         self.players.update()
-
         self.ObjectsController.draw()
-
-        self.cross_rect = self.CROSS_IMAGE.get_rect(center = constants.MOUSE_POSITION_SCREEN)
         self.screen.blit(self.CROSS_IMAGE, self.cross_rect)
-
         self.light.draw(self.screen)
         self.stats.draw(self.screen)
-        
         self.display_fps()
+        
         pg.display.update()
 
     def on_execute(self):
         self.on_init()
-
         while (self._running):
             self.on_event(pg.event.get())
             self.on_loop()

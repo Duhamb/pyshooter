@@ -73,11 +73,11 @@ class ObjectsController:
                 mouse_position = constants.MOUSE_POSITION_SCREEN
                 if self.multiplayer_on:
                     bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background,
-                                         screen_to_scenario(mouse_position, self.background, False),
+                                         helpers.screen_to_scenario(mouse_position, self.background, False),
                                          self.server_client.name)
                 else:
                     bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background,
-                                     screen_to_scenario(mouse_position, self.background, False), None)
+                                     helpers.screen_to_scenario(mouse_position, self.background, False), None)
                 self.bullet_list.add(bullet)
                 self.fire_rate = 0
                 self.player.bullet_counter -= 1

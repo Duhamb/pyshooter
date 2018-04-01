@@ -1,5 +1,5 @@
 import pygame
-from helpers import *
+import helpers
 # link contendo as classes do sprite.Group
 # https://github.com/pygame/pygame/blob/67026e3c51843d9313bbc8cc8a35d219eee3d4d4/lib/sprite.py#L464
 
@@ -20,5 +20,5 @@ class ExtendedGroup(pygame.sprite.Group):
                 spr.draw(surface)
             except:
                 self.spritedict[spr] = surface_blit(spr.image, spr.rect)
-            # draw_rect(spr.rect, surface)
+            # helpers.draw_rect(spr.rect, surface)
         self.lostsprites = []

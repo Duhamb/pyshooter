@@ -185,6 +185,20 @@ def transform_corners_to_rects(corner_list):
 
     return rect_list
 
+# for now, this function is exclusive for bot
+# reason: bot_list is group of Bot, not Collider
+def check_collision(actual_collider, object_group):
+    collider_collisions_list = []
+    for obj in object_group:
+        if actual_collider.rect.colliderect(obj.collider.rect):
+            if actual_collider.rect.center != obj.collider.rect.center:
+                collider_collisions_list.append(obj)
+    
+    if len(collider_collisions_list)!=0:
+        return collider_collisions_list
+    else:
+        return None
+
 def move_on_collision(animated_collider, list_collisions, direction):
     x_move = direction[0]
     y_move = direction[1]

@@ -4,7 +4,7 @@ import helpers
 # IMPORTANT! All colliders are rects with positions based on background image
 # background image has origin axis at topleft
 class Collider(pg.sprite.Sprite):
-    def __init__(self, rect, background_rect, screen):
+    def __init__(self, rect, background_rect, screen=None):
         super().__init__()
         self.rect = rect.copy()
         self.background_rect = background_rect 

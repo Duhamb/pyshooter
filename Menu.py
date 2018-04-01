@@ -105,7 +105,7 @@ class Menu():
         pg.key.set_repeat(*KEY_REPEAT_SETTING)
 
         #music configuration
-        self.music = pg.mixer.Sound('Assets/Sounds/menu_sound.wav')
+        self.music = pg.mixer.Sound('Assets/Sounds/menu_sound_loop.wav')
         self.music.set_volume(0.5)
         self.music.play(-1)
 

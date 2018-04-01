@@ -7,7 +7,7 @@ class Projectiles(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)
 
         self.shooter_name = shooter_name
-
+        self.velocity = 20
         self.background = background
         self.mask = pg.mask.from_surface(image)
         self.player_position = pg.math.Vector2(origin_scenario)
@@ -62,7 +62,7 @@ class Projectiles(pg.sprite.Sprite):
     def update(self):
         self.is_possible_direction()
         actual_position = helpers.scenario_to_screen(self.position_on_scenario, self.background)
-        self.position_on_scenario += 10 * self.final_direction.normalize()
+        self.position_on_scenario += self.velocity * self.final_direction.normalize()
         next_position = helpers.scenario_to_screen(self.position_on_scenario, self.background)
 
         _, angle = (next_position-actual_position).as_polar()
@@ -70,4 +70,4 @@ class Projectiles(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = helpers.scenario_to_screen(self.position_on_scenario, self.background, False)
         
-        self.distance += 10
+        self.distance += self.velocity

@@ -2,13 +2,14 @@ import pygame as pg
 import helpers
 import Collider
 from ExtendedGroup import *
+import random
 
 class Bot(pg.sprite.Sprite):
 
     def __init__(self, location_on_scenario, surface, background, player, animation):
         super().__init__()
 
-        self.velocity = 2
+        self.velocity = random.randint(2, 4)
 
         # load all objects necessary for bot interaction
         self.player = player
@@ -30,7 +31,7 @@ class Bot(pg.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.center)
 
         # add collider to bot
-        self.collider = Collider.Collider(self.rect, self.background.rect, None)
+        self.collider = Collider.Collider(pg.Rect(0,0,40,40), self.background.rect, None)
 
         # the center of sprite isnt the center of the own image file
         # so, this is needed to find the real center
@@ -62,7 +63,11 @@ class Bot(pg.sprite.Sprite):
         self.life = 3
         self.is_dead = False
 
-    def update(self):
+        # group with all other zombies
+        self.bot_group = None
+
+    def update(self, bot_group):
+        self.bot_group = bot_group
         self.choose_animation()
         self.rotate()
         self.choose_action()
@@ -126,21 +131,33 @@ class Bot(pg.sprite.Sprite):
 
         direction.normalize_ip()
         direction = direction * self.velocity
-        # move 
-        self.position_on_scenario += direction
+        # move
+        last_position_on_scenario = tuple(self.position_on_scenario)
 
-        # verify collision
+        # verify collision with walls
+        alternative_move = [0,-120,120]
+        self.position_on_scenario = pg.math.Vector2(last_position_on_scenario)
+        for angle in alternative_move:
+            self.position_on_scenario += direction.rotate(angle) + direction.rotate(angle)*abs(angle/50)
+            self.collider.update(self.position_on_scenario)
+            collisions = pg.sprite.spritecollide(self.collider, self.background.collider_group, False)
+            if collisions:
+                helpers.move_on_collision(self.collider, collisions, direction)
+                # fix position if necessary based on collision
+                self.position_on_scenario = helpers.image_to_scenario(self.collider.rect.center, self.background.rect)
+
+            # verify collision with other zombies
+            collisions = helpers.check_collision(self.collider, self.bot_group)
+            if collisions:
+                self.position_on_scenario = pg.math.Vector2(last_position_on_scenario)
+            else:
+                break
+            
         self.collider.update(self.position_on_scenario)
-        collisions = pg.sprite.spritecollide(self.collider, self.background.collider_group, False)
-        
-        if collisions:
-            helpers.move_on_collision(self.collider, collisions, direction)
-            # fix position if necessary based on collision
-            self.position_on_scenario = helpers.image_to_scenario(self.collider.rect.center, self.background.rect)
 
     def choose_action(self):
         distance_to_player = self.position_on_scenario.distance_to(self.player.position_on_scenario)
-        if distance_to_player < 50:
+        if distance_to_player < 70:
             self.is_moving = False
             self.is_attacking = True
         elif distance_to_player < 600:

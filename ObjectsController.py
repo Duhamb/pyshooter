@@ -56,6 +56,7 @@ class ObjectsController:
         self.bot_list.add(self.bot8)
         self.bot_list.add(self.bot9)
 
+
         self.bullet_list = ExtendedGroup()
         self.BULLET_IMAGE = pg.image.load("Assets/Images/bullets/bullet1.png")
         self.BULLET_IMAGE = pg.transform.scale(self.BULLET_IMAGE, (15, 3))
@@ -160,7 +161,7 @@ class ObjectsController:
         else:
             # self.background.draw(self.screen, self.players.sprites()[0])
             
-            self.bot_list.update()
+            self.bot_list.update(self.bot_list)
             self.players.draw(self.screen)
             self.bot_list.draw(self.screen)
 

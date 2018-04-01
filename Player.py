@@ -50,7 +50,7 @@ class Player(pygame.sprite.Sprite):
         # the sprite and rect of player
         self.image = self.animation_idle[0]
         self.rect = self.image.get_rect(center = location_on_screen)
-        self.collider = Collider.Collider(self.rect_for_collisions, self.background.rect, None)
+        self.collider = Collider.Collider(self.rect_for_collisions, self.background.rect)
 
         # positions
         self.position_on_screen = pygame.math.Vector2(location_on_screen)

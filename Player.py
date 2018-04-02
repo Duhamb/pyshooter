@@ -264,12 +264,7 @@ class Player(pygame.sprite.Sprite):
 
     def choose_animation(self):
         # body animation
-        if self.is_shooting:
-            self.index_animation_shoot = increment(self.index_animation_shoot, 1, len(self.animation_shoot)-1)
-            self.original_image = self.animation_shoot[self.index_animation_shoot]
-            self.animation_body = self.prefix_animation_name + 'shoot'
-            self.animation_body_index = self.index_animation_shoot
-        elif self.is_reloading:
+        if self.is_reloading:
             self.float_index = increment(self.float_index, 0.5, 1)
             self.index_animation_reload = increment(self.index_animation_reload, int(self.float_index),len(self.animation_reload)-1)
             self.animation_body = self.prefix_animation_name + 'reload'
@@ -278,6 +273,11 @@ class Player(pygame.sprite.Sprite):
                 self.is_reloading = False
                 self.index_animation_reload = 0
             self.original_image = self.animation_reload[self.index_animation_reload]
+        elif self.bullet_counter > 0 and self.is_shooting:
+            self.index_animation_shoot = increment(self.index_animation_shoot, 1, len(self.animation_shoot)-1)
+            self.original_image = self.animation_shoot[self.index_animation_shoot]
+            self.animation_body = self.prefix_animation_name + 'shoot'
+            self.animation_body_index = self.index_animation_shoot
         elif self.is_meleeattack:
             self.float_index = increment(self.float_index, 0.5, 1)
             self.index_animation_meleeattack = increment(self.index_animation_meleeattack, int(self.float_index),len(self.animation_meleeattack)-1)

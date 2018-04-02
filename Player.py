@@ -76,7 +76,8 @@ class Player(pygame.sprite.Sprite):
         self.is_idle = True
 
         # flags for sounds
-        self.sound_footstep_playing = False 
+        self.sound_footstep_playing = False
+        self.sound_empty_playing = False
 
         # handle events
         self.is_colliding = False
@@ -98,6 +99,7 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         self.choose_animation()
+        self.choose_sound()
         self.rotate()
         self.react_to_event()
 
@@ -192,7 +194,6 @@ class Player(pygame.sprite.Sprite):
             if event.key == pygame.K_r:
                 self.is_reloading = True
                 self.bullet_counter = 15
-                pygame.mixer.Channel(1).play(self.sound.reload)
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
@@ -261,6 +262,15 @@ class Player(pygame.sprite.Sprite):
             self.animation_meleeattack = self.animation.shotgun_meleeattack
             self.prefix_animation_name = 'shotgun_'
             self.actual_weapon = 'shotgun'
+
+    def choose_sound(self):
+        # Reloading sound
+        if self.is_reloading and not self.sound_empty_playing:
+            self.sound.empty.stop()
+            pygame.mixer.Channel(1).play(self.sound.reload)
+            self.sound_empty_playing = True
+        if not self.is_reloading:
+            self.sound_empty_playing = False
 
     def choose_animation(self):
         # body animation

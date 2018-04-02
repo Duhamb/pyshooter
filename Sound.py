@@ -8,6 +8,7 @@ class Player:
     zoa = None
     reload = None
     footstep = None
+    empty = None
     # @staticmethod
     @classmethod
     def load(cls):
@@ -17,6 +18,7 @@ class Player:
         cls.meleeattack = pg.mixer.Sound('Assets/Sounds/meleeattack.wav')
         cls.footstep = pg.mixer.Sound('Assets/Sounds/footstep.wav')
         cls.zoa = pg.mixer.Sound('Assets/Sounds/tacaopau.wav')
+        cls.empty = pg.mixer.Sound('Assets/Sounds/empty.wav')
 
     @classmethod
     def play(cls):

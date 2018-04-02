@@ -68,8 +68,8 @@ class ObjectsController:
         self.shooter_name = None
 
     def handle_event(self):
-        if self.player.bullet_counter > 0:
-            if self.player.is_shooting and self.fire_rate > 300:
+        if not self.player.is_reloading and self.player.is_shooting and self.fire_rate > 300:
+            if self.player.bullet_counter > 0:
                 self.can_render_bullet = True
                 mouse_position = constants.MOUSE_POSITION_SCREEN
                 if self.multiplayer_on:
@@ -84,8 +84,10 @@ class ObjectsController:
                 self.player.bullet_counter -= 1
                 self.player_sound.shoot.stop()
                 pygame.mixer.Channel(1).play(self.player_sound.shoot)
-
-
+            else:
+                self.player_sound.empty.stop()
+                pygame.mixer.Channel(1).play(self.player_sound.empty)
+                self.fire_rate = 0
 
     def update(self):
         if not self.player.is_shooting or self.player.bullet_counter == 0:

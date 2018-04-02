@@ -76,7 +76,8 @@ class Player(pygame.sprite.Sprite):
         self.is_idle = True
 
         # flags for sounds
-        self.sound_footstep_playing = False 
+        self.sound_footstep_playing = False
+        self.sound_empty_playing = False
 
         # handle events
         self.is_colliding = False
@@ -98,6 +99,7 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         self.choose_animation()
+        self.choose_sound()
         self.rotate()
         self.react_to_event()
 
@@ -194,7 +196,6 @@ class Player(pygame.sprite.Sprite):
             if event.key == pygame.K_r:
                 self.is_reloading = True
                 self.bullet_counter = 15
-                pygame.mixer.Channel(1).play(self.sound.reload)
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
@@ -264,6 +265,15 @@ class Player(pygame.sprite.Sprite):
             self.prefix_animation_name = 'shotgun_'
             self.actual_weapon = 'shotgun'
 
+    def choose_sound(self):
+        # Reloading sound
+        if self.is_reloading and not self.sound_empty_playing:
+            self.sound.empty.stop()
+            pygame.mixer.Channel(1).play(self.sound.reload)
+            self.sound_empty_playing = True
+        if not self.is_reloading:
+            self.sound_empty_playing = False
+
     def choose_animation(self):
         # body animation
         if self.is_shooting:
@@ -274,12 +284,18 @@ class Player(pygame.sprite.Sprite):
         elif self.is_reloading:
             self.float_index = helpers.increment(self.float_index, 0.5, 1)
             self.index_animation_reload = helpers.increment(self.index_animation_reload, int(self.float_index),len(self.animation_reload)-1)
+
             self.animation_body = self.prefix_animation_name + 'reload'
             self.animation_body_index = self.index_animation_reload
             if self.index_animation_reload == len(self.animation_reload)-1:
                 self.is_reloading = False
                 self.index_animation_reload = 0
             self.original_image = self.animation_reload[self.index_animation_reload]
+        elif self.bullet_counter > 0 and self.is_shooting:
+            self.index_animation_shoot = increment(self.index_animation_shoot, 1, len(self.animation_shoot)-1)
+            self.original_image = self.animation_shoot[self.index_animation_shoot]
+            self.animation_body = self.prefix_animation_name + 'shoot'
+            self.animation_body_index = self.index_animation_shoot
         elif self.is_meleeattack:
             self.float_index = helpers.increment(self.float_index, 0.5, 1)
             self.index_animation_meleeattack = helpers.increment(self.index_animation_meleeattack, int(self.float_index),len(self.animation_meleeattack)-1)

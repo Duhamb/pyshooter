@@ -1,4 +1,5 @@
-from helpers import *
+import pygame as pg
+import helpers
 import math
 
 class Projectiles(pg.sprite.Sprite):
@@ -6,7 +7,7 @@ class Projectiles(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)
 
         self.shooter_name = shooter_name
-
+        self.velocity = 20
         self.background = background
         self.mask = pg.mask.from_surface(image)
         self.player_position = pg.math.Vector2(origin_scenario)
@@ -18,8 +19,8 @@ class Projectiles(pg.sprite.Sprite):
         self.first_direction = destination_scenario - self.player_position
         _, angle = self.first_direction.as_polar()
         try:
-            D = self.first_direction.length()
-            add_angle = math.degrees(math.asin(32/(2.7*D)))
+            hypotenuse = self.first_direction.length()
+            add_angle = math.degrees(math.asin(32/(2.7*hypotenuse)))
             angle -= add_angle
         except:
             pass
@@ -30,9 +31,10 @@ class Projectiles(pg.sprite.Sprite):
         #Start position correction
         self.new_vector = self.vector_offset.rotate(angle)
         self.position_on_scenario = self.player_position + self.new_vector
-        self.position_on_screen = scenario_to_screen(self.position_on_scenario, self.background.rect)
+        self.position_on_screen = helpers.scenario_to_screen(self.position_on_scenario, self.background)
 
         self.image = image
+        self.original_image = image
         self.image = pg.transform.rotozoom(self.image, -angle, 1)
         self.rect = self.image.get_rect(center=self.position_on_screen)
 
@@ -59,8 +61,13 @@ class Projectiles(pg.sprite.Sprite):
 
     def update(self):
         self.is_possible_direction()
-        self.position_on_screen += 10 * self.final_direction.normalize()
-        self.position_on_scenario = self.next_position_on_scenario
+        actual_position = helpers.scenario_to_screen(self.position_on_scenario, self.background)
+        self.position_on_scenario += self.velocity * self.final_direction.normalize()
+        next_position = helpers.scenario_to_screen(self.position_on_scenario, self.background)
 
-        self.distance += 10
-        self.rect.center = self.position_on_screen
+        _, angle = (next_position-actual_position).as_polar()
+        self.image = pg.transform.rotozoom(self.original_image, -angle, 1)
+        self.rect = self.image.get_rect()
+        self.rect.center = helpers.scenario_to_screen(self.position_on_scenario, self.background, False)
+        
+        self.distance += self.velocity

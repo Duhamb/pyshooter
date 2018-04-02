@@ -7,9 +7,10 @@ from Player import *
 from Background import *
 from Statistics import *
 from Light import *
-from helpers import *
 from ObjectsController import *
 
+import helpers
+import constants
 import Animation
 import Sound
 
@@ -18,8 +19,8 @@ import Sound
 class Main:
     def __init__(self):
         self._running = True
-        self.size = self.width, self.height = 800, 600
-        self.fps = 60
+        self.size = self.width, self.height = constants.SCREEN_SIZE
+        self.fps = constants.FPS
         self.multiplayer_on = False
     
     def on_init(self):
@@ -46,7 +47,7 @@ class Main:
         pg.display.set_caption("Pyshooter")
         pg.display.set_icon(self.ICON)
 
-        self.PLAYER_POSITION = (self.width/2, self.height/2)
+        self.PLAYER_POSITION = constants.PLAYER_POSITION_SCREEN
 
         self.PLAY_IMAGE = pg.image.load("Assets/Images/player3.png")
         self.PLAY_IMAGE = pg.transform.scale(self.PLAY_IMAGE, (75,75))
@@ -55,6 +56,7 @@ class Main:
         
         self.CROSS_IMAGE = pg.image.load("Assets/Images/cross.png").convert_alpha()
         self.CROSS_IMAGE = pg.transform.scale(self.CROSS_IMAGE, (15,15))
+        self.cross_rect = self.CROSS_IMAGE.get_rect(center = constants.MOUSE_POSITION_SCREEN)
         
         self.player_animation = Animation.Player
         self.player_animation.load()
@@ -62,15 +64,6 @@ class Main:
         self.player_sound.load()
 
         self.background = Background()
-
-
-        self.player = Player((0, -1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background)
-
-        self.light = Light(self.size, self.player)
-
-        # esse grupo herda da sprite group
-        self.players = ExtendedGroup(self.player)
-
 
         #call menu Displays/Loops
         self.menu.intro()
@@ -84,14 +77,10 @@ class Main:
             self.server_client = self.menu.server_client
             self.is_host = self.menu.is_host
 
-        self.player = Player((0, -1400), self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background)
-
-        self.light = Light(self.size, self.player)
-
-        # esse grupo herda da sprite group
+        self.player = Player(constants.PLAYER_POSITION_SCENARIO, self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background)
+        self.light = Light(self.player)
         self.players = ExtendedGroup(self.player)
-
-        self.stats = Statistics(self.player, self.screen.get_rect().size, self.multiplayer_on, self.server_client, self.is_host)
+        self.stats = Statistics(self.player, constants.SCREEN_SIZE, self.multiplayer_on, self.server_client, self.is_host)
 
         #Set mouse invisible
         pg.mouse.set_visible(0)
@@ -119,27 +108,19 @@ class Main:
         sys.exit()
 
     def on_render(self):
-        self.screen.fill((0,0,0))
-
-        # sem sprite ainda
+        self.screen.fill(constants.BLACK)
         self.background.draw(self.screen, self.player)
-
         self.players.update()
-
         self.ObjectsController.draw()
-
-        self.cross_rect = self.CROSS_IMAGE.get_rect(center = pg.mouse.get_pos())
         self.screen.blit(self.CROSS_IMAGE, self.cross_rect)
-
         self.light.draw(self.screen)
         self.stats.draw(self.screen)
-        
         self.display_fps()
+        
         pg.display.update()
 
     def on_execute(self):
         self.on_init()
-
         while (self._running):
             self.on_event(pg.event.get())
             self.on_loop()

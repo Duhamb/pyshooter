@@ -1,62 +1,63 @@
 # this file has constant values and auxiliar functions used in whole game
 
 import pygame as pg
-
-
+import constants
 ######################   FUNCTIONS    ##################################
 
-# this function return the position on screen based on other coordinates
-# is needed because all orientation is made by scenario position and
-# render functions use screen position
-def scenario_to_screen(position_on_scenario, scenario_rect, vector2=True):
-    x = position_on_scenario[0]+scenario_rect.center[0]
-    y = position_on_scenario[1]+scenario_rect.center[1]
-    if vector2:
-        return pg.math.Vector2((x,y))
-    else:
-        return (x,y)
-
-def scenario_to_screen2(position_on_scenario, topleft):
-    a = position_on_scenario[0]
-    b = position_on_scenario[1]
-    x = topleft[0]
-    y = topleft[1]
-    return (a+x, b+y)
-
-# this function return the position on scenario based on other coordinates
-# see comments of scenario_to_screen function
-def screen_to_scenario(position_on_screen, scenario_rect, vector2=True):
-    x = position_on_screen[0]-scenario_rect.center[0]
-    y = position_on_screen[1]-scenario_rect.center[1]
-    if vector2:
-        return pg.math.Vector2((x,y))
-    else:
-        return (x,y)
-
-def screen_to_scenario_server(position_on_screen, scenario_rect):
-    x = position_on_screen[0] - scenario_rect.centerx
-    y = position_on_screen[1] - scenario_rect.centery
-    return (x,y)
-
-def scenario_to_screen_server(position_on_scenario, scenario_rect):
-    x = position_on_scenario[0] + scenario_rect.centerx
-    y = position_on_scenario[1] + scenario_rect.centery
-    return (x,y)
-
 # this function return the center of background image based on other coordinates
-def background_center_position(position_on_screen, position_on_scenario):
-    return position_on_screen - position_on_scenario
+def background_center_position(position_on_screen, position_on_scenario, angle):
+    # pygame returns -90 when player is correct
+    if angle!=None:
+        real_angle = angle # fix angle necessary
+    else:
+        real_angle = 0
+    rotated_position_on_scenario = position_on_scenario.rotate(real_angle)
+    rotated_center = position_on_screen - rotated_position_on_scenario
+    return rotated_center
+    # return position_on_screen - position_on_scenario
 
-def convert_scenario_to_screen(background, position_on_scenario):
+def scenario_to_screen(position_on_scenario, background, vector2=True):
     change_basis = change_basis_matrix(background)
     position_on_screen = matrix_vector_mult(change_basis, position_on_scenario)
-    return pg.math.Vector2(position_on_screen) + background.origin_axis
+    answer_vector = pg.math.Vector2(position_on_screen) + background.origin_axis
+    
+    if vector2:
+        return pg.math.Vector2((answer_vector[0],answer_vector[1]))
+    else:
+        return (answer_vector[0],answer_vector[1])
 
-def convert_screen_to_scenario(background, position_on_screen):
-    change_basis = change_basis_matrix(background)
-    change_basis = matrix_inverse(change_basis)
+def screen_to_scenario(position_on_screen_original, background, vector2=True):
+    position_on_screen = pg.math.Vector2(position_on_screen_original) - pg.math.Vector2(background.origin_axis)
+    change_basis = matrix_inverse(change_basis_matrix(background))
     position_on_scenario = matrix_vector_mult(change_basis, position_on_screen)
-    return pg.math.Vector2(position_on_scenario) - background.origin_axis
+    answer_vector = pg.math.Vector2(position_on_scenario) 
+    
+    if vector2:
+        return pg.math.Vector2((answer_vector[0],answer_vector[1]))
+    else:
+        return (answer_vector[0],answer_vector[1])
+
+
+# create che change basis matrix from background and screen coordinates
+# change screen to scenario
+def change_basis_matrix(background):
+    a11 = background.x_axis[0]
+    a12 = background.y_axis[0]
+    a21 = background.x_axis[1]
+    a22 = background.y_axis[1]
+    return [[a11, a12], [a21, a22]]
+
+def matrix_inverse(matrix):
+    a11 = matrix[1][1]
+    a12 = -matrix[0][1]
+    a21 = -matrix[1][0]
+    a22 = matrix[0][0]
+    return [[a11, a12], [a21, a22]]
+
+def matrix_vector_mult(matrix, vector):
+    a11 = matrix[0][0] * vector[0] + matrix[0][1] * vector[1]
+    a21 = matrix[1][0] * vector[0] + matrix[1][1] * vector[1]
+    return (a11, a21)
 
 # translate an image coordinate to scenario coordinate
 # scenario origin is the center
@@ -77,31 +78,12 @@ def scenario_to_image(position_on_scenario, background_rect, vector=True):
     else:
         return (x,y)
 
-# create che change basis matrix from background and screen coordinates
-# change screen to scenario
-def change_basis_matrix(background):
-    a11 = background.x_axis.dot(pg.math.Vector2((1, 0)))
-    a12 = background.y_axis.dot(pg.math.Vector2((1, 0)))
-    a21 = background.x_axis.dot(pg.math.Vector2((0, 1)))
-    a22 = background.y_axis.dot(pg.math.Vector2((0, 1)))
-    return [[a11, a12], [a21, a22]]
-
-def matrix_inverse(matrix):
-    det = matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
-    aux = matrix[0][0]
-    matrix[0][0] = matrix[1][1]
-    matrix[1][1] = aux
-    matrix[1][0] *= -1
-    matrix[0][1] *= -1
-    for i in range(0, 2):
-        for j in range(0, 2):
-            matrix[i][j] /= det
-    return matrix
-
-def matrix_vector_mult(matrix, vector):
-    a11 = matrix[0][0] * vector[0] + matrix[0][1] * vector[1]
-    a21 = matrix[1][0] * vector[0] + matrix[1][1] * vector[1]
-    return (a11, a21)
+def image_to_screen(position_on_scenario, topleft):
+    a = position_on_scenario[0]
+    b = position_on_scenario[1]
+    x = topleft[0]
+    y = topleft[1]
+    return (a+x, b+y)
 
 def scale_image_list(image_list, ratio):
     list_size = len(image_list)
@@ -135,37 +117,27 @@ def rotate_fake_center(image, angle, offset, position_on_screen):
     rect = new_image.get_rect(center=new_rect_center)
     return [new_image, rect]
 
-def tuple_of_ints(tuple_of_float):
-    a = int(tuple_of_float[0])
-    b = int(tuple_of_float[1])
-    return (a,b)
+def is_visible_area(position_on_screen):
+    center = constants.PLAYER_POSITION_SCREEN
+    visible_radius = constants.VISIBLE_RADIUS*constants.VISIBLE_RADIUS
+    dx = position_on_screen[0]-center[0]
+    dy = position_on_screen[1]-center[1]
+    distance = dx*dx+dy*dy
+    return distance < visible_radius
 
-def get_character_center_position(rect, offset_vector, angle_rotation):
-    delta_position = pg.math.Vector2(rect.center) - pg.math.Vector2(rect.topleft)
-    offset = (-offset_vector).rotate(angle_rotation)
-    actual_position = delta_position + offset
-    return  tuple_of_ints(actual_position)
+def to_int(vector):
+    x = int(vector[0])
+    y = int(vector[1])
+    return (x,y)
 
-def remove_parallel_component(reference_vector, original_vector):
-    perpendicular_vector = reference_vector.rotate(90)
-    new_direction = perpendicular_vector.dot(original_vector) * perpendicular_vector
-    try:
-        new_direction = new_direction.normalize()
-    except:
-        new_direction = pg.math.Vector2((0,0))
-    return new_direction
-
-def convert_vector_to_tuple(vector):
-    return (vector[0], vector[1])
-
-def draw_rect_list(surface, rect_list, background_rect):
+def draw_rect_list(surface, rect_list, back_topleft):
     if rect_list:
         for rect in rect_list:
-            center = scenario_to_screen2(rect.center, background_rect)
-            topleft = scenario_to_screen2(rect.topleft, background_rect)
-            topright = scenario_to_screen2(rect.topright, background_rect)
-            bottomleft = scenario_to_screen2(rect.bottomleft, background_rect)
-            bottomright = scenario_to_screen2(rect.bottomright, background_rect)
+            center = image_to_screen(rect.center, back_topleft)
+            topleft = image_to_screen(rect.topleft, back_topleft)
+            topright = image_to_screen(rect.topright, back_topleft)
+            bottomleft = image_to_screen(rect.bottomleft, back_topleft)
+            bottomright = image_to_screen(rect.bottomright, back_topleft)
 
             if (bottomright[0] < 0 and bottomright[1] < 0) or (topleft[0] > 800 and topleft[1] > 600):
                 pass
@@ -175,6 +147,13 @@ def draw_rect_list(surface, rect_list, background_rect):
                 pg.draw.line(surface, (255,0,0), topright, bottomright)
                 pg.draw.line(surface, (255,0,0), bottomleft, bottomright)
 
+def draw_rect(rect, screen):
+    pg.draw.line(screen, (255,0,0), rect.topleft, rect.topright, 2)
+    pg.draw.line(screen, (255,0,0), rect.topleft, rect.bottomleft, 2)
+    pg.draw.line(screen, (255,0,0), rect.topright, rect.bottomright, 2)
+    pg.draw.line(screen, (255,0,0), rect.bottomleft, rect.bottomright, 2)
+    pg.draw.line(screen, (0,255,0), rect.center, (400,300), 3)
+    pg.draw.circle(screen, (0,255,0), to_int(rect.center),3, 2)
 
 def transform_corners_to_rects(corner_list):
     rect_list = []
@@ -205,6 +184,20 @@ def transform_corners_to_rects(corner_list):
             pass
 
     return rect_list
+
+# for now, this function is exclusive for bot
+# reason: bot_list is group of Bot, not Collider
+def check_collision(actual_collider, object_group):
+    collider_collisions_list = []
+    for obj in object_group:
+        if actual_collider.rect.colliderect(obj.collider.rect):
+            if actual_collider.rect.center != obj.collider.rect.center:
+                collider_collisions_list.append(obj)
+    
+    if len(collider_collisions_list)!=0:
+        return collider_collisions_list
+    else:
+        return None
 
 def move_on_collision(animated_collider, list_collisions, direction):
     x_move = direction[0]
@@ -245,50 +238,3 @@ def move_on_collision(animated_collider, list_collisions, direction):
                 animated_collider.rect.top = collider_wall.rect.bottom
             else:
                 animated_collider.rect.left = collider_wall.rect.right
-
-BACKGROUND_RECTS = [[(104, 97), (147, 165)], [(303, 290), (188, 116)], 
-[(195, 227), (177, 174)], [(139, 223), (100, 185)], [(288, 218), (290, 230)], 
-[(290, 230), (290, 230)], [(290, 230), (290, 230)], [(290, 230), (290, 230)], 
-[(121, 245), (159, 298)], [(408, 111), (467, 136)], [(406, 145), (480, 180)], 
-[(572, 191), (496, 135)], [(590, 276), (590, 278)], [(590, 278), (590, 278)], 
-[(590, 278), (590, 278)], [(590, 278), (590, 278)], [(471, 229), (526, 299)], 
-[(460, 237), (537, 284)], [(433, 245), (406, 209)], [(407, 243), (397, 223)], 
-[(453, 295), (422, 260)], [(411, 259), (424, 289)], [(397, 281), (422, 290)], 
-[(499, 161), (465, 147)], [(465, 174), (444, 188)], [(529, 138), (500, 120)], 
-[(549, 106), (573, 151)], [(688, 157), (740, 265)], [(685, 268), (708, 241)], 
-[(792, 284), (751, 244)], [(778, 251), (762, 238)], [(832, 193), (858, 234)], 
-[(869, 225), (834, 193)], [(713, 367), (716, 368)], [(716, 368), (716, 368)], 
-[(716, 368), (716, 368)], [(304, 712), (182, 675)], [(135, 730), (109, 700)], 
-[(138, 777), (108, 746)], [(178, 878), (105, 806)], [(183, 819), (235, 871)], 
-[(302, 881), (267, 844)], [(303, 826), (267, 793)], [(309, 720), (276, 785)], 
-[(511, 882), (391, 830)], [(506, 833), (490, 821)], [(396, 755), (433, 823)], 
-[(428, 776), (443, 824)], [(442, 788), (455, 854)], [(451, 838), (396, 811)], 
-[(442, 744), (395, 680)], [(591, 681), (411, 718)], [(466, 707), (463, 711)], 
-[(461, 713), (461, 713)], [(460, 714), (446, 706)], [(446, 706), (446, 706)], 
-[(446, 706), (446, 706)], [(446, 706), (446, 706)], [(285, 546), (284, 545)], 
-[(139, 506), (100, 389)], [(223, 421), (128, 389)], [(303, 392), (262, 587)], 
-[(252, 508), (270, 587)], [(240, 390), (270, 438)], [(387, 432), (386, 432)], 
-[(386, 432), (384, 431)], [(384, 431), (384, 431)], [(157, 587), (116, 528)], 
-[(208, 551), (235, 589)], [(195, 556), (168, 588)], [(141, 707), (172, 675)], 
-[(261, 853), (234, 873)], [(255, 885), (230, 864)], [(531, 826), (593, 870)], 
-[(558, 788), (592, 818)], [(554, 747), (593, 777)], [(592, 732), (511, 711)], 
-[(719, 390), (686, 422)], [(721, 432), (684, 463)], [(712, 475), (684, 500)], 
-[(710, 508), (684, 535)], [(686, 557), (805, 588)], [(814, 566), (846, 590)], 
-[(883, 512), (851, 585)], [(883, 497), (845, 403)], [(833, 394), (870, 430)], 
-[(823, 445), (768, 393)], [(770, 411), (735, 387)], [(787, 127), (755, 115)], 
-[(787, 158), (757, 144)], [(787, 185), (754, 174)], [(786, 223), (757, 213)], 
-[(810, 280), (801, 247)], [(828, 164), (800, 143)], [(827, 193), (804, 175)], 
-[(828, 224), (798, 205)], [(834, 252), (873, 277)], [(840, 275), (864, 284)], 
-[(863, 258), (840, 246)], [(864, 178), (837, 147)], [(838, 153), (819, 193)], 
-[(869, 171), (851, 157)], [(850, 149), (837, 142)], [(928, 271), (928, 271)], 
-[(928, 271), (928, 271)], [(929, 272), (930, 272)], [(437, 474), (431, 428)], 
-[(431, 428), (478, 436)], [(431, 500), (438, 547)], [(432, 542), (478, 548)], 
-[(502, 542), (551, 547)], [(545, 501), (549, 548)], [(549, 475), (542, 430)], 
-[(504, 427), (550, 435)], [(478, 479), (503, 501)], [(406, 402), (422, 416)], 
-[(447, 407), (462, 419)], [(520, 407), (532, 416)], [(562, 407), (577, 419)], 
-[(565, 447), (575, 457)], [(561, 523), (573, 533)], [(563, 562), (575, 575)], 
-[(523, 562), (534, 574)], [(449, 565), (461, 575)], [(409, 564), (423, 573)], 
-[(408, 527), (420, 536)], [(408, 445), (421, 458)], [(695, 495), (693, 497)], 
-[(692, 497), (690, 497)], [(689, 497), (687, 497)], [(984, 977), (980, 1)], 
-[(980, 1), (1, 7)], [(5, 1), (1, 975)], [(1, 972), (983, 976)], [(729, 731), (818, 806)], 
-[(799, 802), (754, 817)], [(799, 744), (833, 792)], [(811, 749), (742, 719)], [(733, 746), (718, 790)]]

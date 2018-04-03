@@ -22,9 +22,23 @@ class Player:
 
     @classmethod
     def load(cls):
+        # ---------------------------------------------------------------------------
+        default_directory = 'Assets/Images/player/knife/move/survivor-move_knife_'
+        extension_file = '.png'
+        cls.knife_move = helpers.load_image_list(default_directory, extension_file, 20)
+        cls.knife_move = helpers.scale_image_list(cls.knife_move, constants.SCALE_RATIO)
+
+        default_directory = 'Assets/Images/player/knife/idle/survivor-idle_knife_'
+        cls.knife_idle = helpers.load_image_list(default_directory, extension_file, 20)
+        cls.knife_idle = helpers.scale_image_list(cls.knife_idle, constants.SCALE_RATIO)
+
+        default_directory = 'Assets/Images/player/knife/meleeattack/survivor-meleeattack_knife_'
+        cls.knife_meleeattack = helpers.load_image_list(default_directory, extension_file, 15)
+        cls.knife_meleeattack = helpers.scale_image_list(cls.knife_meleeattack, constants.SCALE_RATIO)
+        # ---------------------------------------------------------------------------
+
         #---------------------------------------------------------------------------
         default_directory = 'Assets/Images/player/rifle/move/survivor-move_rifle_'
-        extension_file = '.png'
         cls.rifle_move = helpers.load_image_list(default_directory, extension_file, 20)
         cls.rifle_move = helpers.scale_image_list(cls.rifle_move, constants.SCALE_RATIO)
 
@@ -66,6 +80,28 @@ class Player:
         cls.shotgun_meleeattack = helpers.load_image_list(default_directory, extension_file, 15)
         cls.shotgun_meleeattack = helpers.scale_image_list(cls.shotgun_meleeattack, constants.SCALE_RATIO)
         #---------------------------------------------------------------------------
+
+        # ---------------------------------------------------------------------------
+        default_directory = 'Assets/Images/player/handgun/move/survivor-move_handgun_'
+        cls.handgun_move = helpers.load_image_list(default_directory, extension_file, 20)
+        cls.handgun_move = helpers.scale_image_list(cls.handgun_move, constants.SCALE_RATIO)
+
+        default_directory = 'Assets/Images/player/handgun/shoot/survivor-shoot_handgun_'
+        cls.handgun_shoot = helpers.load_image_list(default_directory, extension_file, 3)
+        cls.handgun_shoot = helpers.scale_image_list(cls.handgun_shoot, constants.SCALE_RATIO)
+
+        default_directory = 'Assets/Images/player/handgun/idle/survivor-idle_handgun_'
+        cls.handgun_idle = helpers.load_image_list(default_directory, extension_file, 20)
+        cls.handgun_idle = helpers.scale_image_list(cls.handgun_idle, constants.SCALE_RATIO)
+
+        default_directory = 'Assets/Images/player/handgun/reload/survivor-reload_handgun_'
+        cls.handgun_reload = helpers.load_image_list(default_directory, extension_file, 15)
+        cls.handgun_reload = helpers.scale_image_list(cls.handgun_reload, constants.SCALE_RATIO)
+
+        default_directory = 'Assets/Images/player/handgun/meleeattack/survivor-meleeattack_handgun_'
+        cls.handgun_meleeattack = helpers.load_image_list(default_directory, extension_file, 15)
+        cls.handgun_meleeattack = helpers.scale_image_list(cls.handgun_meleeattack, constants.SCALE_RATIO)
+        # ---------------------------------------------------------------------------
 
         default_directory = 'Assets/Images/player/feet/strafe_left/survivor-strafe_left_'
         cls.feet_strafe_left = helpers.load_image_list(default_directory, extension_file, 20)

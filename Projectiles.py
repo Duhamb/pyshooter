@@ -3,9 +3,10 @@ import helpers
 import math
 
 class Projectiles(pg.sprite.Sprite):
-    def __init__(self, origin_scenario, image, background, destination_scenario, shooter_name):
+    def __init__(self, origin_scenario, image, background, destination_scenario, shooter_name, weapon_type):
         pg.sprite.Sprite.__init__(self)
 
+        self.weapon_type = weapon_type
         self.shooter_name = shooter_name
         self.velocity = 20
         self.background = background

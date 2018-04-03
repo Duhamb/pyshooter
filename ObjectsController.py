@@ -76,10 +76,10 @@ class ObjectsController:
                 if self.multiplayer_on:
                     bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background,
                                          helpers.screen_to_scenario(mouse_position, self.background, False),
-                                         self.server_client.name)
+                                         self.server_client.name, self.player.weapon.type)
                 else:
                     bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background,
-                                     helpers.screen_to_scenario(mouse_position, self.background, False), None)
+                                     helpers.screen_to_scenario(mouse_position, self.background, False), None, self.player.weapon.type)
                 self.bullet_list.add(bullet)
                 self.fire_rate_counter = 0
                 self.player.weapon.ammo_list[self.player.weapon.type] -= 1
@@ -122,7 +122,7 @@ class ObjectsController:
 
         # Update for bullets
         for bullet in self.bullet_list:
-            if bullet.distance > self.player.weapon.max_distance() or bullet.is_colliding:
+            if bullet.distance > self.player.weapon.max_distance(bullet.weapon_type) or bullet.is_colliding:
                 self.bullet_list.remove(bullet)
 
     def draw(self):

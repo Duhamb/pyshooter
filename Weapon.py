@@ -15,5 +15,5 @@ class Weapon:
     def fire_rate(self):
         return self.fire_rate_list[self.type]
 
-    def max_distance(self):
-        return self.max_distance_list[self.type]
+    def max_distance(self, tipo):
+        return self.max_distance_list[tipo]

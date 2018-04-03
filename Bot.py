@@ -191,7 +191,7 @@ class Bot(pg.sprite.Sprite):
             screen.blit(imageMultiplayer, rect_multiplayer)
 
     def gets_hit(self):
-        self.life -= 1
+        self.life -= self.player.weapon.damage_list[self.player.weapon.type]
         if self.life <= 0:
             self.is_dead = True
 

@@ -5,8 +5,8 @@ from Background import *
 from Bot import *
 from ExtendedGroup import *
 from Projectiles import *
-import constants
 
+import constants
 import Animation
 import Sound
 
@@ -63,13 +63,14 @@ class ObjectsController:
 
         self.delta_time = 0
         self.second_get_ticks = 0
-        self.fire_rate = 0
+        self.fire_rate_counter = 0
         self.can_render_bullet = False
         self.shooter_name = None
 
     def handle_event(self):
-        if not self.player.is_reloading and self.player.is_shooting and self.fire_rate > 300:
-            if self.player.bullet_counter > 0:
+
+        if self.player.weapon.type != 'knife' and not self.player.is_reloading and self.player.is_shooting and self.fire_rate_counter > self.player.weapon.fire_rate():
+            if self.player.weapon.ammo_list[self.player.weapon.type] > 0:
                 self.can_render_bullet = True
                 mouse_position = constants.MOUSE_POSITION_SCREEN
                 if self.multiplayer_on:
@@ -80,23 +81,23 @@ class ObjectsController:
                     bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background,
                                      helpers.screen_to_scenario(mouse_position, self.background, False), None)
                 self.bullet_list.add(bullet)
-                self.fire_rate = 0
-                self.player.bullet_counter -= 1
+                self.fire_rate_counter = 0
+                self.player.weapon.ammo_list[self.player.weapon.type] -= 1
                 self.player_sound.shoot.stop()
                 pygame.mixer.Channel(1).play(self.player_sound.shoot)
             else:
                 self.player_sound.empty.stop()
                 pygame.mixer.Channel(1).play(self.player_sound.empty)
-                self.fire_rate = 0
+                self.fire_rate_counter = 0
 
     def update(self):
-        if not self.player.is_shooting or self.player.bullet_counter == 0:
+        if self.player.weapon.type != 'knife' and (not self.player.is_shooting or self.player.weapon.ammo_list[self.player.weapon.type] == 0):
             self.can_render_bullet = False
         # Time references
         self.first_get_ticks = self.second_get_ticks
         self.second_get_ticks = pg.time.get_ticks()
         self.delta_time = self.second_get_ticks - self.first_get_ticks
-        self.fire_rate += self.delta_time
+        self.fire_rate_counter += self.delta_time
         for names in self.players_fire_rates:
             self.players_fire_rates[names] += self.delta_time
 
@@ -121,7 +122,7 @@ class ObjectsController:
 
         # Update for bullets
         for bullet in self.bullet_list:
-            if bullet.distance > 300 or bullet.is_colliding:
+            if bullet.distance > self.player.weapon.max_distance() or bullet.is_colliding:
                 self.bullet_list.remove(bullet)
 
     def draw(self):

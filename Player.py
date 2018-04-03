@@ -4,10 +4,13 @@ import helpers
 import math
 import Collider
 
+from Weapon import *
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, location_on_scenario, location_on_screen, animation, sound, background):
         super().__init__()
 
+        self.weapon = Weapon()
         self.velocity = 5
 
         self.score = 0
@@ -19,9 +22,6 @@ class Player(pygame.sprite.Sprite):
         self.animation_reload = self.animation.rifle_reload
         self.animation_shoot = self.animation.rifle_shoot
         self.animation_meleeattack = self.animation.rifle_meleeattack
-
-        self.actual_weapon = 'rifle'
-        self.bullet_counter = 15
 
         # set all sounds (shoot, move, reload)
         self.sound = sound
@@ -195,7 +195,7 @@ class Player(pygame.sprite.Sprite):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_r:
                 self.is_reloading = True
-                self.bullet_counter = 15
+                self.weapon.ammo_list[self.weapon.type] = self.weapon.ammo_limit_list[self.weapon.type]
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
@@ -212,9 +212,17 @@ class Player(pygame.sprite.Sprite):
         # change weapon
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_1:
-                self.change_weapon(1)
+                self.weapon.change_weapon('rifle')
+                self.change_weapon()
             elif event.key == pygame.K_2:
-                self.change_weapon(2)
+                self.weapon.change_weapon('shotgun')
+                self.change_weapon()
+            elif event.key == pygame.K_3:
+                self.weapon.change_weapon('handgun')
+                self.change_weapon()
+            elif event.key == pygame.K_4:
+                self.weapon.change_weapon('knife')
+                self.change_weapon()
         
     def react_to_event(self):
         if self.pressionou_w or self.pressionou_d or self.pressionou_a or self.pressionou_s:
@@ -246,24 +254,37 @@ class Player(pygame.sprite.Sprite):
             except:
                 pass
 
-    def change_weapon(self, weapon_number):
-        if weapon_number == 1:
+    def change_weapon(self):
+        if self.weapon.type == 'rifle':
             self.animation_move = self.animation.rifle_move
             self.animation_shoot = self.animation.rifle_shoot
             self.animation_idle = self.animation.rifle_idle
             self.animation_reload = self.animation.rifle_reload
             self.animation_meleeattack = self.animation.rifle_meleeattack
             self.prefix_animation_name = 'rifle_'
-            self.actual_weapon = 'rifle'
             # self.delta_center_position
-        elif weapon_number == 2:
+
+        elif self.weapon.type == 'shotgun':
             self.animation_move = self.animation.shotgun_move
             self.animation_shoot = self.animation.shotgun_shoot
             self.animation_idle = self.animation.shotgun_idle
             self.animation_reload = self.animation.shotgun_reload
             self.animation_meleeattack = self.animation.shotgun_meleeattack
             self.prefix_animation_name = 'shotgun_'
-            self.actual_weapon = 'shotgun'
+
+        elif self.weapon.type == 'handgun':
+            self.animation_move = self.animation.handgun_move
+            self.animation_shoot = self.animation.handgun_shoot
+            self.animation_idle = self.animation.handgun_idle
+            self.animation_reload = self.animation.handgun_reload
+            self.animation_meleeattack = self.animation.handgun_meleeattack
+            self.prefix_animation_name = 'handgun_'
+
+        elif self.weapon.type == 'knife':
+            self.animation_move = self.animation.knife_move
+            self.animation_idle = self.animation.knife_idle
+            self.animation_meleeattack = self.animation.knife_meleeattack
+            self.prefix_animation_name = 'knife_'
 
     def choose_sound(self):
         # Reloading sound
@@ -276,28 +297,26 @@ class Player(pygame.sprite.Sprite):
 
     def choose_animation(self):
         # body animation
-        if self.is_shooting:
-            self.index_animation_shoot = helpers.increment(self.index_animation_shoot, 1, len(self.animation_shoot)-1)
-            self.original_image = self.animation_shoot[self.index_animation_shoot]
-            self.animation_body = self.prefix_animation_name + 'shoot'
-            self.animation_body_index = self.index_animation_shoot
-        elif self.is_reloading:
-            self.float_index = helpers.increment(self.float_index, 0.5, 1)
-            self.index_animation_reload = helpers.increment(self.index_animation_reload, int(self.float_index),len(self.animation_reload)-1)
+        if self.weapon.type != 'knife':
+            if self.is_reloading:
+                self.float_index = helpers.increment(self.float_index, 0.5, 1)
+                self.index_animation_reload = helpers.increment(self.index_animation_reload, int(self.float_index),len(self.animation_reload)-1)
 
-            self.animation_body = self.prefix_animation_name + 'reload'
-            self.animation_body_index = self.index_animation_reload
-            if self.index_animation_reload == len(self.animation_reload)-1:
-                self.is_reloading = False
-                self.index_animation_reload = 0
-            self.original_image = self.animation_reload[self.index_animation_reload]
-        elif self.bullet_counter > 0 and self.is_shooting:
-            self.index_animation_shoot = increment(self.index_animation_shoot, 1, len(self.animation_shoot)-1)
-            self.original_image = self.animation_shoot[self.index_animation_shoot]
-            self.animation_body = self.prefix_animation_name + 'shoot'
-            self.animation_body_index = self.index_animation_shoot
-        elif self.is_meleeattack:
-            self.float_index = helpers.increment(self.float_index, 0.5, 1)
+                self.animation_body = self.prefix_animation_name + 'reload'
+                self.animation_body_index = self.index_animation_reload
+                if self.index_animation_reload == len(self.animation_reload)-1:
+                    self.is_reloading = False
+                    self.index_animation_reload = 0
+                self.original_image = self.animation_reload[self.index_animation_reload]
+
+            elif self.is_shooting and self.weapon.ammo_list[self.weapon.type] > 0:
+                self.index_animation_shoot = helpers.increment(self.index_animation_shoot, 1, len(self.animation_shoot)-1)
+                self.original_image = self.animation_shoot[self.index_animation_shoot]
+                self.animation_body = self.prefix_animation_name + 'shoot'
+                self.animation_body_index = self.index_animation_shoot
+
+        if self.is_meleeattack:
+            self.float_index = helpers.increment(self.float_index, 1, 1)
             self.index_animation_meleeattack = helpers.increment(self.index_animation_meleeattack, int(self.float_index),len(self.animation_meleeattack)-1)
             self.animation_body = self.prefix_animation_name + 'meleeattack'
             self.animation_body_index = self.index_animation_meleeattack
@@ -305,12 +324,14 @@ class Player(pygame.sprite.Sprite):
                 self.is_meleeattack = False
                 self.index_animation_meleeattack = 0
             self.original_image = self.animation_meleeattack[self.index_animation_meleeattack]
+
         elif self.is_idle:
             self.float_index = helpers.increment(self.float_index, 0.25, 1)
             self.index_animation_idle = helpers.increment(self.index_animation_idle, int(self.float_index), len(self.animation_idle)-1)
             self.original_image = self.animation_idle[self.index_animation_idle]
             self.animation_body = self.prefix_animation_name + 'idle'
             self.animation_body_index = self.index_animation_idle
+
         elif self.is_moving_forward or self.is_moving_left or self.is_moving_right:
             self.index_animation_move = helpers.increment(self.index_animation_move, 1, len(self.animation_move)-1)
             self.original_image = self.animation_move[self.index_animation_move]

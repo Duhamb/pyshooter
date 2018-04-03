@@ -11,6 +11,8 @@ class Statistics():
 
         self.image_weapon_rifle = pg.image.load("Assets/Images/ak47.png").convert_alpha()
         self.image_weapon_shotgun = pg.image.load("Assets/Images/shotgun.png").convert_alpha()
+        self.image_weapon_handgun = pg.image.load("Assets/Images/handgun.png").convert_alpha()
+        self.image_weapon_knife = pg.image.load("Assets/Images/knife.png").convert_alpha()
         self.rect_weapon = self.image_weapon_rifle.get_rect(bottomright=(screen_size[0]-20, screen_size[1]-20))
 
         self.image_minimap = pg.image.load("Assets/Images/minimap.png").convert_alpha()
@@ -27,18 +29,11 @@ class Statistics():
 
     def draw(self, screen):
         self.draw_score(screen)
-        self.draw_weapon(screen)
+        self.draw_weapon_and_ammo(screen)
         self.draw_minimap(screen)
-        self.draw_ammo(screen)
         if self.multiplayer_on:
             self.draw_minimap_multiplayer(screen)
             self.draw_score_multiplayer(screen)
-
-    def draw_weapon(self, screen):
-        if self.player.actual_weapon == 'rifle':
-            screen.blit(self.image_weapon_rifle, self.rect_weapon)
-        else:
-            screen.blit(self.image_weapon_shotgun, self.rect_weapon)
 
     def draw_score(self, screen):
 
@@ -80,8 +75,22 @@ class Statistics():
                 screen.blit(points, (15, 80+y))
                 y = y + 30
 
-    def draw_ammo(self, screen):
-        ammo = str(self.player.bullet_counter) + "/15"
-        ammo = self.font_text_25.render(ammo, 1, (255, 255, 255))
-        screen.blit(ammo, (740, 555))
-        
+    def draw_weapon_and_ammo(self, screen):
+        if self.player.weapon.type == 'rifle':
+            screen.blit(self.image_weapon_rifle, self.rect_weapon)
+        elif self.player.weapon.type == 'shotgun':
+            screen.blit(self.image_weapon_shotgun, self.rect_weapon)
+        elif self.player.weapon.type == 'handgun':
+            screen.blit(self.image_weapon_handgun, self.rect_weapon)
+        elif self.player.weapon.type == 'knife':
+            screen.blit(self.image_weapon_knife, self.rect_weapon)
+
+        if self.player.weapon.type == 'knife':
+            ammo = 'UNLIMITED'
+            ammo = self.font_text_18.render(ammo, 1, (255, 255, 255))
+            screen.blit(ammo, (735, 555))
+
+        else:
+            ammo = str(self.player.weapon.ammo_list[self.player.weapon.type]) + "/" + str(self.player.weapon.ammo_limit_list[self.player.weapon.type])
+            ammo = self.font_text_25.render(ammo, 1, (255, 255, 255))
+            screen.blit(ammo, (740, 555))

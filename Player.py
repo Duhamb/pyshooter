@@ -7,7 +7,7 @@ import Collider
 from Weapon import *
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, location_on_scenario, location_on_screen, animation, sound, background):
+    def __init__(self, location_on_scenario, location_on_screen, animation, sound, background, aim):
         super().__init__()
 
         self.weapon = Weapon()
@@ -93,6 +93,7 @@ class Player(pygame.sprite.Sprite):
         self.animation_feet = None
         self.animation_feet_index = None
         self.prefix_animation_name = 'rifle_'
+        self.aim = aim
 
         # slower animations
         self.float_index = 0
@@ -135,18 +136,14 @@ class Player(pygame.sprite.Sprite):
 
     def rotate(self):
         # get the angle between mouse and player
-        _, angle = (pygame.mouse.get_pos()-self.position_on_screen).as_polar()
         angle = -90
         try:
-            D = (pg.math.Vector2((400,200))-self.position_on_screen).length()
+            D = (pg.math.Vector2(self.aim.position)-self.position_on_screen).length()
             angle -= math.degrees(math.asin(32/(2.7*D)))
         except:
             pass
         self.angle_vision = angle
-        # gira todas as imagens
-        # self.image = pygame.transform.rotozoom(self.original_image, -angle, 1)
-        # self.feet = pygame.transform.rotozoom(self.original_feet, -angle, 1)
-        # self.collider_image = pygame.transform.rotozoom(self.original_back_image, -angle, 1)
+
         self.image = pygame.transform.rotate(self.original_image, -angle)
         self.feet = pygame.transform.rotate(self.original_feet, -angle)
         self.collider_image = pygame.transform.rotate(self.original_back_image, -angle)
@@ -371,7 +368,7 @@ class Player(pygame.sprite.Sprite):
         info = {'position_on_scenario': (self.position_on_scenario[0], self.position_on_scenario[1]),
          'position_on_screen': (self.position_on_screen[0], self.position_on_screen[1]),
          'angle': self.angle_vision,
-         'mouse_position': helpers.screen_to_scenario(pg.mouse.get_pos(), self.background, False),
+         'mouse_position': helpers.screen_to_scenario(self.aim.position, self.background, False),
          'animation_body': self.animation_body,
          'animation_body_index': self.animation_body_index,
          'animation_feet': self.animation_feet,

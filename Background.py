@@ -5,7 +5,7 @@ from ExtendedGroup import *
 from Collider import *
 
 class Background():
-    def __init__(self):
+    def __init__(self, aim):
         self.front = pg.image.load("Assets/Images/map-min.jpg").convert_alpha()
         self.back = pg.image.load("Assets/Images/map_back-min.png").convert_alpha()
         self.rect = self.front.get_rect()
@@ -27,6 +27,8 @@ class Background():
         self.turn_velocity = -4
         self.player_position_on_scenario = None
         self.last_mouse_position = constants.MOUSE_POSITION_SCREEN
+
+        self.aim = aim
 
     def draw(self, surface, player):
         self.update_position(player)
@@ -60,9 +62,9 @@ class Background():
         self.area_rect = self.area.get_rect(center=constants.PLAYER_POSITION_SCREEN)
 
     def update_angle(self):
-        actual_mouse_position = pg.mouse.get_pos()
-        delta_position = actual_mouse_position[0] - self.last_mouse_position[0]
-        self.last_mouse_position = constants.MOUSE_POSITION_SCREEN
-        pg.mouse.set_pos(constants.MOUSE_POSITION_SCREEN)
-        step = 8
-        self.angle += (delta_position/step)
+        if self.aim.is_focused:
+            actual_mouse_position = pg.mouse.get_pos()
+            delta_position = actual_mouse_position[0] - self.last_mouse_position[0]
+            self.last_mouse_position = constants.MOUSE_POSITION_SCREEN
+            step = 8
+            self.angle += (delta_position/step)

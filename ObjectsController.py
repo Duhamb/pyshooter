@@ -11,7 +11,9 @@ import Animation
 import Sound
 
 class ObjectsController:
-    def __init__(self, player, background, multiplayer_on, server_client, menu, players, is_host):
+    def __init__(self, player, background, multiplayer_on, server_client, menu, players, is_host, aim):
+
+        self.aim = aim
 
         self.screen = pg.display.get_surface()
         self.player = player
@@ -72,14 +74,22 @@ class ObjectsController:
         if self.player.weapon.type != 'knife' and not self.player.is_reloading and self.player.is_shooting and self.fire_rate_counter > self.player.weapon.fire_rate():
             if self.player.weapon.ammo_list[self.player.weapon.type] > 0:
                 self.can_render_bullet = True
-                mouse_position = constants.MOUSE_POSITION_SCREEN
+                mouse_position = self.aim.position
                 if self.multiplayer_on:
-                    bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background,
+                    bullet = Projectiles(self.player.position_on_scenario,
+                                         self.BULLET_IMAGE,
+                                         self.background,
                                          helpers.screen_to_scenario(mouse_position, self.background, False),
-                                         self.server_client.name, self.player.weapon.type)
+                                         self.server_client.name,
+                                         self.player.weapon.type)
                 else:
-                    bullet = Projectiles(self.player.position_on_scenario, self.BULLET_IMAGE, self.background,
-                                     helpers.screen_to_scenario(mouse_position, self.background, False), None, self.player.weapon.type)
+                    bullet = Projectiles(self.player.position_on_scenario,
+                                         self.BULLET_IMAGE, self.background,
+                                         helpers.screen_to_scenario(mouse_position,
+                                         self.background, False),
+                                         None,
+                                         self.player.weapon.type)
+                    
                 self.bullet_list.add(bullet)
                 self.fire_rate_counter = 0
                 self.player.weapon.ammo_list[self.player.weapon.type] -= 1
@@ -140,14 +150,16 @@ class ObjectsController:
                 if actual_player['is_shooting'] and player_name != self.menu.name and self.players_fire_rates.get(player_name, 400) > 300:
                     self.players_fire_rates[player_name] = 0
                     bullet = Projectiles(actual_player['position_on_scenario'],
-                                         self.BULLET_IMAGE, self.background, actual_player['mouse_position'],
+                                         self.BULLET_IMAGE,
+                                         self.background,
+                                         actual_player['mouse_position'],
                                          player_name)
                     self.bullet_list.add(bullet)
 
             #Zombie Syn
             #Host send zombie list
             if self.is_host:
-                self.bot_list.update()
+                self.bot_list.update(self.bot_list)
                 zombie_server_list = {}
                 id = 0
                 for zombie in self.bot_list:

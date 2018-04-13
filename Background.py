@@ -24,7 +24,7 @@ class Background():
         self.y_axis = pg.math.Vector2((0,1))
         self.origin_axis = pg.math.Vector2((0,0)) #arbitrary value at constructor
         self.angle = 0
-        self.turn_velocity = -4
+        self.turn_velocity = -1
         self.player_position_on_scenario = None
         self.last_mouse_position = constants.MOUSE_POSITION_SCREEN
 
@@ -66,5 +66,10 @@ class Background():
             actual_mouse_position = pg.mouse.get_pos()
             delta_position = actual_mouse_position[0] - self.last_mouse_position[0]
             self.last_mouse_position = constants.MOUSE_POSITION_SCREEN
-            step = 8
+            step = 1
             self.angle += (delta_position/step)
+            if self.angle > 180:
+                self.angle = -(360-self.angle)
+            elif self.angle < -180:
+                self.angle = 360+self.angle
+

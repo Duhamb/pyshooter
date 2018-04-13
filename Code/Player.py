@@ -261,6 +261,7 @@ class Player(pygame.sprite.Sprite):
                 pass
 
     def change_weapon(self):
+        self.delta_center_position = pygame.math.Vector2((+56/2.7,-19/2.7))
         self.is_shooting = False
         if self.weapon.type == 'rifle':
             self.animation_move = self.animation.rifle_move
@@ -292,6 +293,7 @@ class Player(pygame.sprite.Sprite):
             self.animation_idle = self.animation.knife_idle
             self.animation_meleeattack = self.animation.knife_meleeattack
             self.prefix_animation_name = 'knife_'
+            self.delta_center_position = pygame.math.Vector2((0, 0))
 
     def choose_sound(self):
         # Reloading sound

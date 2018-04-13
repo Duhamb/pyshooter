@@ -204,7 +204,7 @@ class Menu():
         self.surface.blit(self.MENU_IMAGE, (0, 0))
 
     def connect(self):
-        self.server_client = pyshooterClient(self.name)
+        self.server_client = pyshooterClient.pyshooterClient(self.name)
         self.have_client = self.server_client.start_connect(self.server_ip)
         self._in_menu = False
 

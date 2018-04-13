@@ -1,6 +1,6 @@
 import pygame as pg
-import constants
-import helpers
+import Code.constants as constants
+import Code.helpers as helpers
 ###############################################
 
 class Aim:
@@ -26,7 +26,3 @@ class Aim:
 
     def draw(self, screen):
         screen.blit(self.CROSS_IMAGE, self.cross_rect)
-
-
-
- 

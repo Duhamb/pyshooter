@@ -1,5 +1,5 @@
 import pygame as pg
-import helpers
+import Code.helpers as helpers
 
 # IMPORTANT! All colliders are rects with positions based on background image
 # background image has origin axis at topleft

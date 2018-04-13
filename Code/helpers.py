@@ -1,8 +1,7 @@
-# this file has constant values and auxiliar functions used in whole game
+# this file has auxiliar functions used in whole game
 
 import pygame as pg
-import constants
-######################   FUNCTIONS    ##################################
+import Code.constants as constants
 
 # this function return the center of background image based on other coordinates
 def background_center_position(position_on_screen, position_on_scenario, angle):
@@ -14,13 +13,11 @@ def background_center_position(position_on_screen, position_on_scenario, angle):
     rotated_position_on_scenario = position_on_scenario.rotate(real_angle)
     rotated_center = position_on_screen - rotated_position_on_scenario
     return rotated_center
-    # return position_on_screen - position_on_scenario
 
 def scenario_to_screen(position_on_scenario, background, vector2=True):
     change_basis = change_basis_matrix(background)
     position_on_screen = matrix_vector_mult(change_basis, position_on_scenario)
     answer_vector = pg.math.Vector2(position_on_screen) + background.origin_axis
-    
     if vector2:
         return pg.math.Vector2((answer_vector[0],answer_vector[1]))
     else:
@@ -31,12 +28,10 @@ def screen_to_scenario(position_on_screen_original, background, vector2=True):
     change_basis = matrix_inverse(change_basis_matrix(background))
     position_on_scenario = matrix_vector_mult(change_basis, position_on_screen)
     answer_vector = pg.math.Vector2(position_on_scenario) 
-    
     if vector2:
         return pg.math.Vector2((answer_vector[0],answer_vector[1]))
     else:
         return (answer_vector[0],answer_vector[1])
-
 
 # create che change basis matrix from background and screen coordinates
 # change screen to scenario
@@ -238,3 +233,7 @@ def move_on_collision(animated_collider, list_collisions, direction):
                 animated_collider.rect.top = collider_wall.rect.bottom
             else:
                 animated_collider.rect.left = collider_wall.rect.right
+
+def get_free_channel():
+    channel = pg.mixer.find_channel(True)
+    return channel

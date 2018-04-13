@@ -1,8 +1,6 @@
-
 import pygame as pg 
 
 class Player:
-
     shoot = None
     meleeattack = None
     zoa = None

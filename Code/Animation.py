@@ -1,6 +1,6 @@
 import pygame as pg 
-import helpers
-import constants
+import Code.helpers as helpers
+import Code.constants as constants
 
 class Player:
     rifle_move = []
@@ -120,7 +120,6 @@ class Player:
         cls.feet_idle = helpers.scale_image_list(cls.feet_idle, constants.SCALE_RATIO)
 
 class Zombie:
-
     idle = []
     move = []
     attack = []
@@ -138,13 +137,4 @@ class Zombie:
         default_directory = 'Assets/Images/zombie/attack/skeleton-attack_'
         cls.attack = helpers.load_image_list(default_directory, extension_file, 9)
         cls.attack = helpers.scale_image_list(cls.attack, constants.SCALE_RATIO)
-
-
-     # @staticmethod
-     # @classmethod
-     # def class_method(cls):
-     #     # the class method gets passed the class (in this case ModCLass)
-     #     return "I am a class method"
-     # def instance_method(self):
-     #     # An instance method gets passed the instance of ModClass
-     #     return "I am an instance method"
+        

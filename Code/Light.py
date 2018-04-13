@@ -1,5 +1,5 @@
 import pygame as pg
-import constants
+import Code.constants as constants
 
 class Light():
 	def __init__(self, player):
@@ -14,4 +14,3 @@ class Light():
 
 	def draw(self, screen):
 		screen.blit(self.fog, (0, 0), special_flags=pg.BLEND_MULT)
-		

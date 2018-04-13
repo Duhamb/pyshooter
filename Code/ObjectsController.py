@@ -1,14 +1,14 @@
 import pygame as pg
 
-from Player import *
-from Background import *
-from Bot import *
-from ExtendedGroup import *
-from Projectiles import *
-
-import constants
-import Animation
-import Sound
+import Code.Player as Player
+import Code.Background as Background
+import Code.Bot as Bot
+import Code.ExtendedGroup as ExtendedGroup
+import Code.Projectiles as Projectiles
+import Code.constants as constants
+import Code.Animation as Animation
+import Code.Sound as Sound
+import Code.helpers as helpers
 
 class ObjectsController:
     def __init__(self, player, background, multiplayer_on, server_client, menu, players, is_host, aim):
@@ -34,20 +34,20 @@ class ObjectsController:
         self.zombie_animation = Animation.Zombie
         self.zombie_animation.load()
 
-        self.bot_draw = Bot((0, 0), self.screen, self.background, self.player, self.zombie_animation)
+        self.bot_draw = Bot.Bot((0, 0), self.screen, self.background, self.player, self.zombie_animation)
 
-        self.bot0 = Bot((0, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot1 = Bot((-100, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot2 = Bot((100, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot3 = Bot((200, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot4 = Bot((300, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot5 = Bot((400, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot6 = Bot((500, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot7 = Bot((600, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot8 = Bot((700, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot9 = Bot((800, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        self.bot0 = Bot.Bot((0, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        self.bot1 = Bot.Bot((-100, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        self.bot2 = Bot.Bot((100, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        self.bot3 = Bot.Bot((200, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        self.bot4 = Bot.Bot((300, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        self.bot5 = Bot.Bot((400, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        self.bot6 = Bot.Bot((500, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        self.bot7 = Bot.Bot((600, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        self.bot8 = Bot.Bot((700, -1400), self.screen, self.background, self.player, self.zombie_animation)
+        self.bot9 = Bot.Bot((800, -1400), self.screen, self.background, self.player, self.zombie_animation)
 
-        self.bot_list = ExtendedGroup(self.bot0)
+        self.bot_list = ExtendedGroup.ExtendedGroup(self.bot0)
         self.bot_list.add(self.bot1)
         self.bot_list.add(self.bot2)
         self.bot_list.add(self.bot3)
@@ -59,7 +59,7 @@ class ObjectsController:
         self.bot_list.add(self.bot9)
 
 
-        self.bullet_list = ExtendedGroup()
+        self.bullet_list = ExtendedGroup.ExtendedGroup()
         self.BULLET_IMAGE = pg.image.load("Assets/Images/bullets/bullet1.png")
         self.BULLET_IMAGE = pg.transform.scale(self.BULLET_IMAGE, (15, 3))
 
@@ -70,13 +70,12 @@ class ObjectsController:
         self.shooter_name = None
 
     def handle_event(self):
-
         if self.player.weapon.type != 'knife' and not self.player.is_reloading and self.player.is_shooting and self.fire_rate_counter > self.player.weapon.fire_rate():
             if self.player.weapon.ammo_list[self.player.weapon.type] > 0:
                 self.can_render_bullet = True
                 mouse_position = self.aim.position
                 if self.multiplayer_on:
-                    bullet = Projectiles(self.player.position_on_scenario,
+                    bullet = Projectiles.Projectiles(self.player.position_on_scenario,
                                          self.BULLET_IMAGE,
                                          self.background,
                                          helpers.screen_to_scenario(mouse_position, self.background, False),
@@ -84,10 +83,9 @@ class ObjectsController:
                                          self.player.weapon.type
                                          )
                 else:
-                    bullet = Projectiles(self.player.position_on_scenario,
+                    bullet = Projectiles.Projectiles(self.player.position_on_scenario,
                                          self.BULLET_IMAGE, self.background,
-                                         helpers.screen_to_scenario(mouse_position,
-                                         self.background, False),
+                                         helpers.screen_to_scenario(mouse_position, self.background, False),
                                          None,
                                          self.player.weapon.type)
                     
@@ -95,10 +93,10 @@ class ObjectsController:
                 self.fire_rate_counter = 0
                 self.player.weapon.ammo_list[self.player.weapon.type] -= 1
                 self.player_sound.shoot.stop()
-                pygame.mixer.Channel(1).play(self.player_sound.shoot)
+                helpers.get_free_channel().play(self.player_sound.shoot)
             else:
                 self.player_sound.empty.stop()
-                pygame.mixer.Channel(1).play(self.player_sound.empty)
+                helpers.get_free_channel().play(self.player_sound.empty)
                 self.fire_rate_counter = 0
 
     def update(self):
@@ -120,7 +118,6 @@ class ObjectsController:
         for zombie in collisions_zombies:
             zombie.gets_hit()
 
-
         # Update for zombies
         for bot in self.bot_list:
             if bot.is_dead:
@@ -137,20 +134,17 @@ class ObjectsController:
                 self.bullet_list.remove(bullet)
 
     def draw(self):
-
         if self.multiplayer_on:
-
             #Player Syn
             self.server_client.push_player(self.player, self.can_render_bullet)
             self.server_client.pull_players()
             player_list = self.server_client.players_info
-            #print(player_list)
             for player_name in player_list:
                 actual_player = player_list[player_name]
                 self.player.draw_multiplayer(self.screen, actual_player)
                 if actual_player['is_shooting'] and player_name != self.menu.name and self.players_fire_rates.get(player_name, 400) > 300:
                     self.players_fire_rates[player_name] = 0
-                    bullet = Projectiles(actual_player['position_on_scenario'],
+                    bullet = Projectiles.Projectiles(actual_player['position_on_scenario'],
                                          self.BULLET_IMAGE,
                                          self.background,
                                          actual_player['mouse_position'],
@@ -176,8 +170,6 @@ class ObjectsController:
             for zombie_id in zombie_list:
                 self.bot_draw.draw_multiplayer(self.screen, zombie_list[zombie_id])
         else:
-            # self.background.draw(self.screen, self.players.sprites()[0])
-            
             self.bot_list.update(self.bot_list)
             self.players.draw(self.screen)
             self.bot_list.draw(self.screen)

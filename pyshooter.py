@@ -2,22 +2,20 @@ import os
 import sys
 import pygame as pg
 
-from Menu import *
-from Player import *
-from Background import *
-from Statistics import *
-from Light import *
-from ObjectsController import *
-
-import Aim
-
-import helpers
-import constants
-import Animation
-import Sound
+import Code.Menu as Menu
+import Code.Player as Player
+import Code.Background as Background
+import Code.Statistics as Statistics
+import Code.Light as Light
+import Code.ObjectsController as ObjectsController
+import Code.Aim as Aim
+import Code.ExtendedGroup as ExtendedGroup
+import Code.helpers as helpers
+import Code.constants as constants
+import Code.Animation as Animation
+import Code.Sound as Sound
 
 ###############################################
-
 class Main:
     def __init__(self):
         self._running = True
@@ -37,7 +35,7 @@ class Main:
         #self.resolution = (int(pg.display.Info().current_w), int(pg.display.Info().current_h))
 
         #create Menu object
-        self.menu = Menu()
+        self.menu = Menu.Menu()
 
         self._display_surf = pg.display.set_mode(self.size)
         self.screen = pg.display.get_surface() # repetido?
@@ -64,7 +62,7 @@ class Main:
         self.player_sound = Sound.Player 
         self.player_sound.load()
 
-        self.background = Background(self.aim)
+        self.background = Background.Background(self.aim)
 
         #call menu Displays/Loops
         self.menu.intro()
@@ -78,16 +76,16 @@ class Main:
             self.server_client = self.menu.server_client
             self.is_host = self.menu.is_host
 
-        self.player = Player(constants.PLAYER_POSITION_SCENARIO, self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background, self.aim)
-        self.light = Light(self.player)
-        self.players = ExtendedGroup(self.player)
-        self.stats = Statistics(self.player, constants.SCREEN_SIZE, self.multiplayer_on, self.server_client, self.is_host)
+        self.player = Player.Player(constants.PLAYER_POSITION_SCENARIO, self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background, self.aim)
+        self.light = Light.Light(self.player)
+        self.players = ExtendedGroup.ExtendedGroup(self.player)
+        self.stats = Statistics.Statistics(self.player, constants.SCREEN_SIZE, self.multiplayer_on, self.server_client, self.is_host)
 
         #Set mouse invisible
         pg.mouse.set_visible(0)
 
         #Define Objects Controller
-        self.ObjectsController = ObjectsController(self.player, self.background,self.multiplayer_on, self.server_client, self.menu, self.players, self.is_host, self.aim)
+        self.ObjectsController = ObjectsController.ObjectsController(self.player, self.background,self.multiplayer_on, self.server_client, self.menu, self.players, self.is_host, self.aim)
         
     def on_event(self, event_queue):
         for event in event_queue:
@@ -96,7 +94,7 @@ class Main:
             if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 self.is_focused = False
                 pg.mouse.set_visible(1)
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     self.is_focused = True
                     pg.mouse.set_visible(0)

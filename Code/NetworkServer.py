@@ -1,14 +1,11 @@
-from Mastermind import *
-
-from NetworkSettings import *
-
+import Libs.Mastermind as Mastermind
+import Code.NetworkSettings as NetworkSettings
 import threading
 from time import gmtime, strftime
 
-
-class Server(MastermindServerTCP):
+class Server(Mastermind.MastermindServerTCP):
     def __init__(self):
-        MastermindServerTCP.__init__(self, 0.5, 0.5, 10.0)  # server refresh, connections' refresh, connection timeout
+        Mastermind.MastermindServerTCP.__init__(self, 0.5, 0.5, 10.0)  # server refresh, connections' refresh, connection timeout
 
         self.players = {}
         self.zombies = {}
@@ -18,19 +15,16 @@ class Server(MastermindServerTCP):
 
 
     def add_player(self, data):
-
         self.mutex.acquire()
         self.players[data[0]] = data[1][data[0]]
         self.mutex.release()
 
     def add_minimap(self, data):
-
         self.mutex.acquire()
         self.minimaps[data[0]] = data[1][data[0]]
         self.mutex.release()
 
     def add_zombie(self, data):
-
         self.mutex.acquire()
         self.zombies = data
         self.mutex.release()
@@ -82,8 +76,6 @@ class Server(MastermindServerTCP):
     def callback_client_send(self, connection_object, data, compression=None):
         # Something could go here
         return super(Server, self).callback_client_send(connection_object, data, compression)
-
-
 
 if __name__ == "__main__":
     server = Server()

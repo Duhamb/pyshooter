@@ -1,4 +1,4 @@
-file = open("connection.txt","r")
+file = open("Code/connection.txt","r")
 for line in file.readlines():
     line = line.strip()
     if line.startswith("#"): continue

@@ -1,11 +1,10 @@
 import pygame as pg
-import helpers
-import Collider
-from ExtendedGroup import *
-import random
+import Code.helpers as helpers
+import Code.Collider as Collider
+import Code.ExtendedGroup as ExtendedGroup
+import random 
 
 class Bot(pg.sprite.Sprite):
-
     def __init__(self, location_on_scenario, surface, background, player, animation):
         super().__init__()
 
@@ -90,7 +89,6 @@ class Bot(pg.sprite.Sprite):
     def rotate(self):
         player_position = self.player.position_on_screen
         bot_position = helpers.scenario_to_screen(self.position_on_scenario, self.background)
-        # bot_position = pg.math.Vector2(self.rect.center)
         _, self.angle = (player_position-bot_position).as_polar()
         self.angle = self.angle
         # gira todas as imagens
@@ -111,18 +109,15 @@ class Bot(pg.sprite.Sprite):
             self.index_animation_attack = helpers.increment(self.index_animation_attack, int(self.float_index), 8)
             self.original_image = self.animation.attack[self.index_animation_attack]
             self.animation_name = "attack"
-
         elif self.is_moving:
             self.index_animation_move = helpers.increment(self.index_animation_move, 1, 16)
             self.original_image = self.animation.move[self.index_animation_move]
             self.animation_name = "move"
-
         else:
             self.float_index = helpers.increment(self.float_index, 0.25, 1)
             self.index_animation_idle = helpers.increment(self.index_animation_idle, int(self.float_index), 16)
             self.original_image = self.animation.idle[self.index_animation_idle]
             self.animation_name = "idle"
-
         self.animation_index = self.index_animation_attack
 
     def move(self):

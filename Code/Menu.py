@@ -1,7 +1,7 @@
 import pygame as pg
-from pyshooterClient import *
-from textbox import TextBox
-import constants
+import Code.pyshooterClient as pyshooterClient
+import Libs.textbox.TextBox as TextBox
+import Code.constants as constants
 
 KEY_REPEAT_SETTING = (200, 70)
 
@@ -160,8 +160,10 @@ class Menu():
         if multi_is_selected:
             self.surface.blit(self.surface_multi_on, self.surface_multi_rect)
             if event.type == pg.MOUSEBUTTONDOWN:
-                self.input = TextBox((300, 300, 200, 30), command=self.change_name,
-                                     clear_on_enter=True, inactive_on_enter=False)
+                self.input = TextBox.TextBox((300, 300, 200, 30), 
+                                      command=self.change_name,
+                                      clear_on_enter=True,
+                                      inactive_on_enter=False)
                 self.surface.blit(self.MENU_IMAGE, (0, 0))
                 self.menu_state = "multiplayer_get_name"
         else:
@@ -173,7 +175,7 @@ class Menu():
         if 150 + 200 > mouse[0] > 150 and 450 + 50 > mouse[1] > 450:
             self.surface.blit(self.SERVER_ON, (150, 450))
             if event.type == pg.MOUSEBUTTONDOWN:
-                self.server_client = pyshooterClient(self.name)
+                self.server_client = pyshooterClient.pyshooterClient(self.name)
                 self.server_client.start()
                 self.have_client = True
                 self.is_host = True
@@ -184,7 +186,7 @@ class Menu():
         if 450 + 200 > mouse[0] > 450 and 450 + 50 > mouse[1] > 450:
             self.surface.blit(self.CONNECT_ON, (450, 450))
             if event.type == pg.MOUSEBUTTONDOWN:
-                self.input = TextBox((300, 300, 200, 30), command=self.change_ip,
+                self.input = TextBox.TextBox((300, 300, 200, 30), command=self.change_ip,
                                      clear_on_enter=True, inactive_on_enter=False)
                 self.menu_state = "multiplayer_connect_get_ip"
                 self.surface.blit(self.MENU_IMAGE, (0, 0))

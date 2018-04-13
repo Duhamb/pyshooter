@@ -372,7 +372,8 @@ class Player(pygame.sprite.Sprite):
          'animation_body': self.animation_body,
          'animation_body_index': self.animation_body_index,
          'animation_feet': self.animation_feet,
-         'animation_feet_index': self.animation_feet_index
+         'animation_feet_index': self.animation_feet_index,
+         'weapon_type': self.weapon.type
          }
         return info
 

@@ -81,7 +81,8 @@ class ObjectsController:
                                          self.background,
                                          helpers.screen_to_scenario(mouse_position, self.background, False),
                                          self.server_client.name,
-                                         self.player.weapon.type)
+                                         self.player.weapon.type
+                                         )
                 else:
                     bullet = Projectiles(self.player.position_on_scenario,
                                          self.BULLET_IMAGE, self.background,
@@ -153,7 +154,8 @@ class ObjectsController:
                                          self.BULLET_IMAGE,
                                          self.background,
                                          actual_player['mouse_position'],
-                                         player_name)
+                                         player_name,
+                                         actual_player['weapon_type'])
                     self.bullet_list.add(bullet)
 
             #Zombie Syn

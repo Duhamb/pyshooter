@@ -107,18 +107,21 @@ class Player(pygame.sprite.Sprite):
         screen.blit(self.feet, self.feet.get_rect(center=self.position_on_screen).topleft)
         screen.blit(self.image, self.rect)
 
-    def draw_multiplayer(self, screen, server_info ):
+    def draw_multiplayer(self, screen, server_info):
         position_on_screen = helpers.scenario_to_screen(server_info['position_on_scenario'], self.background, False)
-        
+
+        _, angle = (pg.math.Vector2(server_info['mouse_position']) - pg.math.Vector2(server_info['position_on_scenario'])).as_polar()
+        angle = angle - self.background.angle
+
         # body
         animation = getattr(self.animation, server_info['animation_body'])
         original_image = animation[server_info['animation_body_index']]
-        [imageMultiplayer, rect_multiplayer] = helpers.rotate_fake_center(original_image, server_info['angle'], self.delta_center_position, position_on_screen)
+        [imageMultiplayer, rect_multiplayer] = helpers.rotate_fake_center(original_image, angle, self.delta_center_position, position_on_screen)
         
         # feet
         animation_feet = getattr(self.animation, server_info['animation_feet'])
         original_image = animation_feet[server_info['animation_feet_index']]
-        [imageFeet, rect_feet] = helpers.rotate_fake_center(original_image, server_info['angle'], pg.math.Vector2((0,0)), position_on_screen)
+        [imageFeet, rect_feet] = helpers.rotate_fake_center(original_image, angle, pg.math.Vector2((0,0)), position_on_screen)
         
         # draw images
         screen.blit(imageFeet, rect_feet)
@@ -371,7 +374,8 @@ class Player(pygame.sprite.Sprite):
          'animation_body': self.animation_body,
          'animation_body_index': self.animation_body_index,
          'animation_feet': self.animation_feet,
-         'animation_feet_index': self.animation_feet_index
+         'animation_feet_index': self.animation_feet_index,
+         'weapon_type': self.weapon.type
          }
         return info
 

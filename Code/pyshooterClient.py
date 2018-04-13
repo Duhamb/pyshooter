@@ -1,9 +1,9 @@
 import traceback
 
-from Mastermind import *
-from NetworkSettings import *
-import NetworkServer
-import helpers
+import Libs.Mastermind as Mastermind
+from Code.NetworkSettings import *
+import Code.NetworkServer as NetworkServer
+import Code.helpers as helpers
 
 class pyshooterClient():
     def __init__(self, name):
@@ -17,11 +17,11 @@ class pyshooterClient():
         self.scores = {}
 
     def start(self):
-        self.client = MastermindClientTCP(client_timeout_connect, client_timeout_receive)
+        self.client = Mastermind.MastermindClientTCP(client_timeout_connect, client_timeout_receive)
         try:
             print("Client connecting on \"" + client_ip + "\", port " + str(port) + " . . .")
             self.client.connect(client_ip, port)
-        except MastermindError:
+        except Mastermind.MastermindError:
             print("No server found; starting server!")
             self.server = NetworkServer.Server()
             self.server.connect(server_ip, port)
@@ -32,12 +32,12 @@ class pyshooterClient():
         print("Client connected!")
 
     def start_connect(self, server_ip):
-        self.client = MastermindClientTCP(client_timeout_connect, client_timeout_receive)
+        self.client = Mastermind.MastermindClientTCP(client_timeout_connect, client_timeout_receive)
         try:
             print("Client connecting on \"" + server_ip + "\", port " + str(port) + " . . .")
             self.client.connect(server_ip, port)
             return True
-        except MastermindError:
+        except Mastermind.MastermindError:
             print("No server found; Starting Singleplayer")
             return False
 

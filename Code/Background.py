@@ -1,8 +1,8 @@
 import pygame as pg
-import helpers
-import constants
-from ExtendedGroup import *
-from Collider import *
+import Code.helpers as helpers
+import Code.constants as constants
+import Code.ExtendedGroup as ExtendedGroup
+import Code.Collider as Collider
 
 class Background():
     def __init__(self, aim):
@@ -48,9 +48,9 @@ class Background():
         self.player_position_on_scenario = player.position_on_scenario
 
     def create_group(self):
-        collider_group = ExtendedGroup()
+        collider_group = ExtendedGroup.ExtendedGroup()
         for rect in self.rect_list:
-            collider = Collider(rect, self.rect, None)
+            collider = Collider.Collider(rect, self.rect, None)
             collider_group.add(collider)
         return collider_group
             

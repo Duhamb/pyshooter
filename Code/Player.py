@@ -1,16 +1,15 @@
 import pygame as pg
 import pygame
-import helpers
 import math
-import Collider
-
-from Weapon import *
+import Code.helpers as helpers
+import Code.Collider as Collider
+import Code.Weapon as Weapon
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, location_on_scenario, location_on_screen, animation, sound, background, aim):
         super().__init__()
 
-        self.weapon = Weapon()
+        self.weapon = Weapon.Weapon()
         self.velocity = 5
 
         self.score = 0

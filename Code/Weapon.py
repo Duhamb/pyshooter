@@ -1,6 +1,5 @@
 class Weapon:
     def __init__(self):
-
         self.type = 'rifle'
         self.fire_rate_list = {'rifle': 250, 'shotgun': 700, 'handgun': 300, 'knife': 400}
         self.max_distance_list = {'rifle': 500, 'shotgun': 200, 'handgun': 300}
@@ -15,5 +14,5 @@ class Weapon:
     def fire_rate(self):
         return self.fire_rate_list[self.type]
 
-    def max_distance(self, tipo):
-        return self.max_distance_list[tipo]
+    def max_distance(self, weapon_type):
+        return self.max_distance_list[weapon_type]

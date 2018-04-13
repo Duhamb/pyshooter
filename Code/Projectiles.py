@@ -1,5 +1,5 @@
 import pygame as pg
-import helpers
+import Code.helpers as helpers
 import math
 
 class Projectiles(pg.sprite.Sprite):

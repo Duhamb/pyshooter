@@ -36,7 +36,6 @@ class Statistics():
             self.draw_score_multiplayer(screen)
 
     def draw_score(self, screen):
-
         points = "Your score: " + str(self.player.score)
         points = self.font_text_25.render(points, 1, (255,255,255))
         if self.multiplayer_on:
@@ -89,7 +88,6 @@ class Statistics():
             ammo = 'UNLIMITED'
             ammo = self.font_text_18.render(ammo, 1, (255, 255, 255))
             screen.blit(ammo, (735, 555))
-
         else:
             ammo = str(self.player.weapon.ammo_list[self.player.weapon.type]) + "/" + str(self.player.weapon.ammo_limit_list[self.player.weapon.type])
             ammo = self.font_text_25.render(ammo, 1, (255, 255, 255))

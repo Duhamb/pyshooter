@@ -1,5 +1,4 @@
 import pygame as pg
-
 import Code.Player as Player
 import Code.Background as Background
 import Code.Bot as Bot
@@ -9,6 +8,10 @@ import Code.constants as constants
 import Code.Animation as Animation
 import Code.Sound as Sound
 import Code.helpers as helpers
+import random
+
+
+
 
 class ObjectsController:
     def __init__(self, player, background, multiplayer_on, server_client, menu, players, is_host, aim):
@@ -34,30 +37,9 @@ class ObjectsController:
         self.zombie_animation = Animation.Zombie
         self.zombie_animation.load()
 
+
         self.bot_draw = Bot.Bot((0, 0), self.screen, self.background, self.player, self.zombie_animation)
-
-        self.bot0 = Bot.Bot((0, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot1 = Bot.Bot((-100, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot2 = Bot.Bot((100, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot3 = Bot.Bot((200, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot4 = Bot.Bot((300, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot5 = Bot.Bot((400, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot6 = Bot.Bot((500, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot7 = Bot.Bot((600, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot8 = Bot.Bot((700, -1400), self.screen, self.background, self.player, self.zombie_animation)
-        self.bot9 = Bot.Bot((800, -1400), self.screen, self.background, self.player, self.zombie_animation)
-
-        self.bot_list = ExtendedGroup.ExtendedGroup(self.bot0)
-        self.bot_list.add(self.bot1)
-        self.bot_list.add(self.bot2)
-        self.bot_list.add(self.bot3)
-        self.bot_list.add(self.bot4)
-        self.bot_list.add(self.bot5)
-        self.bot_list.add(self.bot6)
-        self.bot_list.add(self.bot7)
-        self.bot_list.add(self.bot8)
-        self.bot_list.add(self.bot9)
-
+        self.bot_list = ExtendedGroup.ExtendedGroup()
 
         self.bullet_list = ExtendedGroup.ExtendedGroup()
         self.BULLET_IMAGE = pg.image.load("Assets/Images/bullets/bullet1.png")
@@ -68,6 +50,10 @@ class ObjectsController:
         self.fire_rate_counter = 0
         self.can_render_bullet = False
         self.shooter_name = None
+        self.spawn_rate = 0
+        self.cant_spawn = True
+        self.bot_spawn = None
+        self.max_zombies = 50
 
     def handle_event(self):
         if self.player.weapon.type != 'knife' and not self.player.is_reloading and self.player.is_shooting and self.fire_rate_counter > self.player.weapon.fire_rate():
@@ -102,11 +88,13 @@ class ObjectsController:
     def update(self):
         if self.player.weapon.type != 'knife' and (not self.player.is_shooting or self.player.weapon.ammo_list[self.player.weapon.type] == 0):
             self.can_render_bullet = False
+
         # Time references
         self.first_get_ticks = self.second_get_ticks
         self.second_get_ticks = pg.time.get_ticks()
         self.delta_time = self.second_get_ticks - self.first_get_ticks
         self.fire_rate_counter += self.delta_time
+        self.spawn_rate += self.delta_time
         for names in self.players_fire_rates:
             self.players_fire_rates[names] += self.delta_time
 
@@ -117,6 +105,16 @@ class ObjectsController:
         collisions_zombies = pg.sprite.groupcollide(self.bot_list, self.bullet_list, dokilla=False, dokillb=True)
         for zombie in collisions_zombies:
             zombie.gets_hit()
+
+        # Spawn for zombies
+        if self.spawn_rate > 1000 and len(self.bot_list) < self.max_zombies:
+            while self.cant_spawn:
+                self.bot_spawn = Bot.Bot((int(random.uniform(-4500,4500)), int(random.uniform(-4500,4500))), self.screen,
+                                     self.background, self.player, self.zombie_animation)
+                self.cant_spawn = pg.sprite.spritecollideany(self.bot_spawn, self.background.collider_group)
+            self.cant_spawn = True
+            self.bot_list.add(self.bot_spawn)
+            self.spawn_rate = 0
 
         # Update for zombies
         for bot in self.bot_list:

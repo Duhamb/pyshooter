@@ -16,3 +16,8 @@ class Weapon:
 
     def max_distance(self, weapon_type):
         return self.max_distance_list[weapon_type]
+
+    @classmethod
+    def get_damage(cls, weapon_type):
+        damage_list = {'rifle': 1, 'shotgun': 3, 'handgun': 1, 'knife': 1}
+        return damage_list[weapon_type]

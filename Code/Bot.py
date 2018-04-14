@@ -2,16 +2,18 @@ import pygame as pg
 import Code.helpers as helpers
 import Code.Collider as Collider
 import Code.ExtendedGroup as ExtendedGroup
+import Code.Weapon as Weapon
 import random 
 
 class Bot(pg.sprite.Sprite):
-    def __init__(self, location_on_scenario, surface, background, player, animation):
+    def __init__(self, location_on_scenario, surface, background, player_group, animation):
         super().__init__()
 
         self.velocity = random.randint(2, 4)
 
         # load all objects necessary for bot interaction
-        self.player = player
+        self.player_group = self.mount_player_group(player_group)
+
         self.background = background
 
         # original_image will be used in rotate
@@ -65,13 +67,18 @@ class Bot(pg.sprite.Sprite):
         # group with all other zombies
         self.bot_group = None
 
-    def update(self, bot_group):
-        self.bot_group = bot_group
+    def update(self, bot_group = None, player_group = None):
+        if player_group != None:
+            self.player_group = self.mount_player_group(player_group)
+        if bot_group != None:
+            self.bot_group = bot_group
+        
+        self.nearest_player = self.get_nearest_player()
         self.choose_animation()
         self.rotate()
         self.choose_action()
 
-        distance_to_player = self.position_on_scenario.distance_to(self.player.position_on_scenario)
+        distance_to_player = self.get_distance_to_player()
         if distance_to_player < 500:
             if not self.is_grunting:
                 self.is_grunting = True
@@ -85,9 +92,8 @@ class Bot(pg.sprite.Sprite):
             self.grunt.stop()
             self.is_grunting = False
 
-
     def rotate(self):
-        player_position = self.player.position_on_screen
+        player_position = pg.math.Vector2(self.nearest_player['position_on_screen'])
         bot_position = helpers.scenario_to_screen(self.position_on_scenario, self.background)
         _, self.angle = (player_position-bot_position).as_polar()
         self.angle = self.angle
@@ -109,20 +115,22 @@ class Bot(pg.sprite.Sprite):
             self.index_animation_attack = helpers.increment(self.index_animation_attack, int(self.float_index), 8)
             self.original_image = self.animation.attack[self.index_animation_attack]
             self.animation_name = "attack"
+            self.animation_index = self.index_animation_attack
         elif self.is_moving:
             self.index_animation_move = helpers.increment(self.index_animation_move, 1, 16)
             self.original_image = self.animation.move[self.index_animation_move]
             self.animation_name = "move"
+            self.animation_index = self.index_animation_move
         else:
             self.float_index = helpers.increment(self.float_index, 0.25, 1)
             self.index_animation_idle = helpers.increment(self.index_animation_idle, int(self.float_index), 16)
             self.original_image = self.animation.idle[self.index_animation_idle]
             self.animation_name = "idle"
-        self.animation_index = self.index_animation_attack
+            self.animation_index = self.index_animation_idle
 
     def move(self):
         # define direction to move
-        direction = self.player.position_on_scenario - self.position_on_scenario
+        direction = pg.math.Vector2(self.nearest_player['position_on_scenario']) - self.position_on_scenario
 
         direction.normalize_ip()
         direction = direction * self.velocity
@@ -151,7 +159,7 @@ class Bot(pg.sprite.Sprite):
         self.collider.update(self.position_on_scenario)
 
     def choose_action(self):
-        distance_to_player = self.position_on_scenario.distance_to(self.player.position_on_scenario)
+        distance_to_player = self.get_distance_to_player()
         if distance_to_player < 70:
             self.is_moving = False
             self.is_attacking = True
@@ -166,6 +174,7 @@ class Bot(pg.sprite.Sprite):
     def get_server_info(self):
         info = {'position_on_scenario': tuple(self.position_on_scenario),
          'angle': self.angle,
+         'player_position': self.nearest_player['position_on_scenario'],
          'animation_name': self.animation_name,
          'animation_index': self.animation_index
          }
@@ -175,22 +184,53 @@ class Bot(pg.sprite.Sprite):
         if helpers.is_visible_area(self.rect.center):
             screen.blit(self.image, self.rect)
 
-    def draw_multiplayer(self, screen, server_info ):
+    def draw_multiplayer(self, screen, server_info, player_group ):
+        self.player_group = player_group
         position_on_screen = helpers.scenario_to_screen(server_info['position_on_scenario'], self.background, False)
         # body
+        animation = getattr(self.animation, server_info['animation_name'])
+        original_image = animation[server_info['animation_index']]
+
+        _, angle = (pg.math.Vector2(server_info['player_position']) - pg.math.Vector2(server_info['position_on_scenario'])).as_polar()
+        angle -= self.background.angle
+
+        [imageMultiplayer, rect_multiplayer] = helpers.rotate_fake_center(original_image, angle, self.delta_center_position, position_on_screen)
         if helpers.is_visible_area(position_on_screen):
-            animation = getattr(self.animation, server_info['animation_name'])
-            original_image = animation[server_info['animation_index']]
-            [imageMultiplayer, rect_multiplayer] = helpers.rotate_fake_center(original_image, server_info['angle'], self.delta_center_position, position_on_screen)
             # draw images
             screen.blit(imageMultiplayer, rect_multiplayer)
 
+        # pg.draw.line(screen,(255,0,0),rect_multiplayer.center, (400,400), 3)
     def gets_hit(self):
-        self.life -= self.player.weapon.damage_list[self.player.weapon.type]
+        # self.life -= self.player.weapon.damage_list[self.player.weapon.type]
+        self.life -= Weapon.Weapon.get_damage(self.nearest_player['weapon_type'])
+        # self.life -= 2
         if self.life <= 0:
             self.is_dead = True
 
     def stop_grunt(self):
         if self.is_grunting:
             self.grunt.stop()
+
+    def get_nearest_player(self):
+        min_distance = 100000 # arbitrary value
+        nearest_player = None
+        for player_name in self.player_group:
+            player_position = pg.math.Vector2(self.player_group[player_name]['position_on_scenario'])
+            distance_to_player = self.position_on_scenario.distance_to(player_position)
+            if distance_to_player < min_distance:
+                min_distance = distance_to_player
+                nearest_player = self.player_group[player_name]
+        return nearest_player
+
+    def mount_player_group(self, player_group):
+        if type(player_group) == dict:
+            return player_group
+        unique_player = {'default':
+        {'position_on_scenario': player_group.position_on_scenario,
+        'position_on_screen': player_group.position_on_screen,
+        'weapon_type': player_group.weapon.type}
+        }
+        return unique_player
    
+    def get_distance_to_player(self):
+        return self.position_on_scenario.distance_to(pg.math.Vector2(self.nearest_player['position_on_scenario']))

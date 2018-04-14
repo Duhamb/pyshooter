@@ -10,9 +10,6 @@ import Code.Sound as Sound
 import Code.helpers as helpers
 import random
 
-
-
-
 class ObjectsController:
     def __init__(self, player, background, multiplayer_on, server_client, menu, players, is_host, aim):
 
@@ -37,7 +34,6 @@ class ObjectsController:
         self.zombie_animation = Animation.Zombie
         self.zombie_animation.load()
 
-
         self.bot_draw = Bot.Bot((0, 0), self.screen, self.background, self.player, self.zombie_animation)
         self.bot_list = ExtendedGroup.ExtendedGroup()
 
@@ -60,20 +56,15 @@ class ObjectsController:
             if self.player.weapon.ammo_list[self.player.weapon.type] > 0:
                 self.can_render_bullet = True
                 mouse_position = self.aim.position
+                player_name = None
                 if self.multiplayer_on:
-                    bullet = Projectiles.Projectiles(self.player.position_on_scenario,
-                                         self.BULLET_IMAGE,
-                                         self.background,
-                                         helpers.screen_to_scenario(mouse_position, self.background, False),
-                                         self.server_client.name,
-                                         self.player.weapon.type
-                                         )
-                else:
-                    bullet = Projectiles.Projectiles(self.player.position_on_scenario,
-                                         self.BULLET_IMAGE, self.background,
-                                         helpers.screen_to_scenario(mouse_position, self.background, False),
-                                         None,
-                                         self.player.weapon.type)
+                    player_name = self.server_client.name
+                bullet = Projectiles.Projectiles(self.player.position_on_scenario,
+                                     self.BULLET_IMAGE,
+                                     self.background,
+                                     helpers.screen_to_scenario(mouse_position, self.background, False),
+                                     player_name,
+                                     self.player.weapon.type)
                     
                 self.bullet_list.add(bullet)
                 self.fire_rate_counter = 0
@@ -90,9 +81,7 @@ class ObjectsController:
             self.can_render_bullet = False
 
         # Time references
-        self.first_get_ticks = self.second_get_ticks
-        self.second_get_ticks = pg.time.get_ticks()
-        self.delta_time = self.second_get_ticks - self.first_get_ticks
+        self.delta_time = self.get_delta_time()
         self.fire_rate_counter += self.delta_time
         self.spawn_rate += self.delta_time
         for names in self.players_fire_rates:
@@ -105,16 +94,13 @@ class ObjectsController:
         collisions_zombies = pg.sprite.groupcollide(self.bot_list, self.bullet_list, dokilla=False, dokillb=True)
         for zombie in collisions_zombies:
             zombie.gets_hit()
+        
+        # update for players
+        self.update_player_group()
 
         # Spawn for zombies
-        if self.spawn_rate > 1000 and len(self.bot_list) < self.max_zombies:
-            while self.cant_spawn:
-                self.bot_spawn = Bot.Bot((int(random.uniform(-4500,4500)), int(random.uniform(-4500,4500))), self.screen,
-                                     self.background, self.player, self.zombie_animation)
-                self.cant_spawn = pg.sprite.spritecollideany(self.bot_spawn, self.background.collider_group)
-            self.cant_spawn = True
-            self.bot_list.add(self.bot_spawn)
-            self.spawn_rate = 0
+        self.spawn_bots()
+        self.bot_list.update(None,self.player_group)
 
         # Update for zombies
         for bot in self.bot_list:
@@ -126,6 +112,23 @@ class ObjectsController:
                 else:
                     self.server_client.add_points(self.shooter_name)
 
+        # update server info for zombies
+        #Zombie Syn
+        #Host send zombie list
+        if self.multiplayer_on:
+            if self.is_host:
+                self.bot_list.update(self.bot_list)
+                zombie_server_list = {}
+                id = 0
+                for zombie in self.bot_list:
+                    zombie_server_list[id] = zombie.get_server_info()
+                    id = id +1
+                self.server_client.push_zombies(zombie_server_list, True)
+            else:
+                self.server_client.push_zombies({}, False)
+            #receive zombie list
+            self.server_client.pull_zombies()
+
         # Update for bullets
         for bullet in self.bullet_list:
             if bullet.distance > self.player.weapon.max_distance(bullet.weapon_type) or bullet.is_colliding:
@@ -134,8 +137,6 @@ class ObjectsController:
     def draw(self):
         if self.multiplayer_on:
             #Player Syn
-            self.server_client.push_player(self.player, self.can_render_bullet)
-            self.server_client.pull_players()
             player_list = self.server_client.players_info
             for player_name in player_list:
                 actual_player = player_list[player_name]
@@ -150,23 +151,9 @@ class ObjectsController:
                                          actual_player['weapon_type'])
                     self.bullet_list.add(bullet)
 
-            #Zombie Syn
-            #Host send zombie list
-            if self.is_host:
-                self.bot_list.update(self.bot_list)
-                zombie_server_list = {}
-                id = 0
-                for zombie in self.bot_list:
-                    zombie_server_list[id] = zombie.get_server_info()
-                    id = id +1
-                self.server_client.push_zombies(zombie_server_list, True)
-            else:
-                self.server_client.push_zombies({}, False)
-            #receive zombie list
-            self.server_client.pull_zombies()
             zombie_list = self.server_client.zombies_info
             for zombie_id in zombie_list:
-                self.bot_draw.draw_multiplayer(self.screen, zombie_list[zombie_id])
+                self.bot_draw.draw_multiplayer(self.screen, zombie_list[zombie_id], player_list)
         else:
             self.bot_list.update(self.bot_list)
             self.players.draw(self.screen)
@@ -174,3 +161,36 @@ class ObjectsController:
 
         self.bullet_list.update()
         self.bullet_list.draw(self.screen)
+
+    def get_delta_time(self):
+        first_get_ticks = self.second_get_ticks
+        self.second_get_ticks = pg.time.get_ticks()
+        delta_time = self.second_get_ticks - first_get_ticks
+        return delta_time
+
+    def generate_random_location(self):
+        return (int(random.uniform(-4500,4500)),int(random.uniform(-4500,4500)))
+
+    def spawn_bots(self):
+        # Spawn for zombies
+        if self.spawn_rate > 1000 and len(self.bot_list) < self.max_zombies:
+            while self.cant_spawn:
+                self.bot_spawn = Bot.Bot(self.generate_random_location(),
+                                          self.screen,
+                                          self.background,
+                                          self.player_group,
+                                          self.zombie_animation)
+                self.cant_spawn = pg.sprite.spritecollideany(self.bot_spawn, self.background.collider_group)
+            self.cant_spawn = True
+            self.bot_list.add(self.bot_spawn)
+            self.spawn_rate = 0
+
+    def update_player_group(self):
+        # self.player_group can be a dict with players info from server or
+        # self.player_group can be a only object of Player class
+        if self.multiplayer_on:
+            self.server_client.push_player(self.player, self.can_render_bullet)
+            self.server_client.pull_players()
+            self.player_group = self.server_client.players_info
+        else:
+            self.player_group = self.player

@@ -111,16 +111,25 @@ class Player(pygame.sprite.Sprite):
         position_on_screen = helpers.scenario_to_screen(server_info['position_on_scenario'], self.background, False)
 
         _, angle = (pg.math.Vector2(server_info['mouse_position']) - pg.math.Vector2(server_info['position_on_scenario'])).as_polar()
-        angle = angle - self.background.angle
+        angle -= self.background.angle
 
-        # body
-        animation = getattr(self.animation, server_info['animation_body'])
-        original_image = animation[server_info['animation_body_index']]
+        # [TODO] os nomes das animações estavam chegando com nonetype nessa parte e dava problema
+        try:
+            # body
+            animation = getattr(self.animation, server_info['animation_body'])
+            original_image = animation[server_info['animation_body_index']]
+        except:
+            animation = getattr(self.animation, 'rifle_idle')
+            original_image = animation[0]
         [imageMultiplayer, rect_multiplayer] = helpers.rotate_fake_center(original_image, angle, self.delta_center_position, position_on_screen)
         
         # feet
-        animation_feet = getattr(self.animation, server_info['animation_feet'])
-        original_image = animation_feet[server_info['animation_feet_index']]
+        try:
+            animation_feet = getattr(self.animation, server_info['animation_feet'])
+            original_image = animation_feet[server_info['animation_feet_index']]
+        except:
+            animation_feet = getattr(self.animation, 'feet_idle')
+            original_image = animation_feet[0]
         [imageFeet, rect_feet] = helpers.rotate_fake_center(original_image, angle, pg.math.Vector2((0,0)), position_on_screen)
         
         # draw images
@@ -261,7 +270,6 @@ class Player(pygame.sprite.Sprite):
                 pass
 
     def change_weapon(self):
-        self.delta_center_position = pygame.math.Vector2((+56/2.7,-19/2.7))
         self.is_shooting = False
         if self.weapon.type == 'rifle':
             self.animation_move = self.animation.rifle_move
@@ -270,15 +278,16 @@ class Player(pygame.sprite.Sprite):
             self.animation_reload = self.animation.rifle_reload
             self.animation_meleeattack = self.animation.rifle_meleeattack
             self.prefix_animation_name = 'rifle_'
-            # self.delta_center_position
+            self.delta_center_position = pygame.math.Vector2((+56/2.7,-19/2.7))
 
         elif self.weapon.type == 'shotgun':
             self.animation_move = self.animation.shotgun_move
             self.animation_shoot = self.animation.shotgun_shoot
             self.animation_idle = self.animation.shotgun_idle
             self.animation_reload = self.animation.shotgun_reload
-            self.animation_meleeattack = self.animation.shotgun_meleeattackd
+            self.animation_meleeattack = self.animation.shotgun_meleeattack
             self.prefix_animation_name = 'shotgun_'
+            self.delta_center_position = pygame.math.Vector2((+56/2.7,-19/2.7))
 
         elif self.weapon.type == 'handgun':
             self.animation_move = self.animation.handgun_move
@@ -287,6 +296,7 @@ class Player(pygame.sprite.Sprite):
             self.animation_reload = self.animation.handgun_reload
             self.animation_meleeattack = self.animation.handgun_meleeattack
             self.prefix_animation_name = 'handgun_'
+            self.delta_center_position = pygame.math.Vector2((0,0))
 
         elif self.weapon.type == 'knife':
             self.animation_move = self.animation.knife_move
@@ -368,7 +378,10 @@ class Player(pygame.sprite.Sprite):
             self.animation_feet = 'feet_idle'
 
     def get_server_info(self):
-        # acho que o servidor não consegue tratar o tipo pg.math.Vector2
+        # [TODO] a draw_multiplayer estava recebendo uns nonetypes para animation_body
+        # resolvi temporariamente o travamento, mas é perceptível na troca de armas
+        # durante o jogo
+        # tem que consertar isso melhor depois
         info = {'position_on_scenario': (self.position_on_scenario[0], self.position_on_scenario[1]),
          'position_on_screen': (self.position_on_screen[0], self.position_on_screen[1]),
          'angle': self.angle_vision,

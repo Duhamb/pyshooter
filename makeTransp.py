@@ -9,18 +9,18 @@ screen = pygame.display.set_mode([400,400])
 
 
 # set the default sprites pre-name
-default_directory = 'Assets/Images/player/knife/idle/'
-default_name = 'survivor-idle_knife_'
+default_directory = 'Assets/Images/player/handgun/shoot/'
+default_name = 'survivor-shoot_handgun_'
 
 # set the total of images
 # start at 0
-number_of_images = 20
+number_of_images = 3
 
 # final folder
 directory_to_save = 'new_images/'
 
 # set the new center position based on current position
-final_center_position = 105, 113
+final_center_position = 97, 118
 
 for i in range(number_of_images):
     current_image_directory = default_directory+default_name + str(i) + '.png'

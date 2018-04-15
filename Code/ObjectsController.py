@@ -88,16 +88,14 @@ class ObjectsController:
             self.players_fire_rates[names] += self.delta_time
 
         # Collisions between zombies and bullets
-        collisions_bullets = pg.sprite.groupcollide(self.bullet_list, self.bot_list, dokilla=False, dokillb=False)
-        for bullet in collisions_bullets:
-            self.shooter_name = bullet.shooter_name
-        collisions_zombies = pg.sprite.groupcollide(self.bot_list, self.bullet_list, dokilla=False, dokillb=True)
-        for zombie in collisions_zombies:
-            zombie.gets_hit()
+        self.check_collision_bot_bullet()
         
         # update for players
         self.update_player_group()
 
+        # Collisions between players and bullets
+        self.check_collision_player_bullet()
+        
         # Spawn for zombies
         self.spawn_bots()
         self.bot_list.update(None,self.player_group)
@@ -128,6 +126,9 @@ class ObjectsController:
                 self.server_client.push_zombies({}, False)
             #receive zombie list
             self.server_client.pull_zombies()
+
+        # Collisions between players and zombies
+        self.check_collision_player_zombies()
 
         # Update for bullets
         for bullet in self.bullet_list:
@@ -194,3 +195,42 @@ class ObjectsController:
             self.player_group = self.server_client.players_info
         else:
             self.player_group = self.player
+
+    def check_collision_bot_bullet(self):
+        # Collisions between zombies and bullets
+        collisions_bullets = pg.sprite.groupcollide(self.bullet_list, self.bot_list, dokilla=False, dokillb=False)
+        for bullet in collisions_bullets:
+            self.shooter_name = bullet.shooter_name
+        collisions_zombies = pg.sprite.groupcollide(self.bot_list, self.bullet_list, dokilla=False, dokillb=True)
+        for zombie in collisions_zombies:
+            zombie.gets_hit()
+
+    def check_collision_player_bullet(self):
+        class player_ghost_class(pg.sprite.Sprite):
+            def __init__(self):
+                super().__init__()
+        # is needed only in multiplayer mode
+
+        if self.multiplayer_on:
+            player_ghost = player_ghost_class()
+            # create rects for each player
+            for player_name in self.player_group:
+                player_rect = pg.Rect(0, 0, 20, 20) # carteação total
+                scenario_position = self.player_group[player_name]['position_on_scenario']
+                player_rect.center = helpers.scenario_to_screen(scenario_position, self.background, False)
+                player_ghost.rect = player_rect
+                bullet_collision = pg.sprite.spritecollideany(player_ghost, self.bullet_list)
+                if bullet_collision:
+                    if player_name == self.player.name:
+                        self.player.gets_hit_by_weapon()
+
+    def check_collision_player_zombies(self):
+        if self.multiplayer_on:
+            zombie_list = self.server_client.zombies_info
+            for zombie_id in zombie_list:
+                if zombie_list[zombie_id]['victim'] == self.player.name:
+                    self.player.gets_hit_by_zombie()
+        else:
+            for zombie in self.bot_list:
+                if zombie.is_attacking:
+                    self.player.gets_hit_by_zombie()

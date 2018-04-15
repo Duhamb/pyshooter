@@ -6,11 +6,13 @@ import Code.Collider as Collider
 import Code.Weapon as Weapon
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, location_on_scenario, location_on_screen, animation, sound, background, aim):
+    def __init__(self, location_on_scenario, location_on_screen, animation, sound, background, aim, name):
         super().__init__()
 
         self.weapon = Weapon.Weapon()
         self.velocity = 5
+
+        self.name = name
 
         self.score = 0
 
@@ -94,6 +96,10 @@ class Player(pygame.sprite.Sprite):
         self.prefix_animation_name = 'rifle_'
         self.aim = aim
 
+        # life inicial status
+        self.life = 100
+        self.is_dead = False
+
         # slower animations
         self.float_index = 0
 
@@ -121,7 +127,11 @@ class Player(pygame.sprite.Sprite):
         except:
             animation = getattr(self.animation, 'rifle_idle')
             original_image = animation[0]
-        [imageMultiplayer, rect_multiplayer] = helpers.rotate_fake_center(original_image, angle, self.delta_center_position, position_on_screen)
+        if server_info['weapon_type'] == 'rifle' or server_info['weapon_type'] == 'shotgun':
+            delta_center_position = pygame.math.Vector2((+56/2.7,-19/2.7))
+        else:
+            delta_center_position = pygame.math.Vector2((0,0))
+        [imageMultiplayer, rect_multiplayer] = helpers.rotate_fake_center(original_image, angle, delta_center_position, position_on_screen)
         
         # feet
         try:
@@ -390,7 +400,8 @@ class Player(pygame.sprite.Sprite):
          'animation_body_index': self.animation_body_index,
          'animation_feet': self.animation_feet,
          'animation_feet_index': self.animation_feet_index,
-         'weapon_type': self.weapon.type
+         'weapon_type': self.weapon.type,
+         'name': self.name
          }
         return info
 
@@ -418,3 +429,15 @@ class Player(pygame.sprite.Sprite):
             self.is_idle = True
             return False
         return True
+
+    def gets_hit_by_weapon(self, weapon_type = 'rifle'):
+        self.life -= Weapon.Weapon.get_damage(weapon_type)
+        if self.life < 0:
+            self.is_dead = True
+            self.life = 0
+    
+    def gets_hit_by_zombie(self):
+        self.life -= 0.1
+        if self.life < 0:
+            self.is_dead = True
+            self.life = 0

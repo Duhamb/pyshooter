@@ -9,6 +9,9 @@ class Statistics():
         self.server_client = server_client
         self.position_on_screen = None
 
+        self.life_counter_mask = pg.image.load("Assets/Images/lifecounter.png").convert_alpha()
+        self.life_counter_rect = self.life_counter_mask.get_rect(topright=(780,20))
+
         self.image_weapon_rifle = pg.image.load("Assets/Images/ak47.png").convert_alpha()
         self.image_weapon_shotgun = pg.image.load("Assets/Images/shotgun.png").convert_alpha()
         self.image_weapon_handgun = pg.image.load("Assets/Images/handgun.png").convert_alpha()
@@ -34,6 +37,7 @@ class Statistics():
         if self.multiplayer_on:
             self.draw_minimap_multiplayer(screen)
             self.draw_score_multiplayer(screen)
+        self.draw_life_counter(screen)
 
     def draw_score(self, screen):
         points = "Your score: " + str(self.player.score)
@@ -92,3 +96,20 @@ class Statistics():
             ammo = str(self.player.weapon.ammo_list[self.player.weapon.type]) + "/" + str(self.player.weapon.ammo_limit_list[self.player.weapon.type])
             ammo = self.font_text_25.render(ammo, 1, (255, 255, 255))
             screen.blit(ammo, (740, 555))
+
+    def draw_life_counter(self, screen):
+        life_size = self.player.life*2-5
+        if self.player.life < 40:
+            color = (140,0,0)
+        elif self.player.life < 75:
+            color = (206,217,16)
+        else:
+            color = (13,100,28)
+        topright = self.life_counter_rect.topright
+        topright = topright[0]-5, topright[1] + 5
+        bottomright = self.life_counter_rect.bottomright
+        bottomright = bottomright[0]-5, bottomright[1] -5
+        topleft = (topright[0] - life_size, topright[1])
+        bottomleft = (bottomright[0] - life_size, bottomright[1])
+        pg.draw.polygon(screen, color, [topright, topleft, bottomleft, bottomright],0)
+        screen.blit(self.life_counter_mask, self.life_counter_rect)

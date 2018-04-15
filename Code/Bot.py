@@ -13,6 +13,7 @@ class Bot(pg.sprite.Sprite):
 
         # load all objects necessary for bot interaction
         self.player_group = self.mount_player_group(player_group)
+        self.multiplayer_on = False # this variable change at self.mount_player_group
 
         self.background = background
 
@@ -63,6 +64,8 @@ class Bot(pg.sprite.Sprite):
         # life inicial status
         self.life = 3
         self.is_dead = False
+
+        self.victim_name = None
 
         # group with all other zombies
         self.bot_group = None
@@ -159,10 +162,12 @@ class Bot(pg.sprite.Sprite):
         self.collider.update(self.position_on_scenario)
 
     def choose_action(self):
+        self.victim_name = None # reset variable
         distance_to_player = self.get_distance_to_player()
         if distance_to_player < 70:
             self.is_moving = False
             self.is_attacking = True
+            self.victim_name = self.nearest_player['name']
         elif distance_to_player < 600:
             self.is_moving = True
             self.is_attacking = False
@@ -176,7 +181,8 @@ class Bot(pg.sprite.Sprite):
          'angle': self.angle,
          'player_position': self.nearest_player['position_on_scenario'],
          'animation_name': self.animation_name,
-         'animation_index': self.animation_index
+         'animation_index': self.animation_index,
+         'victim': self.victim_name
          }
         return info
 
@@ -203,7 +209,6 @@ class Bot(pg.sprite.Sprite):
     def gets_hit(self):
         # self.life -= self.player.weapon.damage_list[self.player.weapon.type]
         self.life -= Weapon.Weapon.get_damage(self.nearest_player['weapon_type'])
-        # self.life -= 2
         if self.life <= 0:
             self.is_dead = True
 
@@ -224,11 +229,14 @@ class Bot(pg.sprite.Sprite):
 
     def mount_player_group(self, player_group):
         if type(player_group) == dict:
+            self.multiplayer_on = True
             return player_group
+
         unique_player = {'default':
         {'position_on_scenario': player_group.position_on_scenario,
         'position_on_screen': player_group.position_on_screen,
-        'weapon_type': player_group.weapon.type}
+        'weapon_type': player_group.weapon.type,
+        'name': player_group.name}
         }
         return unique_player
    

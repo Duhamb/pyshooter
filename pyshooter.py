@@ -76,7 +76,7 @@ class Main:
             self.server_client = self.menu.server_client
             self.is_host = self.menu.is_host
 
-        self.player = Player.Player(constants.PLAYER_POSITION_SCENARIO, self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background, self.aim)
+        self.player = Player.Player(constants.PLAYER_POSITION_SCENARIO, self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background, self.aim, self.menu.name)
         self.light = Light.Light(self.player)
         self.players = ExtendedGroup.ExtendedGroup(self.player)
         self.stats = Statistics.Statistics(self.player, constants.SCREEN_SIZE, self.multiplayer_on, self.server_client, self.is_host)

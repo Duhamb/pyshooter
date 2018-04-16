@@ -12,6 +12,7 @@ class pyshooterClient():
         self.client = None
         self.server = None
         self.zombies_info = {}
+        self.powerups_info = {}
         self.players_info = {}
         self.minimaps_info = {}
         self.scores = {}
@@ -67,9 +68,20 @@ class pyshooterClient():
             reply = self.client.receive(False)
         self.zombies_info = reply[1]
 
+    def push_powerups(self, powerup_list, is_host):
+        if is_host:
+            self.client.send(["powerup_host", powerup_list], None)
+        else:
+            self.client.send(["powerup_client", powerup_list], None)
+
+    def pull_powerups(self):
+        reply = None
+        while (reply == None or reply[0] != "powerups"):
+            reply = self.client.receive(False)
+        self.powerups_info = reply[1]
+
     def push_minimap(self, position_on_screen):
         self.client.send(["minimaps", [self.name, {self.name: position_on_screen}]], None)
-
 
     def pull_minimaps(self):
         reply = None

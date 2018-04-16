@@ -1,6 +1,7 @@
 # this file has auxiliar functions used in whole game
 
 import pygame as pg
+import random
 import Code.constants as constants
 
 # this function return the center of background image based on other coordinates
@@ -239,3 +240,6 @@ def move_on_collision(animated_collider, list_collisions, direction):
 def get_free_channel():
     channel = pg.mixer.find_channel(True)
     return channel
+
+def generate_random_location():
+    return (int(random.uniform(-4500,4500)),int(random.uniform(-4500,4500)))

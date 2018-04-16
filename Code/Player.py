@@ -441,3 +441,8 @@ class Player(pygame.sprite.Sprite):
         if self.life < 0:
             self.is_dead = True
             self.life = 0
+
+    def gets_powerup(self, powerup_type):
+        if powerup_type == 'life':
+            self.life = 100
+            

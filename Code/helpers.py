@@ -243,3 +243,6 @@ def get_free_channel():
 
 def generate_random_location():
     return (int(random.uniform(-4500,4500)),int(random.uniform(-4500,4500)))
+
+def select_random_from_list(list):
+    return random.choice(list)

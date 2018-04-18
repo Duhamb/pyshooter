@@ -93,7 +93,7 @@ class Statistics():
             ammo = self.font_text_18.render(ammo, 1, (255, 255, 255))
             screen.blit(ammo, (735, 555))
         else:
-            ammo = str(self.player.weapon.ammo_list[self.player.weapon.type]) + "/" + str(self.player.weapon.ammo_limit_list[self.player.weapon.type])
+            ammo = str(self.player.weapon.loaded_ammo_list[self.player.weapon.type]) + "/" + str(self.player.weapon.unloaded_ammo_list[self.player.weapon.type])
             ammo = self.font_text_25.render(ammo, 1, (255, 255, 255))
             screen.blit(ammo, (740, 555))
 

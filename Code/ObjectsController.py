@@ -49,15 +49,16 @@ class ObjectsController:
         self.fire_rate_counter = 0
         self.can_render_bullet = False
         self.shooter_name = None
-        self.spawn_rate = 0
+        self.bots_spawn_rate = 0
         self.powerups_spawn_rate = 0
         self.cant_spawn = True
         self.bot_spawn = None
         self.max_zombies = 50
+        self.powerups_type_list = ['life', 'rifle', 'shotgun', 'rifle_ammo', 'shotgun_ammo', 'handgun_ammo']
 
     def handle_event(self):
         if self.player.weapon.type != 'knife' and not self.player.is_reloading and self.player.is_shooting and self.fire_rate_counter > self.player.weapon.fire_rate():
-            if self.player.weapon.ammo_list[self.player.weapon.type] > 0:
+            if self.player.weapon.loaded_ammo_list[self.player.weapon.type] > 0:
                 self.can_render_bullet = True
                 mouse_position = self.aim.position
                 player_name = None
@@ -72,7 +73,7 @@ class ObjectsController:
                     
                 self.bullet_list.add(bullet)
                 self.fire_rate_counter = 0
-                self.player.weapon.ammo_list[self.player.weapon.type] -= 1
+                self.player.weapon.loaded_ammo_list[self.player.weapon.type] -= 1
                 self.player_sound.shoot.stop()
                 helpers.get_free_channel().play(self.player_sound.shoot)
             else:
@@ -81,13 +82,13 @@ class ObjectsController:
                 self.fire_rate_counter = 0
 
     def update(self):
-        if self.player.weapon.type != 'knife' and (not self.player.is_shooting or self.player.weapon.ammo_list[self.player.weapon.type] == 0):
+        if self.player.weapon.type != 'knife' and (not self.player.is_shooting or self.player.weapon.loaded_ammo_list[self.player.weapon.type] == 0):
             self.can_render_bullet = False
 
         # Time references
         self.delta_time = self.get_delta_time()
         self.fire_rate_counter += self.delta_time
-        self.spawn_rate += self.delta_time
+        self.bots_spawn_rate += self.delta_time
         self.powerups_spawn_rate += self.delta_time
         for names in self.players_fire_rates:
             self.players_fire_rates[names] += self.delta_time
@@ -200,7 +201,7 @@ class ObjectsController:
 
     def spawn_bots(self):
         # Spawn for zombies
-        if self.spawn_rate > 1000 and len(self.bot_list) < self.max_zombies:
+        if self.bots_spawn_rate > 1000 and len(self.bot_list) < self.max_zombies:
             while self.cant_spawn:
                 self.bot_spawn = Bot.Bot(helpers.generate_random_location(),
                                           self.screen,
@@ -210,12 +211,12 @@ class ObjectsController:
                 self.cant_spawn = pg.sprite.spritecollideany(self.bot_spawn, self.background.collider_group)
             self.cant_spawn = True
             self.bot_list.add(self.bot_spawn)
-            self.spawn_rate = 0
+            self.bots_spawn_rate = 0
 
     def spawn_powerups(self):
         # Spawn for zombies
         if self.powerups_spawn_rate > 1000 and len(self.powerups_list) < 25:
-            powerup = Powerups.Powerups(self.background)
+            powerup = Powerups.Powerups(self.background, helpers.select_random_from_list(self.powerups_type_list))
             self.powerups_list.add(powerup)
             self.powerups_spawn_rate = 0
 

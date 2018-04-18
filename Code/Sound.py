@@ -1,21 +1,15 @@
-import pygame as pg 
+import pygame as pg
 
 class Player:
-    shoot = None
-    meleeattack = None
-    zoa = None
-    reload = None
-    footstep = None
-    empty = None
-    # @staticmethod
     @classmethod
     def load(cls):
         # if len(cls.move) == 0:
         cls.shoot = pg.mixer.Sound('Assets/Sounds/ak47_shoot2.wav')
         cls.reload = pg.mixer.Sound('Assets/Sounds/ak47_reload.wav')
+        cls.shotgun_shoot = pg.mixer.Sound('Assets/Sounds/shotgun_shoot.wav')
+        cls.shotgun_reload = pg.mixer.Sound('Assets/Sounds/shotgun_reload.wav')
         cls.meleeattack = pg.mixer.Sound('Assets/Sounds/meleeattack.wav')
         cls.footstep = pg.mixer.Sound('Assets/Sounds/footstep.wav')
-        cls.zoa = pg.mixer.Sound('Assets/Sounds/tacaopau.wav')
         cls.empty = pg.mixer.Sound('Assets/Sounds/empty.wav')
 
     @classmethod

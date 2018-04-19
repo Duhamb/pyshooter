@@ -3,6 +3,7 @@ import Code.helpers as helpers
 import Code.Collider as Collider
 import Code.ExtendedGroup as ExtendedGroup
 import Code.Weapon as Weapon
+import Code.Sound as Sound
 import random 
 
 class Bot(pg.sprite.Sprite):
@@ -38,10 +39,9 @@ class Bot(pg.sprite.Sprite):
         # the center of sprite isnt the center of the own image file
         # so, this is needed to find the real center
         self.delta_center_position = pg.math.Vector2((+35.5/2.7,-8/2.7))
-        
-        # [TODO] sounds should be loaded in Sounds.py
-        self.grunt = pg.mixer.Sound('Assets/Sounds/zombie.wav')
-        self.channel = pg.mixer.find_channel(True)
+
+        Sound.Bot.load()
+        self.grunt = Sound.Bot.grunt
 
         # flag
         self.is_grunting = False
@@ -85,7 +85,7 @@ class Bot(pg.sprite.Sprite):
         if distance_to_player < 500:
             if not self.is_grunting:
                 self.is_grunting = True
-                self.channel.play(self.grunt, -1)
+                helpers.get_free_channel().play(self.grunt, -1)
             self.grunt.set_volume(1-distance_to_player/500)
         else:
             self.grunt.stop()

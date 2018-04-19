@@ -225,7 +225,7 @@ class Player(pygame.sprite.Sprite):
             if event.button == 3:
                 if self.weapon.type != 'knife':
                     self.is_meleeattack = True
-                    pygame.mixer.Channel(1).play(self.sound.meleeattack)
+                    self.weapon.make_sound('meleeattack')
                 else:
                     self.is_meleeattack = True
     
@@ -318,8 +318,7 @@ class Player(pygame.sprite.Sprite):
     def choose_sound(self):
         # Reloading sound
         if self.is_reloading and not self.sound_empty_playing:
-            self.sound.empty.stop()
-            pygame.mixer.Channel(1).play(self.sound.reload)
+            self.weapon.make_sound('reload')
             self.sound_empty_playing = True
         if not self.is_reloading:
             self.sound_empty_playing = False

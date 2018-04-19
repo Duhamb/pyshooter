@@ -1,3 +1,6 @@
+import Code.Sound as Sound
+import Code.helpers as helpers
+
 class Weapon:
     def __init__(self):
         self.type = 'rifle'
@@ -8,6 +11,8 @@ class Weapon:
         self.weapon_list = {'rifle': False, 'shotgun': False, 'handgun': True, 'knife': True}
         self.damage_list = {'rifle': 1, 'shotgun': 3, 'handgun': 1, 'knife': 1}
 
+        Sound.Weapon.load()
+
     def change_weapon(self, new_weapon):
         self.type = new_weapon
 
@@ -17,7 +22,29 @@ class Weapon:
     def max_distance(self, weapon_type):
         return self.max_distance_list[weapon_type]
 
+    def make_sound(self, sound_type):
+        if sound_type == 'shoot':
+            if self.type == 'rifle':
+                helpers.get_free_channel().play(Sound.Weapon.rifle_shoot)
+            elif self.type == 'shotgun':
+                helpers.get_free_channel().play(Sound.Weapon.shotgun_shoot)
+            elif self.type == 'handgun':
+                helpers.get_free_channel().play(Sound.Weapon.rifle_shoot)
+        elif sound_type == 'reload':
+            if self.type == 'rifle':
+                helpers.get_free_channel().play(Sound.Weapon.rifle_reload)
+            elif self.type == 'shotgun':
+                helpers.get_free_channel().play(Sound.Weapon.shotgun_reload)
+            elif self.type == 'handgun':
+                helpers.get_free_channel().play(Sound.Weapon.rifle_reload)
+        elif sound_type == 'meleeattack':
+            helpers.get_free_channel().play(Sound.Weapon.meleeattack)
+        else:
+            print('sound type invalid <Weapon class>')
+
     @classmethod
     def get_damage(cls, weapon_type):
         damage_list = {'rifle': 1, 'shotgun': 3, 'handgun': 1, 'knife': 1}
         return damage_list[weapon_type]
+
+

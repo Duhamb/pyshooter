@@ -71,7 +71,7 @@ class ObjectsController:
                 self.player.weapon.ammo_list[self.player.weapon.type] -= 1
                 self.player.weapon.make_sound('shoot')
             else:
-                self.player.weapon.make_sound('shoot')
+                self.player.weapon.make_sound('empty')
                 self.fire_rate_counter = 0
 
     def update(self):

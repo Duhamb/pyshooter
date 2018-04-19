@@ -4,7 +4,7 @@ import Code.helpers as helpers
 class Weapon:
     def __init__(self):
         self.type = 'rifle'
-        self.fire_rate_list = {'rifle': 250, 'shotgun': 700, 'handgun': 300, 'knife': 400}
+        self.fire_rate_list = {'rifle': 250, 'shotgun': 1200, 'handgun': 300, 'knife': 400}
         self.max_distance_list = {'rifle': 500, 'shotgun': 200, 'handgun': 300}
         self.ammo_limit_list = {'rifle': 15, 'shotgun': 10, 'handgun': 20}
         self.ammo_list = {'rifle': 15, 'shotgun': 10, 'handgun': 20}
@@ -39,6 +39,8 @@ class Weapon:
                 helpers.get_free_channel().play(Sound.Weapon.rifle_reload)
         elif sound_type == 'meleeattack':
             helpers.get_free_channel().play(Sound.Weapon.meleeattack)
+        elif sound_type == 'empty':
+            helpers.get_free_channel().play(Sound.Weapon.empty)
         else:
             print('sound type invalid <Weapon class>')
 

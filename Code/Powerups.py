@@ -40,12 +40,14 @@ class Powerups(pygame.sprite.Sprite):
 
         self.background = background
 
-        self.rect = self.image.get_rect()
-        self.life_current_quantity = 0
-        self.life_maximum_quantity = 5
-
         self.position_on_scenario = None
         self.get_free_position()
+
+        self.center = helpers.scenario_to_screen(self.position_on_scenario, self.background, False)
+        self.rect = self.image.get_rect(center=self.center)
+
+        self.life_current_quantity = 0
+        self.life_maximum_quantity = 5
 
         self.player_name = None
 

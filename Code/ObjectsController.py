@@ -49,11 +49,19 @@ class ObjectsController:
         self.fire_rate_counter = 0
         self.can_render_bullet = False
         self.shooter_name = None
+
+        # Bot spawn variables
         self.bots_spawn_rate = 0
-        self.powerups_spawn_rate = 0
-        self.cant_spawn = True
+        self.cant_spawn_bot = True
         self.bot_spawn = None
         self.max_zombies = 50
+
+        # Powerup spawn variables
+        self.powerups_spawn_rate = 0
+        self.cant_spawn_powerup = True
+        self.powerup_spawn = None
+        self.max_powerups = 50
+
         self.powerups_type_list = ['life', 'rifle', 'shotgun', 'rifle_ammo', 'shotgun_ammo', 'handgun_ammo']
 
     def handle_event(self):
@@ -202,22 +210,27 @@ class ObjectsController:
     def spawn_bots(self):
         # Spawn for zombies
         if self.bots_spawn_rate > 1000 and len(self.bot_list) < self.max_zombies:
-            while self.cant_spawn:
+            while self.cant_spawn_bot:
                 self.bot_spawn = Bot.Bot(helpers.generate_random_location(),
                                           self.screen,
                                           self.background,
                                           self.player_group,
                                           self.zombie_animation)
-                self.cant_spawn = pg.sprite.spritecollideany(self.bot_spawn, self.background.collider_group)
-            self.cant_spawn = True
+                self.cant_spawn_bot = pg.sprite.spritecollideany(self.bot_spawn, self.background.collider_group)
+            self.cant_spawn_bot = True
             self.bot_list.add(self.bot_spawn)
             self.bots_spawn_rate = 0
 
     def spawn_powerups(self):
         # Spawn for zombies
-        if self.powerups_spawn_rate > 1000 and len(self.powerups_list) < 25:
-            powerup = Powerups.Powerups(self.background, helpers.select_random_from_list(self.powerups_type_list))
-            self.powerups_list.add(powerup)
+        print("chegou aqui")
+        if self.powerups_spawn_rate > 1000 and len(self.powerups_list) < self.max_powerups:
+            while self.cant_spawn_powerup:
+                print("teste")
+                self.powerup_spawn = Powerups.Powerups(self.background, helpers.select_random_from_list(self.powerups_type_list))
+                self.cant_spawn_powerup = pg.sprite.spritecollideany(self.powerup_spawn, self.background.collider_group)
+            self.cant_spawn_powerup = True
+            self.powerups_list.add(self.powerup_spawn)
             self.powerups_spawn_rate = 0
 
     def update_player_group(self):

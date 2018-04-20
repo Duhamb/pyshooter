@@ -73,12 +73,12 @@ class ObjectsController:
                     
                 self.bullet_list.add(bullet)
                 self.fire_rate_counter = 0
+
                 self.player.weapon.loaded_ammo_list[self.player.weapon.type] -= 1
-                self.player_sound.shoot.stop()
-                helpers.get_free_channel().play(self.player_sound.shoot)
+                self.player.weapon.make_sound('shoot')
+
             else:
-                self.player_sound.empty.stop()
-                helpers.get_free_channel().play(self.player_sound.empty)
+                self.player.weapon.make_sound('empty')
                 self.fire_rate_counter = 0
 
     def update(self):

@@ -4,6 +4,7 @@ import math
 import Code.helpers as helpers
 import Code.Collider as Collider
 import Code.Weapon as Weapon
+import Code.Sound as Sound
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, location_on_scenario, location_on_screen, animation, sound, background, aim, name):
@@ -95,6 +96,7 @@ class Player(pygame.sprite.Sprite):
         self.float_index = 0
 
         # shotgun multiple reload counter
+        self.shotgun_reload_quantity = 0
         self.counter = 0
 
     def update(self):
@@ -206,15 +208,21 @@ class Player(pygame.sprite.Sprite):
         
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_r:
-                if self.weapon.type != 'knife' and self.weapon.unloaded_ammo_list[self.weapon.type] != 0:
+                if self.weapon.type != 'knife' and self.weapon.unloaded_ammo_list[self.weapon.type] != 0 and self.weapon.loaded_ammo_list[self.weapon.type] < self.weapon.ammo_limit_list[self.weapon.type]:
                     self.is_reloading = True
-                    if self.weapon.unloaded_ammo_list[self.weapon.type] >= self.weapon.ammo_limit_list[self.weapon.type] - self.weapon.loaded_ammo_list[self.weapon.type]:
-                        self.weapon.unloaded_ammo_list[self.weapon.type] -= self.weapon.ammo_limit_list[self.weapon.type] - self.weapon.loaded_ammo_list[self.weapon.type]
-                        self.weapon.loaded_ammo_list[self.weapon.type] = self.weapon.ammo_limit_list[self.weapon.type]
-
+                    if self.weapon.type == 'shotgun':
+                        if self.weapon.ammo_limit_list[self.weapon.type] - self.weapon.loaded_ammo_list[self.weapon.type] < self.weapon.unloaded_ammo_list[self.weapon.type]:
+                            self.shotgun_reload_quantity = self.weapon.ammo_limit_list[self.weapon.type] - self.weapon.loaded_ammo_list[self.weapon.type]
+                        else:
+                            self.shotgun_reload_quantity = self.weapon.unloaded_ammo_list[self.weapon.type]
                     else:
-                        self.weapon.loaded_ammo_list[self.weapon.type] += self.weapon.unloaded_ammo_list[self.weapon.type]
-                        self.weapon.unloaded_ammo_list[self.weapon.type] = 0
+                        if self.weapon.unloaded_ammo_list[self.weapon.type] >= self.weapon.ammo_limit_list[self.weapon.type] - self.weapon.loaded_ammo_list[self.weapon.type]:
+                            self.weapon.unloaded_ammo_list[self.weapon.type] -= self.weapon.ammo_limit_list[self.weapon.type] - self.weapon.loaded_ammo_list[self.weapon.type]
+                            self.weapon.loaded_ammo_list[self.weapon.type] = self.weapon.ammo_limit_list[self.weapon.type]
+
+                        else:
+                            self.weapon.loaded_ammo_list[self.weapon.type] += self.weapon.unloaded_ammo_list[self.weapon.type]
+                            self.weapon.unloaded_ammo_list[self.weapon.type] = 0
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
@@ -328,23 +336,33 @@ class Player(pygame.sprite.Sprite):
         if self.is_reloading:
             if self.weapon.type == 'shotgun':
                 self.float_index = helpers.increment(self.float_index, 1, 1)
+
             else:
                 self.float_index = helpers.increment(self.float_index, 0.5, 1)
-            self.index_animation_reload = helpers.increment(self.index_animation_reload, int(self.float_index),len(self.animation_reload)-1)
+
+            self.index_animation_reload = helpers.increment(self.index_animation_reload, int(self.float_index),
+                                                                len(self.animation_reload) - 1)
 
             self.animation_body = self.prefix_animation_name + 'reload'
             self.animation_body_index = self.index_animation_reload
+
+            self.original_image = self.animation_reload[self.index_animation_reload]
+
             if self.index_animation_reload == len(self.animation_reload)-1:
                 if self.weapon.type == 'shotgun':
-                    if self.counter >= 7:
+                    if self.counter < self.shotgun_reload_quantity:
+                        if self.counter < self.shotgun_reload_quantity - 1:
+                            helpers.get_free_channel().play(Sound.Weapon.shotgun_reload)
+                        self.weapon.unloaded_ammo_list[self.weapon.type] -= 1
+                        self.weapon.loaded_ammo_list[self.weapon.type] += 1
+                        self.counter += 1
+
+                    if self.counter >= self.shotgun_reload_quantity:
                         self.is_reloading = False
                         self.counter = 0
-                    else:
-                        self.counter += 1
                 else:
                     self.is_reloading = False
                 self.index_animation_reload = 0
-            self.original_image = self.animation_reload[self.index_animation_reload]
 
         elif self.is_shooting and self.weapon.loaded_ammo_list[self.weapon.type] > 0:
             self.index_animation_shoot = helpers.increment(self.index_animation_shoot, 1, len(self.animation_shoot)-1)

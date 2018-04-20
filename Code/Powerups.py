@@ -55,7 +55,6 @@ class Powerups(pygame.sprite.Sprite):
         self.rect.center = helpers.scenario_to_screen(self.position_on_scenario, self.background)
 
     def draw(self, screen):
-        self.rect.center = helpers.scenario_to_screen(self.position_on_scenario, self.background, False)
         if helpers.is_visible_area(self.rect.center):
             screen.blit(self.image, self.rect)
 

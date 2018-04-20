@@ -223,10 +223,8 @@ class ObjectsController:
 
     def spawn_powerups(self):
         # Spawn for zombies
-        print("chegou aqui")
-        if self.powerups_spawn_rate > 1000 and len(self.powerups_list) < self.max_powerups:
+        if self.powerups_spawn_rate > 500 and len(self.powerups_list) < self.max_powerups:
             while self.cant_spawn_powerup:
-                print("teste")
                 self.powerup_spawn = Powerups.Powerups(self.background, helpers.select_random_from_list(self.powerups_type_list))
                 self.cant_spawn_powerup = pg.sprite.spritecollideany(self.powerup_spawn, self.background.collider_group)
             self.cant_spawn_powerup = True

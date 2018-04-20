@@ -10,7 +10,7 @@ class Weapon:
         self.max_distance_list = {'rifle': 500, 'shotgun': 200, 'handgun': 300}
         self.ammo_limit_list = {'rifle': 15, 'shotgun': 10, 'handgun': 20}
         self.loaded_ammo_list = {'rifle': 0, 'shotgun': 0, 'handgun': 20}
-        self.unloaded_ammo_list = {'rifle': 0, 'shotgun': 0, 'handgun': 0}
+        self.unloaded_ammo_list = {'rifle': 0, 'shotgun': 0, 'handgun': 20}
         self.weapon_list = {'rifle': False, 'shotgun': False, 'handgun': True, 'knife': True}
         self.damage_list = {'rifle': 1, 'shotgun': 3, 'handgun': 1, 'knife': 1}
 

@@ -54,7 +54,8 @@ class Powerups(pygame.sprite.Sprite):
 
     def draw(self, screen):
         self.rect.center = helpers.scenario_to_screen(self.position_on_scenario, self.background, False)
-        screen.blit(self.image, self.rect)
+        if helpers.is_visible_area(self.rect.center):
+            screen.blit(self.image, self.rect)
 
     def get_free_position(self):
         self.position_on_scenario = helpers.generate_random_location()

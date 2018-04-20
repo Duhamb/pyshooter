@@ -9,20 +9,16 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, location_on_scenario, location_on_screen, animation, sound, background, aim, name):
         super().__init__()
 
+        # setting animations
+        self.animation = animation
         self.weapon = Weapon.Weapon()
+        self.change_weapon()
+
         self.velocity = 5
 
         self.name = name
 
         self.score = 0
-
-        # set all animations
-        self.animation = animation
-        self.animation_move = self.animation.rifle_move
-        self.animation_idle = self.animation.rifle_idle
-        self.animation_reload = self.animation.rifle_reload
-        self.animation_shoot = self.animation.rifle_shoot
-        self.animation_meleeattack = self.animation.rifle_meleeattack
 
         # set all sounds (shoot, move, reload)
         self.sound = sound
@@ -43,10 +39,6 @@ class Player(pygame.sprite.Sprite):
         # represent the Background object
         # needed to orientation
         self.background = background
-
-        # the image center isnt correct
-        # each sprite has a different offset
-        self.delta_center_position = pygame.math.Vector2((+56/2.7,-19/2.7))
 
         # the sprite and rect of player
         self.image = self.animation_idle[0]
@@ -93,7 +85,6 @@ class Player(pygame.sprite.Sprite):
         self.animation_body_index = None
         self.animation_feet = None
         self.animation_feet_index = None
-        self.prefix_animation_name = 'rifle_'
         self.aim = aim
 
         # life inicial status
@@ -215,9 +206,15 @@ class Player(pygame.sprite.Sprite):
         
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_r:
-                if self.weapon.type != 'knife':
+                if self.weapon.type != 'knife' and self.weapon.unloaded_ammo_list[self.weapon.type] != 0:
                     self.is_reloading = True
-                    self.weapon.ammo_list[self.weapon.type] = self.weapon.ammo_limit_list[self.weapon.type]
+                    if self.weapon.unloaded_ammo_list[self.weapon.type] >= self.weapon.ammo_limit_list[self.weapon.type] - self.weapon.loaded_ammo_list[self.weapon.type]:
+                        self.weapon.unloaded_ammo_list[self.weapon.type] -= self.weapon.ammo_limit_list[self.weapon.type] - self.weapon.loaded_ammo_list[self.weapon.type]
+                        self.weapon.loaded_ammo_list[self.weapon.type] = self.weapon.ammo_limit_list[self.weapon.type]
+
+                    else:
+                        self.weapon.loaded_ammo_list[self.weapon.type] += self.weapon.unloaded_ammo_list[self.weapon.type]
+                        self.weapon.unloaded_ammo_list[self.weapon.type] = 0
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
@@ -349,7 +346,7 @@ class Player(pygame.sprite.Sprite):
                 self.index_animation_reload = 0
             self.original_image = self.animation_reload[self.index_animation_reload]
 
-        elif self.is_shooting and self.weapon.ammo_list[self.weapon.type] > 0:
+        elif self.is_shooting and self.weapon.loaded_ammo_list[self.weapon.type] > 0:
             self.index_animation_shoot = helpers.increment(self.index_animation_shoot, 1, len(self.animation_shoot)-1)
             self.original_image = self.animation_shoot[self.index_animation_shoot]
             self.animation_body = self.prefix_animation_name + 'shoot'
@@ -453,3 +450,22 @@ class Player(pygame.sprite.Sprite):
         if self.life < 0:
             self.is_dead = True
             self.life = 0
+
+    def gets_powerup(self, powerup_type):
+        if powerup_type == 'life':
+            self.life = 100
+
+        if powerup_type == 'rifle':
+            self.weapon.weapon_list['rifle'] = True
+
+        if powerup_type == 'shotgun':
+            self.weapon.weapon_list['shotgun'] = True
+
+        if powerup_type == 'rifle_ammo':
+            self.weapon.unloaded_ammo_list['rifle'] += 10
+
+        if powerup_type == 'shotgun_ammo':
+            self.weapon.unloaded_ammo_list['shotgun'] += 10
+
+        if powerup_type == 'handgun_ammo':
+            self.weapon.unloaded_ammo_list['handgun'] += 10

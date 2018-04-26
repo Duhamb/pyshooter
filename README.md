@@ -6,7 +6,7 @@ This project was made for OOP(CES-22) class by three students:
 * [Eduardo Alarcon Mady Barbosa](https://github.com/Duhamb) 
 * [Eric Toshio Endo Soares](https://github.com/EricToshio)
 
-![alt text](https://github.com/Duhamb/pyshooter/blob/master/Assets/Images/screenshot_readme.png "Pyshooter")
+![alt text](https://github.com/Duhamb/pyshooter/blob/master/screenshots/singleplayer.png "Pyshooter")
 
 
 It consists of a Top-Down Shooter game. 

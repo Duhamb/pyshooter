@@ -4,29 +4,39 @@ import Code.Background as Background
 import Code.Bot as Bot
 import Code.ExtendedGroup as ExtendedGroup
 import Code.Projectiles as Projectiles
-import Code.constants as constants
 import Code.Animation as Animation
 import Code.Sound as Sound
 import Code.helpers as helpers
 import Code.Powerups as Powerups
+import Code.constants as constants
 import random
 
 class ObjectsController:
-    def __init__(self, player, background, multiplayer_on, server_client, menu, players, is_host, aim):
+    def __init__(self, background, multiplayer_on, server_client, menu, is_host, aim):
 
-        self.aim = aim
-
-        self.screen = pg.display.get_surface()
-        self.player = player
-        self.background = background
+        # Player init
+        self.PLAYER_POSITION = constants.PLAYER_POSITION_SCREEN
+        self.PLAY_IMAGE = pg.image.load("Assets/Images/player3.png")
+        self.PLAY_IMAGE = pg.transform.scale(self.PLAY_IMAGE, (75, 75))
+        self.PLAY_IMAGE_BACK = pg.image.load("Assets/Images/back_player.png")
+        self.PLAY_IMAGE_BACK = pg.transform.scale(self.PLAY_IMAGE_BACK, (75, 75))
+        self.player_animation = Animation.Player
+        self.player_animation.load()
         self.player_sound = Sound.Player
         self.player_sound.load()
+        self.aim = aim
+        self.background = background
+        self.menu = menu
+        self.player = Player.Player(constants.PLAYER_POSITION_SCENARIO, self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background, self.aim, self.menu.name)
+
+
+        self.screen = pg.display.get_surface()
+
         self.players_fire_rates = {}
 
         self.multiplayer_on = multiplayer_on
         self.server_client = server_client
-        self.menu = menu
-        self.players = players
+        self.players = ExtendedGroup.ExtendedGroup(self.player)
         self.is_host = is_host
 
         self.BOT_IMAGE = pg.image.load("Assets/Images/player2.png")
@@ -64,8 +74,14 @@ class ObjectsController:
 
         self.powerups_type_list = ['life', 'rifle', 'shotgun', 'rifle_ammo', 'shotgun_ammo', 'handgun_ammo']
 
-    def handle_event(self):
-        if self.player.weapon.type != 'knife' and not self.player.is_reloading and self.player.is_shooting and self.fire_rate_counter > self.player.weapon.fire_rate():
+        # Death variables
+        self.font_text_40 = pg.font.Font("Assets/Fonts/BebasNeue-Regular.otf", 40)
+        self.is_dead = False
+
+    def handle_event(self, event):
+        self.players.handle_event(event)
+
+        if not self.is_dead and self.player.weapon.type != 'knife' and not self.player.is_reloading and self.player.is_shooting and self.fire_rate_counter > self.player.weapon.fire_rate():
             if self.player.weapon.loaded_ammo_list[self.player.weapon.type] > 0:
                 self.can_render_bullet = True
                 mouse_position = self.aim.position
@@ -90,7 +106,15 @@ class ObjectsController:
                 self.fire_rate_counter = 0
 
     def update(self):
-        if self.player.weapon.type != 'knife' and (not self.player.is_shooting or self.player.weapon.loaded_ammo_list[self.player.weapon.type] == 0):
+
+        if not self.is_dead and self.player.is_dead:
+            self.players.remove(self.player)
+            self.player = None
+            self.is_dead = True
+
+        self.players.update()
+
+        if not self.is_dead and self.player.weapon.type != 'knife' and (not self.player.is_shooting or self.player.weapon.loaded_ammo_list[self.player.weapon.type] == 0):
             self.can_render_bullet = False
 
         # Time references
@@ -161,11 +185,17 @@ class ObjectsController:
             #receive zombie list
             self.server_client.pull_powerups()
 
-        # Collisions between players and zombies
-        self.check_collision_player_bots()
+        # Singleplayer collisions between players with zombies and powerups
+        if not self.is_dead:
+            self.check_collision_player_bots_singleplayer()
+            self.check_collision_player_powerups_singleplayer()
 
-        # Collisions between players and zombies
-        self.check_collision_player_powerups()
+
+
+        # Multiplayer collisions between players with zombies and powerups
+        if self.multiplayer_on:
+            self.check_collision_player_bots_multiplayer()
+            self.check_collision_player_powerups_multiplayer()
 
         # Update for bullets
         for bullet in self.bullet_list:
@@ -173,6 +203,11 @@ class ObjectsController:
                 self.bullet_list.remove(bullet)
 
     def draw(self):
+        if self.is_dead:
+            dead = 'YOU ARE DEAD'
+            dead = self.font_text_40.render(dead, 1, (255, 255, 255))
+            self.screen.blit(dead, (300, 300))
+
         if self.multiplayer_on:
             #Player Syn
             player_list = self.server_client.players_info
@@ -272,50 +307,45 @@ class ObjectsController:
                     if player_name == self.player.name:
                         self.player.gets_hit_by_weapon()
 
-    def check_collision_player_powerups(self):
+    def check_collision_player_powerups_singleplayer(self):
+        powerup_caught = pg.sprite.spritecollideany(self.player, self.powerups_list)
+        if powerup_caught:
+            self.player.gets_powerup(powerup_caught.powerup_type)
+            self.powerups_list.remove(powerup_caught)
 
-        # is needed only in multiplayer mode
-        if self.multiplayer_on:
-
-            # check if someone picked up any powerup
-            if self.is_host:
-
-                for powerup in self.powerups_list:
-                    for player_name in self.player_group:
-                        player_rect = pg.Rect(0, 0, 20, 20) # carteação total
-                        scenario_position = self.player_group[player_name]['position_on_scenario']
-                        player_rect.center = helpers.scenario_to_screen(scenario_position, self.background, False)
-                        if player_rect.colliderect(powerup.rect):
-                            if player_name == self.player.name:
-                                self.player.gets_powerup(powerup.powerup_type)
-                            else:
-                                self.server_client.push_powerups_state(player_name, powerup.powerup_type, True)
-                                self.server_client.pull_powerups_state()
-                            self.powerups_list.remove(powerup)
-
-            else:
-                self.server_client.push_powerups_state("null", "null", False)
-                self.server_client.pull_powerups_state()
-                player_list_status = self.server_client.powerups_clients_state
-                for player_name in player_list_status:
-                    if player_name == self.player.name and player_list_status[player_name] != "None":
-                        self.player.gets_powerup(player_list_status[player_name])
-                        self.server_client.push_powerups_state(player_name, "None", True)
-                        self.server_client.pull_powerups_state()
+    def check_collision_player_powerups_multiplayer(self):
+        # check if someone picked up any powerup
+        if self.is_host:
+            for powerup in self.powerups_list:
+                for player_name in self.player_group:
+                    player_rect = pg.Rect(0, 0, 20, 20)  # carteação total
+                    scenario_position = self.player_group[player_name]['position_on_scenario']
+                    player_rect.center = helpers.scenario_to_screen(scenario_position, self.background, False)
+                    if player_rect.colliderect(powerup.rect):
+                        if player_name == self.player.name:
+                            self.player.gets_powerup(powerup.powerup_type)
+                        else:
+                            self.server_client.push_powerups_state(player_name, powerup.powerup_type, True)
+                            self.server_client.pull_powerups_state()
+                        self.powerups_list.remove(powerup)
 
         else:
-            powerup_caught = pg.sprite.spritecollideany(self.player, self.powerups_list)
-            if powerup_caught:
-                self.player.gets_powerup(powerup_caught.powerup_type)
-                self.powerups_list.remove(powerup_caught)
+            self.server_client.push_powerups_state("null", "null", False)
+            self.server_client.pull_powerups_state()
+            player_list_status = self.server_client.powerups_clients_state
+            for player_name in player_list_status:
+                if player_name == self.player.name and player_list_status[player_name] != "None":
+                    self.player.gets_powerup(player_list_status[player_name])
+                    self.server_client.push_powerups_state(player_name, "None", True)
+                    self.server_client.pull_powerups_state()
 
-    def check_collision_player_bots(self):
-        if self.multiplayer_on:
-            zombie_list = self.server_client.zombies_info
-            for zombie_id in zombie_list:
-                if zombie_list[zombie_id]['victim'] == self.player.name:
-                    self.player.gets_hit_by_zombie()
-        else:
-            for zombie in self.bot_list:
-                if zombie.is_attacking:
-                    self.player.gets_hit_by_zombie()
+    def check_collision_player_bots_singleplayer(self):
+        for zombie in self.bot_list:
+            if zombie.is_attacking:
+                self.player.gets_hit_by_zombie()
+
+    def check_collision_player_bots_multiplayer(self):
+        zombie_list = self.server_client.zombies_info
+        for zombie_id in zombie_list:
+            if zombie_list[zombie_id]['victim'] == self.player.name:
+                self.player.gets_hit_by_zombie()

@@ -48,22 +48,6 @@ class Main:
         pg.display.set_caption("Pyshooter")
         pg.display.set_icon(self.ICON)
 
-        self.PLAYER_POSITION = constants.PLAYER_POSITION_SCREEN
-
-        self.PLAY_IMAGE = pg.image.load("Assets/Images/player3.png")
-        self.PLAY_IMAGE = pg.transform.scale(self.PLAY_IMAGE, (75, 75))
-        self.PLAY_IMAGE_BACK = pg.image.load("Assets/Images/back_player.png")
-        self.PLAY_IMAGE_BACK = pg.transform.scale(self.PLAY_IMAGE_BACK, (75,75))
-
-        self.aim = Aim.Aim()
-        
-        self.player_animation = Animation.Player
-        self.player_animation.load()
-        self.player_sound = Sound.Player 
-        self.player_sound.load()
-
-        self.background = Background.Background(self.aim)
-
         #call menu Displays/Loops
         self.menu.intro()
 
@@ -79,19 +63,18 @@ class Main:
         else:
             self.is_host = True
 
-        self.player = Player.Player(constants.PLAYER_POSITION_SCENARIO, self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background, self.aim, self.menu.name)
-        self.light = Light.Light(self.player)
-        self.players = ExtendedGroup.ExtendedGroup(self.player)
-        self.stats = Statistics.Statistics(self.player, constants.SCREEN_SIZE, self.multiplayer_on, self.server_client, self.is_host)
+        self.aim = Aim.Aim()
+        self.background = Background.Background(self.aim)
 
         #Set mouse invisible
         pg.mouse.set_visible(0)
 
         #Define Objects Controller
-        self.ObjectsController = ObjectsController.ObjectsController(self.player, self.background,self.multiplayer_on, self.server_client, self.menu, self.players, self.is_host, self.aim)
+        self.ObjectsController = ObjectsController.ObjectsController(self.background,self.multiplayer_on, self.server_client, self.menu, self.is_host, self.aim)
 
-        self.font_text_40 = pg.font.Font("Assets/Fonts/BebasNeue-Regular.otf", 40)
-        self.morreu = False
+        self.light = Light.Light(self.ObjectsController.player)
+        self.stats = Statistics.Statistics(self.ObjectsController.player, constants.SCREEN_SIZE, self.multiplayer_on, self.server_client,
+                                           self.is_host)
 
     def on_event(self, event_queue):
         for event in event_queue:
@@ -105,8 +88,7 @@ class Main:
                     self.is_focused = True
                     pg.mouse.set_visible(0)
 
-            self.players.handle_event(event)
-        self.ObjectsController.handle_event()
+            self.ObjectsController.handle_event(event)
 
     def display_fps(self):
         pg.display.set_caption("{} - FPS: {:.2f}".format("PyShooter", self.clock.get_fps()))
@@ -115,10 +97,6 @@ class Main:
         self.clock.tick(self.fps)
         self.ObjectsController.update()
         self.aim.update(self.is_focused)
-        if not self.morreu and self.player.is_dead:
-            self.players.remove(self.player)
-            self.player = None
-            self.morreu = True
 
     def on_cleanup(self):
         pg.quit()
@@ -126,18 +104,12 @@ class Main:
 
     def on_render(self):
         self.screen.fill(constants.BLACK)
-        self.background.draw(self.screen, self.player)
-        self.players.update()
+        self.background.draw(self.screen, self.ObjectsController.player)
         self.ObjectsController.draw()
         self.aim.draw(self.screen)
         self.light.draw(self.screen)
         self.stats.draw(self.screen)
         self.display_fps()
-
-        if self.morreu:
-            dead = 'YOU ARE DEAD'
-            dead = self.font_text_40.render(dead, 1, (255, 255, 255))
-            self.screen.blit(dead, (300, 300))
         
         pg.display.update()
 

@@ -89,7 +89,10 @@ class Main:
 
         #Define Objects Controller
         self.ObjectsController = ObjectsController.ObjectsController(self.player, self.background,self.multiplayer_on, self.server_client, self.menu, self.players, self.is_host, self.aim)
-        
+
+        self.font_text_40 = pg.font.Font("Assets/Fonts/BebasNeue-Regular.otf", 40)
+        self.morreu = False
+
     def on_event(self, event_queue):
         for event in event_queue:
             if event.type == pg.QUIT:
@@ -112,6 +115,10 @@ class Main:
         self.clock.tick(self.fps)
         self.ObjectsController.update()
         self.aim.update(self.is_focused)
+        if not self.morreu and self.player.is_dead:
+            self.players.remove(self.player)
+            self.player = None
+            self.morreu = True
 
     def on_cleanup(self):
         pg.quit()
@@ -126,6 +133,11 @@ class Main:
         self.light.draw(self.screen)
         self.stats.draw(self.screen)
         self.display_fps()
+
+        if self.morreu:
+            dead = 'YOU ARE DEAD'
+            dead = self.font_text_40.render(dead, 1, (255, 255, 255))
+            self.screen.blit(dead, (300, 300))
         
         pg.display.update()
 

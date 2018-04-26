@@ -113,7 +113,7 @@ class ObjectsController:
         # Spawn for zombies(only in sigleplayer or multiplayer host)
         if self.is_host:
             self.spawn_bots()
-            self.bot_list.update(None,self.player_group)
+            self.bot_list.update(None, self.player_group)
 
             self.spawn_powerups()
             self.powerups_list.update()

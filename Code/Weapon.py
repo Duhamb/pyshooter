@@ -16,9 +16,14 @@ class Weapon:
 
         Sound.Weapon.load()
 
+        self.player_reload_played = False
+        self.player_out_of_ammo_played = False
+
     def change_weapon(self, new_weapon):
         if self.weapon_list[new_weapon]:
             self.type = new_weapon
+            self.player_reload_played = False
+            self.player_out_of_ammo_played = False
 
     def fire_rate(self):
         return self.fire_rate_list[self.type]
@@ -45,6 +50,14 @@ class Weapon:
             helpers.get_free_channel().play(Sound.Weapon.meleeattack)
         elif sound_type == 'empty':
             helpers.get_free_channel().play(Sound.Weapon.empty)
+            if self.loaded_ammo_list[self.type] == 0:
+                if self.unloaded_ammo_list[self.type] == 0 and not self.player_out_of_ammo_played:
+                    helpers.get_free_channel().play(Sound.Weapon.player_out_of_ammo)
+                    self.player_out_of_ammo_played = True
+                elif not self.player_reload_played:
+                    helpers.get_free_channel().play(Sound.Weapon.player_reload)
+                    self.player_reload_played = True
+
         else:
             print('sound type invalid <Weapon class>')
 

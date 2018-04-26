@@ -11,6 +11,7 @@ class Server(Mastermind.MastermindServerTCP):
         self.zombies = {}
         self.minimaps = {}
         self.powerups = {}
+        self.powerups_states = {}
         self.scores = {}
         self.mutex = threading.Lock()
 
@@ -28,6 +29,11 @@ class Server(Mastermind.MastermindServerTCP):
     def add_powerup(self, data):
         self.mutex.acquire()
         self.powerups = data
+        self.mutex.release()
+
+    def add_powerup_states(self, data):
+        self.mutex.acquire()
+        self.powerups_states[data[0]] = data[1]
         self.mutex.release()
 
     def add_zombie(self, data):
@@ -92,6 +98,10 @@ class Server(Mastermind.MastermindServerTCP):
         elif cmd == "delete_player":
             self.delete_player(data[1])
             self.callback_client_send(connection_object, ["players", self.players])
+        elif cmd == "add_status_player":
+            self.add_powerup_states(data[1])
+            self.callback_client_send(connection_object, ["powerups_states", self.powerups_states ])
+
 
     def callback_client_send(self, connection_object, data, compression=None):
         # Something could go here

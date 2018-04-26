@@ -110,12 +110,13 @@ class ObjectsController:
         # Collisions between players and bullets
         self.check_collision_player_bullet()
         
-        # Spawn for zombies
-        self.spawn_bots()
-        self.bot_list.update(None,self.player_group)
+        # Spawn for zombies(only in sigleplayer or multiplayer host)
+        if self.is_host:
+            self.spawn_bots()
+            self.bot_list.update(None,self.player_group)
 
-        self.spawn_powerups()
-        self.powerups_list.update()
+            self.spawn_powerups()
+            self.powerups_list.update()
 
         # Update for zombies
         for bot in self.bot_list:
@@ -127,9 +128,9 @@ class ObjectsController:
                 else:
                     self.server_client.add_points(self.shooter_name)
 
-        # update server info for zombies
-        #Zombie Syn
-        #Host send zombie list
+        # Update server info for zombies
+        # Zombie Syn
+        # Host send zombie list
         if self.multiplayer_on:
             if self.is_host:
                 self.bot_list.update(self.bot_list)
@@ -144,6 +145,9 @@ class ObjectsController:
             #receive zombie list
             self.server_client.pull_zombies()
 
+        # Update server info for powerups
+        # Powerups Syn
+        # Host send zombie list
         if self.multiplayer_on:
             if self.is_host:
                 powerups_server_list = {}
@@ -269,38 +273,41 @@ class ObjectsController:
                         self.player.gets_hit_by_weapon()
 
     def check_collision_player_powerups(self):
+
         # is needed only in multiplayer mode
         if self.multiplayer_on:
-            pass
 
-            # algo de errado não está certo
+            # check if someone picked up any powerup
+            if self.is_host:
 
+                for powerup in self.powerups_list:
+                    for player_name in self.player_group:
+                        player_rect = pg.Rect(0, 0, 20, 20) # carteação total
+                        scenario_position = self.player_group[player_name]['position_on_scenario']
+                        player_rect.center = helpers.scenario_to_screen(scenario_position, self.background, False)
+                        if player_rect.colliderect(powerup.rect):
+                            if player_name == self.player.name:
+                                self.player.gets_powerup(powerup.powerup_type)
+                            else:
+                                self.server_client.push_powerups_state(player_name, powerup.powerup_type, True)
+                                self.server_client.pull_powerups_state()
+                            self.powerups_list.remove(powerup)
 
-            # if self.is_host:
-            #     # check if someone picked up any powerup
-            #     for powerup in self.powerups_list:
-            #         for player_name in self.player_group:
-            #             player_rect = pg.Rect(0, 0, 20, 20) # carteação total
-            #             scenario_position = self.player_group[player_name]['position_on_scenario']
-            #             player_rect.center = helpers.scenario_to_screen(scenario_position, self.background, False)
-            #             if player_rect.colliderect(powerup.rect):
-            #                 if player_name == self.player.name:
-            #                     self.player.gets_powerup(powerup.powerup_type)
-            #                 self.powerups_list.remove(powerup)
-            #                 break
-            # else:
-            #     powerup_list_from_server = self.server_client.pull_powerups()
-            #     for powerup in powerup_list_from_server:
-            #         powerup_rect = pg.Rect(0, 0, 20, 20) # [TODO] this rect size isnt correct
-            #         powerup_rect.center = helpers.scenario_to_screen(powerup['position_on_scenario'], self.background, False)
-            #         if self.player.rect.colliderect(powerup_rect):
-            #             self.player.gets_powerup(powerup['type'])
+            else:
+                self.server_client.push_powerups_state("null", "null", False)
+                self.server_client.pull_powerups_state()
+                player_list_status = self.server_client.powerups_clients_state
+                for player_name in player_list_status:
+                    if player_name == self.player.name and player_list_status[player_name] != "None":
+                        self.player.gets_powerup(player_list_status[player_name])
+                        self.server_client.push_powerups_state(player_name, "None", True)
+                        self.server_client.pull_powerups_state()
+
         else:
             powerup_caught = pg.sprite.spritecollideany(self.player, self.powerups_list)
             if powerup_caught:
                 self.player.gets_powerup(powerup_caught.powerup_type)
                 self.powerups_list.remove(powerup_caught)
-            
 
     def check_collision_player_bots(self):
         if self.multiplayer_on:

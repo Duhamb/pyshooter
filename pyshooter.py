@@ -51,7 +51,7 @@ class Main:
         self.PLAYER_POSITION = constants.PLAYER_POSITION_SCREEN
 
         self.PLAY_IMAGE = pg.image.load("Assets/Images/player3.png")
-        self.PLAY_IMAGE = pg.transform.scale(self.PLAY_IMAGE, (75,75))
+        self.PLAY_IMAGE = pg.transform.scale(self.PLAY_IMAGE, (75, 75))
         self.PLAY_IMAGE_BACK = pg.image.load("Assets/Images/back_player.png")
         self.PLAY_IMAGE_BACK = pg.transform.scale(self.PLAY_IMAGE_BACK, (75,75))
 
@@ -71,10 +71,13 @@ class Main:
         self.is_host = None
 
         #Get informations about multiplayer/singleplayer
+        #Observation is_host is True on Singleplayer
         self.multiplayer_on = self.menu.have_client
         if self.multiplayer_on:
             self.server_client = self.menu.server_client
             self.is_host = self.menu.is_host
+        else:
+            self.is_host = True
 
         self.player = Player.Player(constants.PLAYER_POSITION_SCENARIO, self.PLAYER_POSITION, self.player_animation, self.player_sound, self.background, self.aim, self.menu.name)
         self.light = Light.Light(self.player)

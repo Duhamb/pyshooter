@@ -132,6 +132,12 @@ class Main:
             self.on_event(pg.event.get())
             self.on_loop()
             self.on_render()
+
+        if self.multiplayer_on:
+            self.server_client.delete_player()
+            self.server_client.pull_players()
+            self.server_client.scores.pop(self.menu.name, None)
+
         self.on_cleanup()
 
 if __name__ == "__main__":

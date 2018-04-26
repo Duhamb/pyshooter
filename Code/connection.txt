@@ -7,4 +7,4 @@ client_ip = "localhost"
 server_ip = "0.0.0.0"
 
 #The port used for both the client and the server
-port = 6210
+port = 6211

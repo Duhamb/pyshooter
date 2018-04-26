@@ -72,9 +72,12 @@ class Powerups(pygame.sprite.Sprite):
     @classmethod
     def draw_multiplayer(cls, screen, background, server_info):
         position_on_screen = helpers.scenario_to_screen(server_info['position_on_scenario'], background, False)
-        if server_info['type'] == 'life':
-            image = cls.life_image
-            rect = image.get_rect(center=position_on_screen)
-        screen.blit(image,rect)
-        
+        try:
+            if server_info['type'] == 'life':
+                image = cls.life_image
+                rect = image.get_rect(center=position_on_screen)
+
+                screen.blit(image, rect)
+        except:
+            pass
         # pygame.draw.line(screen,(255,0,0),rect.center,(400,400),2)

@@ -104,3 +104,6 @@ class pyshooterClient():
             reply = self.client.receive(False)
         if not is_host:
             self.scores = reply[1]
+
+    def delete_player(self):
+        self.client.send(["delete_player", self.name], None)

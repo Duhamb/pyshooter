@@ -40,6 +40,12 @@ class Server(Mastermind.MastermindServerTCP):
         self.scores = data
         self.mutex.release()
 
+    def delete_player(self, name):
+        self.mutex.acquire()
+        self.players.pop(name, None)
+        self.minimaps.pop(name, None)
+        self.mutex.release()
+
     def callback_connect(self):
         # Something could go here
         return super(Server, self).callback_connect()
@@ -83,6 +89,9 @@ class Server(Mastermind.MastermindServerTCP):
         elif cmd == "minimaps":
             self.add_minimap(data[1])
             self.callback_client_send(connection_object, ["minimaps", self.minimaps])
+        elif cmd == "delete_player":
+            self.delete_player(data[1])
+            self.callback_client_send(connection_object, ["players", self.players])
 
     def callback_client_send(self, connection_object, data, compression=None):
         # Something could go here

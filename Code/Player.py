@@ -496,6 +496,7 @@ class Player(pygame.sprite.Sprite):
         return delta_time
 
     def gets_powerup(self, powerup_type):
+        helpers.get_free_channel().play(Sound.Player.pick_up)
         if powerup_type == 'life':
             self.life = 100
 

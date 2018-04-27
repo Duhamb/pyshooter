@@ -89,7 +89,7 @@ class Main:
 
         #Define Objects Controller
         self.ObjectsController = ObjectsController.ObjectsController(self.player, self.background,self.multiplayer_on, self.server_client, self.menu, self.players, self.is_host, self.aim)
-        
+
     def on_event(self, event_queue):
         for event in event_queue:
             if event.type == pg.QUIT:

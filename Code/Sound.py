@@ -6,6 +6,7 @@ class Player:
     def load(cls):
         cls.footstep = pg.mixer.Sound('Assets/Sounds/footstep.wav')
         cls.player_ugh = pg.mixer.Sound('Assets/Sounds/Player/ugh.wav')
+        cls.pick_up = pg.mixer.Sound('Assets/Sounds/Player/pick_up.wav')
 
 class Weapon:
     @classmethod

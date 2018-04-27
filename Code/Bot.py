@@ -13,7 +13,9 @@ class Bot(pg.sprite.Sprite):
         self.velocity = random.randint(2, 4)
 
         # load all objects necessary for bot interaction
+        self.player_is_dead = True
         self.player_group = self.mount_player_group(player_group)
+        self.player_is_dead = False
         self.multiplayer_on = False # this variable change at self.mount_player_group
 
         self.background = background
@@ -75,8 +77,9 @@ class Bot(pg.sprite.Sprite):
             self.player_group = self.mount_player_group(player_group)
         if bot_group != None:
             self.bot_group = bot_group
-        
+
         self.nearest_player = self.get_nearest_player()
+
         self.choose_animation()
         self.rotate()
         self.choose_action()
@@ -163,6 +166,7 @@ class Bot(pg.sprite.Sprite):
 
     def choose_action(self):
         self.victim_name = None # reset variable
+
         distance_to_player = self.get_distance_to_player()
         if distance_to_player < 70:
             self.is_moving = False
@@ -219,6 +223,7 @@ class Bot(pg.sprite.Sprite):
     def get_nearest_player(self):
         min_distance = 100000 # arbitrary value
         nearest_player = None
+
         for player_name in self.player_group:
             player_position = pg.math.Vector2(self.player_group[player_name]['position_on_scenario'])
             distance_to_player = self.position_on_scenario.distance_to(player_position)
@@ -232,13 +237,26 @@ class Bot(pg.sprite.Sprite):
             self.multiplayer_on = True
             return player_group
 
-        unique_player = {'default':
-        {'position_on_scenario': player_group.position_on_scenario,
-        'position_on_screen': player_group.position_on_screen,
-        'weapon_type': player_group.weapon.type,
-        'name': player_group.name}
-        }
+        if self.player_is_dead:
+            unique_player = {'default':
+                                 {'position_on_scenario': (20000, 20000),
+                                  'position_on_screen': (20000, 20000),
+                                  'weapon_type': 'handgun',
+                                  'name': "Player"}
+                             }
+
+        else:
+            unique_player = {'default':
+            {'position_on_scenario': player_group.position_on_scenario,
+            'position_on_screen': player_group.position_on_screen,
+            'weapon_type': player_group.weapon.type,
+            'name': player_group.name}
+            }
+
         return unique_player
    
     def get_distance_to_player(self):
+        if self.player_is_dead:
+            return 10000
+
         return self.position_on_scenario.distance_to(pg.math.Vector2(self.nearest_player['position_on_scenario']))

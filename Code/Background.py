@@ -31,7 +31,8 @@ class Background():
         self.aim = aim
 
     def draw(self, surface, player):
-        self.update_position(player)
+        if player != None:
+            self.update_position(player)
         self.define_area()
         surface.blit(self.area, self.area_rect)
  

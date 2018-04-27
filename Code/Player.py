@@ -464,7 +464,7 @@ class Player(pygame.sprite.Sprite):
             self.life = 0
     
     def gets_hit_by_zombie(self):
-        self.life -= 0.1
+        self.life -= 0.2
         if self.life < 0:
             self.is_dead = True
             self.life = 0

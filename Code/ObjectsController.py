@@ -205,11 +205,6 @@ class ObjectsController:
                 self.bullet_list.remove(bullet)
 
     def draw(self):
-        if self.is_dead:
-            dead = 'YOU ARE DEAD'
-            dead = self.font_text_40.render(dead, 1, (255, 255, 255))
-            self.screen.blit(dead, (300, 300))
-
         if self.multiplayer_on:
             #Player Syn
             player_list = self.server_client.players_info
@@ -241,6 +236,11 @@ class ObjectsController:
 
         self.bullet_list.update()
         self.bullet_list.draw(self.screen)
+
+        if self.is_dead:
+            dead = 'YOU ARE DEAD'
+            dead = self.font_text_40.render(dead, 1, (255, 255, 255))
+            self.screen.blit(dead, (300, 300))
 
     def get_delta_time(self):
         first_get_ticks = self.second_get_ticks

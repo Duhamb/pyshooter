@@ -487,6 +487,8 @@ class Player(pygame.sprite.Sprite):
             helpers.get_free_channel().play(self.player_ugh, -1)
 
         if self.life < 0:
+            self.player_ugh_playing = False
+            self.player_ugh.stop()
             self.is_dead = True
             self.life = 0
 

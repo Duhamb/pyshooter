@@ -191,7 +191,7 @@ def check_collision(actual_collider, object_group):
                 if actual_collider.rect.center != obj.collider.rect.center:
                     collider_collisions_list.append(obj)
     except:
-        print("ERROR! helpers.check_collision")
+        pass
     if len(collider_collisions_list)!=0:
         return collider_collisions_list
     else:

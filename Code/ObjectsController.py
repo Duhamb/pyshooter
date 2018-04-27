@@ -111,6 +111,8 @@ class ObjectsController:
             self.players.remove(self.player)
             self.player = None
             self.is_dead = True
+            for bot in self.bot_list:
+                bot.player_is_dead = True
 
         self.players.update()
 

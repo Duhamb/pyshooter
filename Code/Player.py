@@ -481,7 +481,7 @@ class Player(pygame.sprite.Sprite):
             self.life = 0
     
     def gets_hit_by_zombie(self):
-        self.life -= 0.1
+        self.life -= 0.2
         if not self.player_ugh_playing:
             self.player_ugh_playing = True
             helpers.get_free_channel().play(self.player_ugh, -1)

@@ -10,7 +10,7 @@ class Bot(pg.sprite.Sprite):
     def __init__(self, location_on_scenario, surface, background, player_group, animation):
         super().__init__()
 
-        self.velocity = random.randint(2, 4)
+        self.velocity = random.randint(3, 6)
 
         # load all objects necessary for bot interaction
         self.player_is_dead = True

@@ -23,6 +23,13 @@ class Player(pygame.sprite.Sprite):
 
         # set all sounds (shoot, move, reload)
         self.sound = sound
+        Sound.Player.load()
+        self.player_ugh = Sound.Player.player_ugh
+        self.player_ugh_playing = False
+        self.delta_time = 0
+        self.second_get_ticks = 0
+        self.delay = 0
+
 
         # define the collider shape
         self.collider_image = pg.image.load("Assets/Images/back_player.png").convert_alpha()
@@ -90,6 +97,7 @@ class Player(pygame.sprite.Sprite):
 
         # life inicial status
         self.life = 100
+        self.life_anterior = 100
         self.is_dead = False
 
         # slower animations
@@ -104,6 +112,15 @@ class Player(pygame.sprite.Sprite):
         self.choose_sound()
         self.rotate()
         self.react_to_event()
+
+        self.delta_time = self.get_delta_time()
+        self.delay += self.delta_time
+
+        if self.delay > 1200 and self.life == self.life_anterior:
+            self.player_ugh_playing = False
+            self.player_ugh.stop()
+            self.delay = 0
+        self.life_anterior = self.life
 
     def draw(self, screen):
         screen.blit(self.feet, self.feet.get_rect(center=self.position_on_screen).topleft)
@@ -464,12 +481,23 @@ class Player(pygame.sprite.Sprite):
             self.life = 0
     
     def gets_hit_by_zombie(self):
-        self.life -= 0.2
+        self.life -= 0.1
+        if not self.player_ugh_playing:
+            self.player_ugh_playing = True
+            helpers.get_free_channel().play(self.player_ugh, -1)
+
         if self.life < 0:
             self.is_dead = True
             self.life = 0
 
+    def get_delta_time(self):
+        first_get_ticks = self.second_get_ticks
+        self.second_get_ticks = pg.time.get_ticks()
+        delta_time = self.second_get_ticks - first_get_ticks
+        return delta_time
+
     def gets_powerup(self, powerup_type):
+        helpers.get_free_channel().play(Sound.Player.pick_up)
         if powerup_type == 'life':
             self.life = 100
 
@@ -487,3 +515,7 @@ class Player(pygame.sprite.Sprite):
 
         if powerup_type == 'handgun_ammo':
             self.weapon.unloaded_ammo_list['handgun'] += 10
+
+        if powerup_type == self.weapon.type + '_ammo':
+            self.weapon.player_out_of_ammo_played = False
+            self.weapon.player_reload_played = False

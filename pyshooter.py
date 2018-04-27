@@ -48,6 +48,9 @@ class Main:
         pg.display.set_caption("Pyshooter")
         pg.display.set_icon(self.ICON)
 
+        self.aim = Aim.Aim()
+        self.background = Background.Background(self.aim)
+
         #call menu Displays/Loops
         self.menu.intro()
 
@@ -62,9 +65,6 @@ class Main:
             self.is_host = self.menu.is_host
         else:
             self.is_host = True
-
-        self.aim = Aim.Aim()
-        self.background = Background.Background(self.aim)
 
         #Set mouse invisible
         pg.mouse.set_visible(0)
@@ -87,8 +87,9 @@ class Main:
                 if event.button == 1:
                     self.is_focused = True
                     pg.mouse.set_visible(0)
+            self.ObjectsController.player_handle_event(event)
 
-            self.ObjectsController.handle_event(event)
+        self.ObjectsController.handle_event()
 
     def display_fps(self):
         pg.display.set_caption("{} - FPS: {:.2f}".format("PyShooter", self.clock.get_fps()))

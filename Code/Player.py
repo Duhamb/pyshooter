@@ -503,9 +503,11 @@ class Player(pygame.sprite.Sprite):
 
         if powerup_type == 'rifle':
             self.weapon.weapon_list['rifle'] = True
+            self.weapon.unloaded_ammo_list['rifle'] += 20
 
         if powerup_type == 'shotgun':
             self.weapon.weapon_list['shotgun'] = True
+            self.weapon.unloaded_ammo_list['shotgun'] += 20
 
         if powerup_type == 'rifle_ammo':
             self.weapon.unloaded_ammo_list['rifle'] += 10

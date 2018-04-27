@@ -63,6 +63,7 @@ class ObjectsController:
         # Bot spawn variables
         self.bots_spawn_rate = 0
         self.cant_spawn_bot = True
+        self.is_visible_spawn_bot = True
         self.bot_spawn = None
         self.max_zombies = 50
 
@@ -72,15 +73,17 @@ class ObjectsController:
         self.powerup_spawn = None
         self.max_powerups = 50
 
-        self.powerups_type_list = ['life', 'rifle', 'shotgun', 'rifle_ammo', 'shotgun_ammo', 'handgun_ammo']
+        self.powerups_type_list = ['life', 'rifle', 'shotgun', 'rifle_ammo', 'rifle_ammo',
+                                   'shotgun_ammo', 'shotgun_ammo', 'handgun_ammo', 'handgun_ammo', 'handgun_ammo']
 
         # Death variables
         self.font_text_40 = pg.font.Font("Assets/Fonts/BebasNeue-Regular.otf", 40)
         self.is_dead = False
 
-    def handle_event(self, event):
+    def player_handle_event(self, event):
         self.players.handle_event(event)
 
+    def handle_event(self):
         if not self.is_dead and self.player.weapon.type != 'knife' and not self.player.is_reloading and self.player.is_shooting and self.fire_rate_counter > self.player.weapon.fire_rate():
             if self.player.weapon.loaded_ammo_list[self.player.weapon.type] > 0:
                 self.can_render_bullet = True
@@ -229,7 +232,6 @@ class ObjectsController:
             for powerup_id in powerup_list:
                 Powerups.Powerups.draw_multiplayer(self.screen, self.background, powerup_list[powerup_id])
         else:
-            self.bot_list.update(self.bot_list)
             self.players.draw(self.screen)
             self.bot_list.draw(self.screen)
             self.powerups_list.draw(self.screen)
@@ -251,19 +253,22 @@ class ObjectsController:
     def spawn_bots(self):
         # Spawn for zombies
         if self.bots_spawn_rate > 1000 and len(self.bot_list) < self.max_zombies:
-            while self.cant_spawn_bot:
-                self.bot_spawn = Bot.Bot(helpers.generate_random_location(),
+            while self.cant_spawn_bot or self.is_visible_spawn_bot:
+                position = helpers.generate_random_location()
+                self.is_visible_spawn_bot = helpers.is_visible_area(position) # Works only for host on multiplayer!!
+                self.bot_spawn = Bot.Bot(position,
                                           self.screen,
                                           self.background,
                                           self.player_group,
                                           self.zombie_animation)
                 self.cant_spawn_bot = pg.sprite.spritecollideany(self.bot_spawn, self.background.collider_group)
             self.cant_spawn_bot = True
+            self.is_visible_spawn_bot = True
             self.bot_list.add(self.bot_spawn)
             self.bots_spawn_rate = 0
 
     def spawn_powerups(self):
-        # Spawn for zombies
+        # Spawn for powerups
         if self.powerups_spawn_rate > 500 and len(self.powerups_list) < self.max_powerups:
             while self.cant_spawn_powerup:
                 self.powerup_spawn = Powerups.Powerups(self.background, helpers.select_random_from_list(self.powerups_type_list))

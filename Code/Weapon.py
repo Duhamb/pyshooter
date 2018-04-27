@@ -8,7 +8,7 @@ class Weapon:
         self.fire_rate_list = {'rifle': 250, 'shotgun': 1200, 'handgun': 300, 'knife': 400}
 
         self.max_distance_list = {'rifle': 500, 'shotgun': 200, 'handgun': 300}
-        self.ammo_limit_list = {'rifle': 15, 'shotgun': 10, 'handgun': 20}
+        self.ammo_limit_list = {'rifle': 15, 'shotgun': 8, 'handgun': 20}
         self.loaded_ammo_list = {'rifle': 0, 'shotgun': 0, 'handgun': 20}
         self.unloaded_ammo_list = {'rifle': 0, 'shotgun': 0, 'handgun': 20}
         self.weapon_list = {'rifle': False, 'shotgun': False, 'handgun': True, 'knife': True}
@@ -54,7 +54,7 @@ class Weapon:
                 if self.unloaded_ammo_list[self.type] == 0 and not self.player_out_of_ammo_played:
                     helpers.get_free_channel().play(Sound.Weapon.player_out_of_ammo)
                     self.player_out_of_ammo_played = True
-                elif not self.player_reload_played:
+                elif self.unloaded_ammo_list[self.type] != 0 and not self.player_reload_played:
                     helpers.get_free_channel().play(Sound.Weapon.player_reload)
                     self.player_reload_played = True
 
